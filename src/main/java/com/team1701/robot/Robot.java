@@ -42,7 +42,7 @@ public class Robot extends LoggedRobot {
         // Set up data receivers & replay source
         switch (Configuration.getMode()) {
             case REAL:
-                Logger.addDataReceiver(new WPILOGWriter("/media/sda1/"));
+                Logger.addDataReceiver(new WPILOGWriter());
                 Logger.addDataReceiver(new NT4Publisher());
                 break;
             case SIMULATION:

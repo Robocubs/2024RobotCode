@@ -9,8 +9,8 @@ import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.MultiTargetPNPResults;
-import org.photonvision.targeting.PNPResults;
+import org.photonvision.targeting.MultiTargetPNPResult;
+import org.photonvision.targeting.PNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -113,17 +113,17 @@ public interface AprilTagCameraIO {
 
             var multiTagPnpResultPresent = table.get("MultiTag/PnpResult/IsPresent", false);
             var multiTagPnpResult = multiTagPnpResultPresent
-                    ? new PNPResults(
+                    ? new PNPResult(
                             table.get("MultiTag/PnpResult/BestPose", new Transform3d()),
                             table.get("MultiTag/PnpResult/AltPose", new Transform3d()),
                             table.get("MultiTag/PnpResult/Ambiguity", 0.0),
                             table.get("MultiTag/PnpResult/BestPoseReprojectionError", 0.0),
                             table.get("MultiTag/PnpResult/AltPoseReprojectionError", 0.0))
-                    : new PNPResults();
+                    : new PNPResult();
             var multiTagTargetIdsUsed = IntStream.of(table.get("MultiTag/TargetIdsUsed", new int[] {}))
                     .boxed()
                     .toList();
-            var multiTargetResult = new MultiTargetPNPResults(multiTagPnpResult, multiTagTargetIdsUsed);
+            var multiTargetResult = new MultiTargetPNPResult(multiTagPnpResult, multiTagTargetIdsUsed);
 
             pipelineResult = new PhotonPipelineResult(latency, targets, multiTargetResult);
             pipelineResult.setTimestampSeconds(timestamp);
