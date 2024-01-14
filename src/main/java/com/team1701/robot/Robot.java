@@ -4,22 +4,35 @@
 
 package com.team1701.robot;
 
+import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
+import java.util.Optional;
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import com.team1701.robot.Configuration.Mode;
 
 public class Robot extends LoggedRobot {
-    private Command m_autonomousCommand;
-
-    private RobotContainer m_robotContainer;
+    private Optional<Command> mAutonomousCommand = Optional.empty();
+    private RobotContainer mRobotContainer;
 
     @Override
     public void robotInit() {
+        initializeAdvantageKit();
+        mRobotContainer = new RobotContainer();
+
+    }
+
+    // Record metadata
+
+    private void initializeAdvantageKit() {
         // Record metadata
         Logger.recordMetadata("RuntimeType", getRuntimeType().toString());
         Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
@@ -42,6 +55,32 @@ public class Robot extends LoggedRobot {
         // Set up data receivers & replay source
         switch (Configuration.getMode()) {
             case REAL:
+                Logger.addDataReceiver(new WPILOGWriter("/media/sda1/"));
+                Logger.addDataReceiver(new NT4Publisher());
+                break;
+            case SIMULATION:
+                Logger.addDataReceiver(new NT4Publisher());
+                break;
+            case REPLAY:
+                var logPath = LogFileUtil.findReplayLog();
+                Logger.setReplaySource(new WPILOGReader(logPath));
+                Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+                break;
+        }
+
+        // Start AdvantageKit logger
+        setUseTiming(Configuration.getMode() != Mode.REPLAY);
+        Logger.start();
+
+        // Default to blue alliance in sim
+        if (Configuration.getMode() == Mode.SIMULATION) {
+            DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+        }
+    
+
+        // Set up data receivers & replay source
+        switch (Configuration.getMode()) {
+            case REAL:
                 Logger.addDataReceiver(new WPILOGWriter());
                 Logger.addDataReceiver(new NT4Publisher());
                 break;
@@ -58,7 +97,8 @@ public class Robot extends LoggedRobot {
         // Start AdvantageKit logger
         setUseTiming(Configuration.getMode() != Configuration.Mode.REPLAY);
         Logger.start();
-        m_robotContainer = new RobotContainer();
+        mRobotContainer = new RobotContainer();
+    
     }
 
     @Override
@@ -77,10 +117,10 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.schedule();
+        if (mAutonomousCommand != null) {
+            CommandScheduler.getInstance().cancelAll();
+            mAutonomousCommand = Optional.of(mRobotContainer.getAutonomousCommand());
+            mAutonomousCommand.ifPresent(command -> CommandScheduler.getInstance().schedule(command));
         }
     }
 
@@ -92,9 +132,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopInit() {
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.cancel();
-        }
+        mAutonomousCommand.ifPresent(Command::cancel);
     }
 
     @Override

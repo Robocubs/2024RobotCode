@@ -29,7 +29,7 @@ public class DriveToPose extends Command {
             kLoggingPrefix + "MaxAngularVelocity", kMaxKinematicLimits.maxDriveVelocity() / kModuleRadius);
     private static final LoggedTunableNumber kMaxAngularAcceleration =
             new LoggedTunableNumber(kLoggingPrefix + "MaxAngularAcceleration", kMaxAngularVelocity.get() / 2.0);
-    //TODO: Update PID values
+    // TODO: Update PID values
     private static final LoggedTunableNumber kTranslationKp =
             new LoggedTunableNumber(kLoggingPrefix + "TranslationKp", 6.0);
     private static final LoggedTunableNumber kTranslationKi =

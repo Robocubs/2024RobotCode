@@ -2,8 +2,8 @@ package com.team1701.robot.subsystems.drive;
 
 import java.util.function.Supplier;
 
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVLibError;
 import com.team1701.lib.alerts.REVAlert;
 import com.team1701.lib.drivers.motors.MotorIOSparkMax;

@@ -140,7 +140,7 @@ public final class Constants {
                     kFastKinematicLimits.maxSteeringVelocity());
 
             kPathFollowerConfig = new HolonomicPathFollowerConfig(
-                    //TODO: determine PID values
+                    // TODO: determine PID values
                     new PIDConstants(4.0, 0.0, 0.0),
                     new PIDConstants(2.0, 0.0, 0.0),
                     kMaxVelocityMetersPerSecond * 0.95,
