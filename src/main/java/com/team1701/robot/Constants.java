@@ -67,8 +67,8 @@ public final class Constants {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
                     kWheelRadiusMeters = Units.inchesToMeters(2);
-                    driveMotorMaxRPM = Constants.Motors.kMaxNeoRPM;
-                    turnMotorMaxRPM = Constants.Motors.kMaxNeoRPM;
+                    driveMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
+                    turnMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
                     kDriveReduction = kL3DriveReduction;
                     kSteerReduction = kMk4iSteerReduction;
                     kDriveMotorsInverted = true;
@@ -85,7 +85,7 @@ public final class Constants {
                 case SIMULATION_BOT:
                     kWheelRadiusMeters = Units.inchesToMeters(2);
                     driveMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
-                    turnMotorMaxRPM = Constants.Motors.kMaxNeoRPM;
+                    turnMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
                     kDriveReduction = kL3DriveReduction * k16ToothKitReduction;
                     kSteerReduction = kMk4iSteerReduction;
                     kDriveMotorsInverted = true;
