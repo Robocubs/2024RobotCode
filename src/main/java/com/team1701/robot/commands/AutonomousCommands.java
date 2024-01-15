@@ -54,7 +54,7 @@ public class AutonomousCommands {
             return none();
         }
 
-        var command = AutoBuilder.followPathWithEvents(path);
+        var command = AutoBuilder.followPath(path);
         if (resetPose) {
             command = command.beforeStarting(resetPose(path.getPreviewStartingHolonomicPose()));
             command.setName("ResetPoseAndFollowPathWithEvents");
@@ -66,13 +66,13 @@ public class AutonomousCommands {
     public Command demo() {
         return loggedSequence(
                         print("Starting demo"),
-                        followPath("demo1", true),
+                        // ("demo1", true),
                         driveToPose(new Pose2d(2.0, 1.0, Rotation2d.fromRadians(-Math.PI * 2.0 / 3.0))),
                         driveToPose(new Pose2d(10.0, 1.0, GeometryUtil.kRotationHalfPi)),
                         driveToPose(
                                 new Pose2d(2.0, 5.0, GeometryUtil.kRotationIdentity),
                                 Constants.Drive.kSlowKinematicLimits),
-                        followPath("demo2"),
+                        // followPath("demo2"),
                         driveToPose(new Pose2d(10.0, 5.0, GeometryUtil.kRotationMinusHalfPi), false))
                 .withName("AutonomousDemo");
     }

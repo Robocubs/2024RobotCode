@@ -4,20 +4,19 @@
 
 package com.team1701.robot;
 
+import java.util.Optional;
+
+import com.team1701.robot.Configuration.Mode;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-
-import java.util.Optional;
-
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
-import com.team1701.robot.Configuration.Mode;
 
 public class Robot extends LoggedRobot {
     private Optional<Command> mAutonomousCommand = Optional.empty();
@@ -26,11 +25,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotInit() {
         initializeAdvantageKit();
-        mRobotContainer = new RobotContainer();
-
     }
-
-    // Record metadata
 
     private void initializeAdvantageKit() {
         // Record metadata
@@ -76,7 +71,6 @@ public class Robot extends LoggedRobot {
         if (Configuration.getMode() == Mode.SIMULATION) {
             DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
         }
-    
 
         // Set up data receivers & replay source
         switch (Configuration.getMode()) {
@@ -98,7 +92,6 @@ public class Robot extends LoggedRobot {
         setUseTiming(Configuration.getMode() != Configuration.Mode.REPLAY);
         Logger.start();
         mRobotContainer = new RobotContainer();
-    
     }
 
     @Override
@@ -117,11 +110,9 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void autonomousInit() {
-        if (mAutonomousCommand != null) {
-            CommandScheduler.getInstance().cancelAll();
-            mAutonomousCommand = Optional.of(mRobotContainer.getAutonomousCommand());
-            mAutonomousCommand.ifPresent(command -> CommandScheduler.getInstance().schedule(command));
-        }
+        CommandScheduler.getInstance().cancelAll();
+        mAutonomousCommand = mRobotContainer.getAutonomousCommand();
+        mAutonomousCommand.ifPresent(command -> CommandScheduler.getInstance().schedule(command));
     }
 
     @Override

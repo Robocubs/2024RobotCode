@@ -63,12 +63,16 @@ public class DriveToPose extends Command {
         mKinematicLimits = kinematicLimits;
         mFinishAtPose = finishAtPose;
 
-        mTranslationController = new PIDController(0.0, 0.0, 0.0, Constants.kLoopPeriodSeconds);
-        mTranslationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0.0, 0.0));
+        mTranslationController = new PIDController(
+                kTranslationKp.get(), kTranslationKi.get(), kTranslationKd.get(), Constants.kLoopPeriodSeconds);
+        mTranslationProfile =
+                new TrapezoidProfile(new TrapezoidProfile.Constraints(kMaxVelocity.get(), kMaxAcceleration.get()));
 
-        mRotationController = new PIDController(0.0, 0.0, 0.0, Constants.kLoopPeriodSeconds);
+        mRotationController = new PIDController(
+                kRotationKp.get(), kRotationKi.get(), kRotationKd.get(), Constants.kLoopPeriodSeconds);
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
-        mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0.0, 0.0));
+        mRotationProfile = new TrapezoidProfile(
+                new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
 
         addRequirements(drive);
     }

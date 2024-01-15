@@ -69,7 +69,7 @@ public final class Constants {
                     kWheelRadiusMeters = Units.inchesToMeters(2);
                     driveMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
                     turnMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
-                    kDriveReduction = kL3DriveReduction;
+                    kDriveReduction = k16ToothKitReduction;
                     kSteerReduction = kMk4iSteerReduction;
                     kDriveMotorsInverted = true;
                     kSteerMotorsInverted = true;
