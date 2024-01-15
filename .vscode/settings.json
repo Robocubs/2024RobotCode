@@ -25,5 +25,39 @@
       }
     },
   ],
-  "java.test.defaultConfig": "WPIlibUnitTests"
+  "java.test.defaultConfig": "WPIlibUnitTests",
+  "editor.formatOnSave": true,
+  "files.eol": "\n",
+  "java.format.enabled": false,
+  "[java]": {
+    "files.trimTrailingWhitespace": false,
+    "spotlessGradle.format.enable": true,
+    "editor.defaultFormatter": "richardwillis.vscode-spotless-gradle",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.spotlessGradle": "always"
+    },
+    "editor.detectIndentation": false,
+    "editor.indentSize": 4
+  },
+  "[json]": {
+    "files.insertFinalNewline": true,
+    "editor.indentSize": 2
+  },
+  "[jsonc]": {
+    "files.insertFinalNewline": true,
+    "editor.indentSize": 2
+  },
+  "cSpell.words": [
+    "Brushless",
+    "Deadband",
+    "dtheta",
+    "Holonomic",
+    "Odometry",
+    "Reprojection",
+    "Setpoint",
+    "Setpoints",
+    "teleop",
+    "Uncomitted",
+    "WPILOG"
+  ]
 }
