@@ -5,8 +5,10 @@ import java.util.Queue;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.team1701.lib.util.SignalSamplingThread;
@@ -18,11 +20,12 @@ public class MotorIOTalonFX implements MotorIO {
     private final double mReduction;
     private final PositionDutyCycle mPositionDutyCycle;
     private final VelocityDutyCycle mVelocityDutyCycle;
-    private final Slot0Configs configs;
+    private final DutyCycleOut mDutyCycleOut;
+    private final VoltageOut mVoltageOut;
     private final StatusSignal<Double> mPositionSignal;
     private final StatusSignal<Double> mVelocitySignal;
-
-    private final double kMaxKrakenVoltage = 24;
+    private final StatusSignal<Double> mDutyCycleSignal;
+    private final StatusSignal<Double> mVoltageSignal;
 
     private Optional<Queue<Double>> mPositionSamples = Optional.empty();
     private Optional<Queue<Double>> mVelocitySamples = Optional.empty();
@@ -33,25 +36,28 @@ public class MotorIOTalonFX implements MotorIO {
         mReduction = reduction;
         mPositionDutyCycle = new PositionDutyCycle(0);
         mVelocityDutyCycle = new VelocityDutyCycle(0);
-        configs = new Slot0Configs();
+        mDutyCycleOut = new DutyCycleOut(0);
+        mVoltageOut = new VoltageOut(0);
         mPositionSignal = mMotor.getPosition();
         mVelocitySignal = mMotor.getVelocity();
+        mDutyCycleSignal = mMotor.getDutyCycle();
+        mVoltageSignal = mMotor.getSupplyVoltage();
+        mMotor.getSupplyVoltage();
     }
 
     @Override
     public void updateInputs(MotorInputs inputs) {
         inputs.positionRadians = Units.rotationsToRadians(mPositionSignal.getValue()) * mReduction;
-        inputs.velocityRadiansPerSecond =
-                Units.rotationsPerMinuteToRadiansPerSecond(mVelocitySignal.getValue()) * mReduction;
+        inputs.velocityRadiansPerSecond = Units.rotationsToRadians(mVelocitySignal.getValue()) * mReduction;
         mPositionSamples.ifPresent(samples -> {
             inputs.positionRadiansSamples = samples.stream()
-                    .mapToDouble((position) -> Units.rotationsToRadians(position))
+                    .mapToDouble((position) -> Units.rotationsToRadians(position) * mReduction)
                     .toArray();
             samples.clear();
         });
         mVelocitySamples.ifPresent(samples -> {
             inputs.positionRadiansSamples = samples.stream()
-                    .mapToDouble((velocity) -> Units.rotationsToRadians(velocity))
+                    .mapToDouble((velocity) -> Units.rotationsToRadians(velocity) * mReduction)
                     .toArray();
             samples.clear();
         });
@@ -68,22 +74,16 @@ public class MotorIOTalonFX implements MotorIO {
     }
 
     /**
-     * This method sets the percent of max voltage to output to a Kraken X60.
-     * Phoenix 6 has shifted away from arbitrary max voltages and percent outputs,
-     * so either DutyCycle or Direct Voltage controls will be a better method of controlling output.
-     *
-     * This uses 24 volts as the max voltage for a Kraken X60.
-     *
-     * @param percentage The percent, as a decimal, of voltage to output
+     * @param percentage Percent between -1 & 1
      */
     @Override
     public void setPercentOutput(double percentage) {
-        mMotor.setVoltage(percentage < 1 ? percentage * kMaxKrakenVoltage : kMaxKrakenVoltage);
+        mMotor.setControl(mDutyCycleOut.withOutput(percentage));
     }
 
     @Override
     public void setVoltageOutput(double volts) {
-        mMotor.setVoltage(volts);
+        mMotor.setControl(mVoltageOut.withOutput(volts));
     }
 
     @Override
@@ -93,6 +93,7 @@ public class MotorIOTalonFX implements MotorIO {
 
     @Override
     public void setPID(double ff, double p, double i, double d) {
+        var configs = new Slot0Configs();
         configs.kV = ff;
         configs.kP = p;
         configs.kI = i;
@@ -107,8 +108,7 @@ public class MotorIOTalonFX implements MotorIO {
             throw new IllegalStateException("Position sampling already enabled");
         }
 
-        var queue = samplingThread.addSignal(
-                () -> Units.rotationsToRadians(mMotor.getPosition().getValue()));
+        var queue = samplingThread.addSignal(mPositionSignal);
         mPositionSamples = Optional.of(queue);
     }
 
@@ -118,8 +118,7 @@ public class MotorIOTalonFX implements MotorIO {
             throw new IllegalStateException("Velocity sampling already enabled");
         }
 
-        var queue = samplingThread.addSignal(() ->
-                Units.rotationsPerMinuteToRadiansPerSecond(mMotor.getVelocity().getValue()));
+        var queue = samplingThread.addSignal(mVelocitySignal);
         mVelocitySamples = Optional.of(queue);
     }
 
@@ -134,5 +133,13 @@ public class MotorIOTalonFX implements MotorIO {
 
     public void updateVelocityFrequency(double frequencyHz) {
         mVelocitySignal.setUpdateFrequency(frequencyHz);
+    }
+
+    public void updateVoltageFrequency(double frequencyHz) {
+        mVoltageSignal.setUpdateFrequency(frequencyHz);
+    }
+
+    public void updateDutyCycleFrequency(double frequencyHz) {
+        mDutyCycleSignal.setUpdateFrequency(frequencyHz);
     }
 }
