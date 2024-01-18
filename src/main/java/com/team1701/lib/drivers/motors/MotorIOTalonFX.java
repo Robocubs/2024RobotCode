@@ -24,8 +24,6 @@ public class MotorIOTalonFX implements MotorIO {
     private final VoltageOut mVoltageOut;
     private final StatusSignal<Double> mPositionSignal;
     private final StatusSignal<Double> mVelocitySignal;
-    private final StatusSignal<Double> mDutyCycleSignal;
-    private final StatusSignal<Double> mVoltageSignal;
 
     private Optional<Queue<Double>> mPositionSamples = Optional.empty();
     private Optional<Queue<Double>> mVelocitySamples = Optional.empty();
@@ -40,9 +38,6 @@ public class MotorIOTalonFX implements MotorIO {
         mVoltageOut = new VoltageOut(0);
         mPositionSignal = mMotor.getPosition();
         mVelocitySignal = mMotor.getVelocity();
-        mDutyCycleSignal = mMotor.getDutyCycle();
-        mVoltageSignal = mMotor.getSupplyVoltage();
-        mMotor.getSupplyVoltage();
     }
 
     @Override
@@ -133,13 +128,5 @@ public class MotorIOTalonFX implements MotorIO {
 
     public void updateVelocityFrequency(double frequencyHz) {
         mVelocitySignal.setUpdateFrequency(frequencyHz);
-    }
-
-    public void updateVoltageFrequency(double frequencyHz) {
-        mVoltageSignal.setUpdateFrequency(frequencyHz);
-    }
-
-    public void updateDutyCycleFrequency(double frequencyHz) {
-        mDutyCycleSignal.setUpdateFrequency(frequencyHz);
     }
 }
