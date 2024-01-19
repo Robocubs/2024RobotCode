@@ -34,13 +34,13 @@ public class MotorIOSparkMax implements MotorIO {
                 Units.rotationsPerMinuteToRadiansPerSecond(mEncoder.getVelocity()) * mReduction;
         mPositionSamples.ifPresent(samples -> {
             inputs.positionRadiansSamples = samples.stream()
-                    .mapToDouble((position) -> Units.rotationsToRadians(position))
+                    .mapToDouble((position) -> Units.rotationsToRadians(position) * mReduction)
                     .toArray();
             samples.clear();
         });
         mVelocitySamples.ifPresent(samples -> {
             inputs.velocityRadiansPerSecondSamples = samples.stream()
-                    .mapToDouble((velocity) -> Units.rotationsPerMinuteToRadiansPerSecond(velocity))
+                    .mapToDouble((velocity) -> Units.rotationsPerMinuteToRadiansPerSecond(velocity) * mReduction)
                     .toArray();
             samples.clear();
         });
@@ -87,7 +87,7 @@ public class MotorIOSparkMax implements MotorIO {
             throw new IllegalStateException("Position sampling already enabled");
         }
 
-        var queue = samplingThread.addSignal(() -> Units.rotationsToRadians(mEncoder.getPosition()));
+        var queue = samplingThread.addSignal(mEncoder::getPosition);
         mPositionSamples = Optional.of(queue);
     }
 
@@ -97,7 +97,7 @@ public class MotorIOSparkMax implements MotorIO {
             throw new IllegalStateException("Velocity sampling already enabled");
         }
 
-        var queue = samplingThread.addSignal(() -> Units.rotationsPerMinuteToRadiansPerSecond(mEncoder.getVelocity()));
+        var queue = samplingThread.addSignal(mEncoder::getVelocity);
         mVelocitySamples = Optional.of(queue);
     }
 }
