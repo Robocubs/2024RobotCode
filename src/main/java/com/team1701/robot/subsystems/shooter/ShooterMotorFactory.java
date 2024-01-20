@@ -30,7 +30,7 @@ public class ShooterMotorFactory {
 
         configureWithRetry(() -> controller.setP(Constants.Shooter.kShooterKp.get()), errorAlert);
         configureWithRetry(() -> controller.setD(Constants.Shooter.kShooterKd.get()), errorAlert);
-        configureWithRetry(() -> controller.setFF(Constants.Shooter.kShooterKf.get()), errorAlert);
+        configureWithRetry(() -> controller.setFF(Constants.Shooter.kShooterKff.get()), errorAlert);
 
         configureWithRetry(() -> motor.burnFlash(), errorAlert);
 

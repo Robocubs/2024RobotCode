@@ -13,16 +13,17 @@ public class Shooter extends SubsystemBase {
     private MotorIO mShooterMotorIO;
     private final MotorInputsAutoLogged mShooterMotorInputsAutoLogged = new MotorInputsAutoLogged();
 
-    @AutoLogOutput(key = "Shooter/DemandRadiansPerSecond")
-    private double mLeftDemandRadiansPerSecond;
+    @AutoLogOutput(key = "Shooter/Motor/DemandRadiansPerSecond")
+    private double mDemandRadiansPerSecond;
 
     public Shooter(MotorIO motor) {
         mShooterMotorIO = motor;
-        mShooterMotorIO.setPID(
-                Constants.Shooter.kShooterKf.get(),
+        setPID(
+                Constants.Shooter.kShooterKff.get(),
                 Constants.Shooter.kShooterKp.get(),
                 0,
                 Constants.Shooter.kShooterKd.get());
+        mShooterMotorIO.setBrakeMode(false);
     }
 
     public static MotorIOSim createSim(DCMotor shooterMotor) {
@@ -31,17 +32,26 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // TODO: Update inputs
+        var hash = hashCode();
         mShooterMotorIO.updateInputs(mShooterMotorInputsAutoLogged);
         Logger.processInputs("Shooter/Motor", mShooterMotorInputsAutoLogged);
+        if (Constants.Shooter.kShooterKff.hasChanged(hash)
+                || Constants.Shooter.kShooterKp.hasChanged(hash)
+                || Constants.Shooter.kShooterKd.hasChanged(hash)) {
+            setPID(
+                    Constants.Shooter.kShooterKff.get(),
+                    Constants.Shooter.kShooterKp.get(),
+                    0,
+                    Constants.Shooter.kShooterKd.get());
+        }
+    }
+
+    public void setPID(double ff, double p, double i, double d) {
+        mShooterMotorIO.setPID(ff, p, i, d);
     }
 
     public void setSpeed(double radiansPerSecond) {
         mShooterMotorIO.setVelocityControl(radiansPerSecond);
-    }
-
-    public void setShooterBrakeMode(boolean enable) {
-        mShooterMotorIO.setBrakeMode(enable);
     }
 
     public void stop() {
