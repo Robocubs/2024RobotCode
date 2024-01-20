@@ -69,7 +69,7 @@ public class MotorIOSparkFlex implements MotorIO {
     }
 
     @Override
-    public void setBreakMode(boolean enable) {
+    public void setBrakeMode(boolean enable) {
         mMotor.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
     }
 

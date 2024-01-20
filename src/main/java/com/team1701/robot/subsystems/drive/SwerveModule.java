@@ -127,11 +127,11 @@ public class SwerveModule {
     }
 
     public void setDriveBrakeMode(boolean enable) {
-        mDriveMotorIO.setBreakMode(enable);
+        mDriveMotorIO.setBrakeMode(enable);
     }
 
     public void setSteerBrakeMode(boolean enable) {
-        mSteerMotorIO.setBreakMode(enable);
+        mSteerMotorIO.setBrakeMode(enable);
     }
 
     public void zeroSteeringMotor() {

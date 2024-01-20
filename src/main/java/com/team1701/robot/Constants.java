@@ -149,4 +149,31 @@ public final class Constants {
                     kLoopPeriodSeconds);
         }
     }
+
+    public static final class Shooter {
+        // TODO: Update values
+        public static final double kShooterReduction = 1;
+        public static final int kShooterDeviceId = 0;
+
+        public static final LoggedTunableNumber kShooterKf = new LoggedTunableNumber("Shooter/Motor/Kf");
+        public static final LoggedTunableNumber kShooterKp = new LoggedTunableNumber("Shooter/Motor/Kp");
+        public static final LoggedTunableNumber kShooterKd = new LoggedTunableNumber("Shooter/Motor/Kd");
+
+        static {
+            switch (Configuration.getRobot()) {
+                case COMPETITION_BOT:
+                    kShooterKd.initDefault(1);
+                    kShooterKp.initDefault(0.6);
+                    kShooterKf.initDefault(0);
+                    break;
+                case SIMULATION_BOT:
+                    kShooterKd.initDefault(1);
+                    kShooterKp.initDefault(0.6);
+                    kShooterKf.initDefault(0);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("No shooter configuration for " + Configuration.getRobot());
+            }
+        }
+    }
 }
