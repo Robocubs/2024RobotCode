@@ -23,6 +23,8 @@ import com.team1701.robot.estimation.PoseEstimator;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.DriveMotorFactory;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
+import com.team1701.robot.subsystems.shooter.Shooter;
+import com.team1701.robot.subsystems.shooter.ShooterMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -38,6 +40,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 public class RobotContainer {
     public final Drive mDrive;
+    public final Shooter mShooter;
     // public final Vision mVision;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
@@ -47,6 +50,7 @@ public class RobotContainer {
     public RobotContainer() {
         Optional<Drive> drive = Optional.empty();
         // Optional<Vision> vision = Optional.empty();
+        Optional<Shooter> shooter = Optional.empty();
 
         if (Configuration.getMode() != Mode.REPLAY) {
             switch (Configuration.getRobot()) {
@@ -71,6 +75,10 @@ public class RobotContainer {
                                 DriveMotorFactory.createSteerMotorIOSparkMax(15),
                                 new EncoderIOAnalog(2)),
                     }));
+
+                    // TODO: update ID
+                    shooter = Optional.of(new Shooter(
+                            ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterDeviceId)));
                     break;
                 case SIMULATION_BOT:
                     kAllianceIsBlue = true;
@@ -83,7 +91,9 @@ public class RobotContainer {
                                     .toArray(SwerveModuleIO[]::new));
                     gyroIO.setYawSupplier(
                             () -> simDrive.getVelocity().omegaRadiansPerSecond, Constants.kLoopPeriodSeconds);
+
                     drive = Optional.of(simDrive);
+                    shooter = Optional.of(new Shooter(Shooter.createSim(DCMotor.getNeoVortex(1))));
                     break;
                 default:
                     kAllianceIsBlue = true;
@@ -110,6 +120,9 @@ public class RobotContainer {
         new AprilTagCameraIO() {},
         new AprilTagCameraIO() {},
         new AprilTagCameraIO() {})); */
+
+        this.mShooter = shooter.orElseGet(
+                () -> new Shooter(ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterDeviceId)));
 
         setupControllerBindings();
         setupAutonomous();

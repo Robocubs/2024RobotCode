@@ -52,7 +52,7 @@ public final class Constants {
         public static final KinematicLimits kFastTrapezoidalKinematicLimits;
         public static final KinematicLimits kSlowTrapezoidalKinematicLimits;
 
-        public static final LoggedTunableNumber kDriveKf = new LoggedTunableNumber("Drive/Module/DriveKf");
+        public static final LoggedTunableNumber kDriveKff = new LoggedTunableNumber("Drive/Module/DriveKff");
         public static final LoggedTunableNumber kDriveKp = new LoggedTunableNumber("Drive/Module/DriveKp");
         public static final LoggedTunableNumber kDriveKd = new LoggedTunableNumber("Drive/Module/DriveKd");
         public static final LoggedTunableNumber kSteerKp = new LoggedTunableNumber("Drive/Module/SteerKp");
@@ -76,7 +76,7 @@ public final class Constants {
                     /* TODO: Update values for 2024 bot */
                     kTrackWidthMeters = 0.465;
                     kWheelbaseMeters = 0.465;
-                    kDriveKf.initDefault(0.0002);
+                    kDriveKff.initDefault(0.0002);
                     kDriveKp.initDefault(0.00003);
                     kDriveKd.initDefault(0);
                     kSteerKp.initDefault(1.0);
@@ -93,7 +93,7 @@ public final class Constants {
                     /* TODO: Update values for 2024 bot */
                     kTrackWidthMeters = 0.5;
                     kWheelbaseMeters = 0.5;
-                    kDriveKf.initDefault(0.1);
+                    kDriveKff.initDefault(0.1);
                     kDriveKp.initDefault(0.6);
                     kDriveKd.initDefault(0);
                     kSteerKp.initDefault(16.0);
@@ -148,5 +148,43 @@ public final class Constants {
                     new ReplanningConfig(),
                     kLoopPeriodSeconds);
         }
+    }
+
+    public static final class Shooter {
+        // TODO: Update values
+        public static final double kShooterReduction = 1;
+        public static final int kShooterDeviceId = 0;
+
+        public static final LoggedTunableNumber kShooterKff = new LoggedTunableNumber("Shooter/Motor/Kff");
+        public static final LoggedTunableNumber kShooterKp = new LoggedTunableNumber("Shooter/Motor/Kp");
+        public static final LoggedTunableNumber kShooterKd = new LoggedTunableNumber("Shooter/Motor/Kd");
+
+        static {
+            switch (Configuration.getRobot()) {
+                case COMPETITION_BOT:
+                    kShooterKd.initDefault(1);
+                    kShooterKp.initDefault(0.6);
+                    kShooterKff.initDefault(0);
+                    break;
+                case SIMULATION_BOT:
+                    kShooterKd.initDefault(1);
+                    kShooterKp.initDefault(0.6);
+                    kShooterKff.initDefault(0);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("No shooter configuration for " + Configuration.getRobot());
+            }
+        }
+    }
+
+    public static final class Elevator {
+        // TODO: Update values
+        public static final double kElevatorReduction = 1;
+        public static final int kElevatorLeftDeviceId = 1;
+        public static final int kElevatorRightDeviceId = 2;
+
+        public static final LoggedTunableNumber kElevatorKff = new LoggedTunableNumber("Elevator/Motor/Kff");
+        public static final LoggedTunableNumber kElevatorKp = new LoggedTunableNumber("Elevator/Motor/Kp");
+        public static final LoggedTunableNumber kElevatorKd = new LoggedTunableNumber("Elevator/Motor/Kd");
     }
 }
