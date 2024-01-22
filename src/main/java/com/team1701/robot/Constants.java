@@ -12,6 +12,8 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
     public static final double kLoopPeriodSeconds = 0.02;
 
+    public static final class Robot {}
+
     public static final class Controls {
         public static final double kDriverDeadband = 0.09;
     }
@@ -154,6 +156,9 @@ public final class Constants {
         // TODO: Update values
         public static final double kShooterReduction = 1;
         public static final int kShooterDeviceId = 0;
+
+        public static final double kShooterAxisHeight = Units.inchesToMeters(10);
+        public static final double kShooterAxisOffset = Units.inchesToMeters(10); // + is toward front of bot
 
         public static final LoggedTunableNumber kShooterKff = new LoggedTunableNumber("Shooter/Motor/Kff");
         public static final LoggedTunableNumber kShooterKp = new LoggedTunableNumber("Shooter/Motor/Kp");
