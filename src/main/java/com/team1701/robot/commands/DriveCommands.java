@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class DriveCommands {
-    public static DriveWithJoysticks driveWithJoysticks(
+    public static Command driveWithJoysticks(
             Drive drive,
             DoubleSupplier throttle,
             DoubleSupplier strafe,
@@ -19,14 +19,14 @@ public class DriveCommands {
         return new DriveWithJoysticks(drive, throttle, strafe, rotation, kinematicLimits);
     }
 
-    public static DriveToPose driveToPose(
-            Drive drive, Pose2d pose, KinematicLimits kinematicLimits, boolean finishAtPose) {
-        return new DriveToPose(drive, pose, kinematicLimits, finishAtPose);
+    public static Command driveToPose(
+            Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits, boolean finishAtPose) {
+        return new DriveToPose(drive, poseSupplier, kinematicLimits, finishAtPose);
     }
 
     public static Command swerveLock(Drive drive) {
-        var command = Commands.runOnce(drive::engageSwerveLock, drive).andThen(Commands.idle(drive));
-        command.setName("SwerveLock");
-        return command;
+        return Commands.runOnce(drive::engageSwerveLock, drive)
+                .andThen(Commands.idle(drive))
+                .withName("SwerveLock");
     }
 }

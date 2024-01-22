@@ -1,5 +1,7 @@
 package com.team1701.robot.commands;
 
+import java.util.function.Supplier;
+
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
@@ -45,21 +47,22 @@ public class DriveToPose extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "RotationToleranceRadians", 0.01);
 
     private final Drive mDrive;
-    private final Pose2d mTargetPose;
+    private final Supplier<Pose2d> mTargetPoseSupplier;
     private final KinematicLimits mKinematicLimits;
     private final boolean mFinishAtPose;
     private final PIDController mTranslationController;
     private final PIDController mRotationController;
 
+    private Pose2d mTargetPose = GeometryUtil.kPoseIdentity;
     private Pose2d mSetpoint = GeometryUtil.kPoseIdentity;
     private TrapezoidProfile mTranslationProfile;
     private TrapezoidProfile mRotationProfile;
     private TrapezoidProfile.State mTranslationState = new TrapezoidProfile.State();
     private TrapezoidProfile.State mRotationState = new TrapezoidProfile.State();
 
-    DriveToPose(Drive drive, Pose2d pose, KinematicLimits kinematicLimits, boolean finishAtPose) {
+    DriveToPose(Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits, boolean finishAtPose) {
         mDrive = drive;
-        mTargetPose = pose;
+        mTargetPoseSupplier = poseSupplier;
         mKinematicLimits = kinematicLimits;
         mFinishAtPose = finishAtPose;
 
@@ -80,6 +83,7 @@ public class DriveToPose extends Command {
     @Override
     public void initialize() {
         mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits);
+        mTargetPose = mTargetPoseSupplier.get();
         mSetpoint = PoseEstimator.getInstance().getPose2d();
 
         mTranslationController.reset();
@@ -98,6 +102,8 @@ public class DriveToPose extends Command {
                         mTargetPose.getRotation().getRadians() - Math.PI,
                         mTargetPose.getRotation().getRadians() + Math.PI),
                 fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
+
+        Logger.recordOutput(kLoggingPrefix + "TargetPose", mTargetPose);
     }
 
     @Override
@@ -164,7 +170,6 @@ public class DriveToPose extends Command {
         Logger.recordOutput(
                 kLoggingPrefix + "RotationError", Rotation2d.fromRadians(mRotationController.getPositionError()));
         Logger.recordOutput(kLoggingPrefix + "Setpoint", mSetpoint);
-        Logger.recordOutput(kLoggingPrefix + "TargetPose", mTargetPose);
     }
 
     @Override
@@ -177,7 +182,7 @@ public class DriveToPose extends Command {
         return mFinishAtPose && atTargetPose();
     }
 
-    public boolean atTargetPose() {
+    private boolean atTargetPose() {
         var currentPose = PoseEstimator.getInstance().getPose2d();
         var translationError =
                 mTargetPose.getTranslation().minus(currentPose.getTranslation()).getNorm();

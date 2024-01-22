@@ -29,9 +29,7 @@ public final class GeometryUtil {
     }
 
     public static boolean isNear(Rotation2d expected, Rotation2d actual, Rotation2d tolerance) {
-        return MathUtil.isNear(
-                MathUtil.angleModulus(expected.getRadians()),
-                MathUtil.angleModulus(actual.getRadians()),
-                tolerance.getRadians());
+        var difference = MathUtil.angleModulus(expected.minus(actual).getRadians());
+        return MathUtil.isNear(difference, 0.0, tolerance.getRadians());
     }
 }

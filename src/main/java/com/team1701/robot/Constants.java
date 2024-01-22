@@ -60,6 +60,10 @@ public final class Constants {
         public static final LoggedTunableNumber kSteerKp = new LoggedTunableNumber("Drive/Module/SteerKp");
         public static final LoggedTunableNumber kSteerKd = new LoggedTunableNumber("Drive/Module/SteerKd");
 
+        // TODO: determine PID values
+        public static final double kPathTranslationKp = 4.0;
+        public static final double kPathRotationKp = 2.0;
+
         public static final HolonomicPathFollowerConfig kPathFollowerConfig;
 
         static {
@@ -142,9 +146,8 @@ public final class Constants {
                     kFastKinematicLimits.maxSteeringVelocity());
 
             kPathFollowerConfig = new HolonomicPathFollowerConfig(
-                    // TODO: determine PID values
-                    new PIDConstants(4.0, 0.0, 0.0),
-                    new PIDConstants(2.0, 0.0, 0.0),
+                    new PIDConstants(kPathTranslationKp),
+                    new PIDConstants(kPathRotationKp),
                     kMaxVelocityMetersPerSecond * 0.95,
                     kModuleRadius,
                     new ReplanningConfig(),
