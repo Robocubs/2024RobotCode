@@ -34,8 +34,12 @@ public final class Configuration {
         }
     }
 
-    public static Alliance getAlliance() {
-        return DriverStation.getAlliance().orElse(Alliance.Blue);
+    public static boolean isBlueAlliance() {
+        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
+    }
+
+    public static boolean isRedAlliance() {
+        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
     }
 
     public static enum RobotType {

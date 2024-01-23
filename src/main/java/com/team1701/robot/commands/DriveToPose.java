@@ -7,7 +7,6 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
-import com.team1701.robot.estimation.PoseEstimator;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -48,6 +47,7 @@ public class DriveToPose extends Command {
 
     private final Drive mDrive;
     private final Supplier<Pose2d> mTargetPoseSupplier;
+    private final Supplier<Pose2d> mRobotPoseSupplier;
     private final KinematicLimits mKinematicLimits;
     private final boolean mFinishAtPose;
     private final PIDController mTranslationController;
@@ -60,9 +60,15 @@ public class DriveToPose extends Command {
     private TrapezoidProfile.State mTranslationState = new TrapezoidProfile.State();
     private TrapezoidProfile.State mRotationState = new TrapezoidProfile.State();
 
-    DriveToPose(Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits, boolean finishAtPose) {
+    DriveToPose(
+            Drive drive,
+            Supplier<Pose2d> poseSupplier,
+            Supplier<Pose2d> robotPoseSupplier,
+            KinematicLimits kinematicLimits,
+            boolean finishAtPose) {
         mDrive = drive;
         mTargetPoseSupplier = poseSupplier;
+        mRobotPoseSupplier = robotPoseSupplier;
         mKinematicLimits = kinematicLimits;
         mFinishAtPose = finishAtPose;
 
@@ -84,12 +90,12 @@ public class DriveToPose extends Command {
     public void initialize() {
         mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits);
         mTargetPose = mTargetPoseSupplier.get();
-        mSetpoint = PoseEstimator.getInstance().getPose2d();
+        mSetpoint = mRobotPoseSupplier.get();
 
         mTranslationController.reset();
         mRotationController.reset();
 
-        var currentPose = PoseEstimator.getInstance().getPose2d();
+        var currentPose = mRobotPoseSupplier.get();
         var translationToTarget = mTargetPose.getTranslation().minus(currentPose.getTranslation());
         var rotationToTarget = translationToTarget.getAngle();
         var fieldRelativeChassisSpeeds = mDrive.getFieldRelativeVelocity();
@@ -129,7 +135,7 @@ public class DriveToPose extends Command {
             mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
         }
 
-        var currentPose = PoseEstimator.getInstance().getPose2d();
+        var currentPose = mRobotPoseSupplier.get();
         var translationToTarget = mTargetPose.getTranslation().minus(currentPose.getTranslation());
         var distanceToTarget = translationToTarget.getNorm();
         var headingToTarget = translationToTarget.getAngle();
@@ -183,7 +189,7 @@ public class DriveToPose extends Command {
     }
 
     private boolean atTargetPose() {
-        var currentPose = PoseEstimator.getInstance().getPose2d();
+        var currentPose = mRobotPoseSupplier.get();
         var translationError =
                 mTargetPose.getTranslation().minus(currentPose.getTranslation()).getNorm();
         return Util.inRange(translationError, kTranslationToleranceMeters.get())

@@ -20,7 +20,7 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
-import com.team1701.robot.estimation.PoseEstimator;
+import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.DriveMotorFactory;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
@@ -29,7 +29,6 @@ import com.team1701.robot.subsystems.shooter.ShooterMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -40,6 +39,7 @@ import static com.team1701.robot.commands.DriveCommands.*;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 public class RobotContainer {
+    private final RobotState mRobotState = new RobotState();
     public final Drive mDrive;
     public final Shooter mShooter;
     // public final Vision mVision;
@@ -55,37 +55,40 @@ public class RobotContainer {
         if (Configuration.getMode() != Mode.REPLAY) {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    drive = Optional.of(new Drive(new GyroIOPigeon2(10), new SwerveModuleIO[] {
-                        new SwerveModuleIO(
-                                DriveMotorFactory.createDriveMotorIOSparkMax(10),
-                                DriveMotorFactory.createSteerMotorIOSparkMax(11),
-                                new EncoderIOAnalog(0)),
-                        new SwerveModuleIO(
-                                DriveMotorFactory.createDriveMotorIOSparkMax(12),
-                                DriveMotorFactory.createSteerMotorIOSparkMax(13),
-                                new EncoderIOAnalog(1)),
-                        new SwerveModuleIO(
-                                DriveMotorFactory.createDriveMotorIOSparkMax(16),
-                                DriveMotorFactory.createSteerMotorIOSparkMax(17),
-                                new EncoderIOAnalog(3)),
-                        new SwerveModuleIO(
-                                DriveMotorFactory.createDriveMotorIOSparkMax(14),
-                                DriveMotorFactory.createSteerMotorIOSparkMax(15),
-                                new EncoderIOAnalog(2)),
-                    }));
+                    drive = Optional.of(new Drive(
+                            new GyroIOPigeon2(10),
+                            new SwerveModuleIO[] {
+                                new SwerveModuleIO(
+                                        DriveMotorFactory.createDriveMotorIOSparkMax(10),
+                                        DriveMotorFactory.createSteerMotorIOSparkMax(11),
+                                        new EncoderIOAnalog(0)),
+                                new SwerveModuleIO(
+                                        DriveMotorFactory.createDriveMotorIOSparkMax(12),
+                                        DriveMotorFactory.createSteerMotorIOSparkMax(13),
+                                        new EncoderIOAnalog(1)),
+                                new SwerveModuleIO(
+                                        DriveMotorFactory.createDriveMotorIOSparkMax(16),
+                                        DriveMotorFactory.createSteerMotorIOSparkMax(17),
+                                        new EncoderIOAnalog(3)),
+                                new SwerveModuleIO(
+                                        DriveMotorFactory.createDriveMotorIOSparkMax(14),
+                                        DriveMotorFactory.createSteerMotorIOSparkMax(15),
+                                        new EncoderIOAnalog(2)),
+                            },
+                            mRobotState));
 
                     // TODO: update ID
                     shooter = Optional.of(new Shooter(
                             ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterDeviceId)));
                     break;
                 case SIMULATION_BOT:
-                    var gyroIO = new GyroIOSim(
-                            () -> PoseEstimator.getInstance().getPose2d().getRotation());
+                    var gyroIO = new GyroIOSim(mRobotState::getHeading);
                     var simDrive = new Drive(
                             gyroIO,
                             Stream.generate(() -> SwerveModuleIO.createSim(DCMotor.getKrakenX60(1), DCMotor.getNEO(1)))
                                     .limit(Constants.Drive.kNumModules)
-                                    .toArray(SwerveModuleIO[]::new));
+                                    .toArray(SwerveModuleIO[]::new),
+                            mRobotState);
                     gyroIO.setYawSupplier(
                             () -> simDrive.getVelocity().omegaRadiansPerSecond, Constants.kLoopPeriodSeconds);
 
@@ -107,7 +110,8 @@ public class RobotContainer {
                 new GyroIO() {},
                 Stream.generate(() -> new SwerveModuleIO(new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}))
                         .limit(Constants.Drive.kNumModules)
-                        .toArray(SwerveModuleIO[]::new)));
+                        .toArray(SwerveModuleIO[]::new),
+                mRobotState));
 
         /*  this.mVision = vision.orElseGet(() -> new Vision(
         new AprilTagCameraIO() {},
@@ -142,7 +146,7 @@ public class RobotContainer {
         mDriverController
                 .x()
                 .onTrue(runOnce(() -> mDrive.zeroGyroscope(
-                                Configuration.getAlliance().equals(Alliance.Blue)
+                                Configuration.isBlueAlliance()
                                         ? GeometryUtil.kRotationIdentity
                                         : GeometryUtil.kRotationPi))
                         .withName("ZeroGyroscopeToHeading"));
@@ -153,22 +157,20 @@ public class RobotContainer {
     }
 
     private void setupAutonomous() {
-        var poseEstimator = PoseEstimator.getInstance();
-
         AutoBuilder.configureHolonomic(
-                poseEstimator::getPose2d,
-                poseEstimator::setPose,
+                mRobotState::getPose2d,
+                mRobotState::resetPose,
                 mDrive::getVelocity,
                 mDrive::setVelocity,
                 Constants.Drive.kPathFollowerConfig,
-                () -> Configuration.getAlliance() == Alliance.Red,
+                Configuration::isRedAlliance,
                 mDrive);
 
         PathPlannerLogging.setLogTargetPoseCallback(pose -> Logger.recordOutput("PathPlanner/TargetPose", pose));
         PathPlannerLogging.setLogActivePathCallback(
                 poses -> Logger.recordOutput("PathPlanner/Path", poses.toArray(Pose2d[]::new)));
 
-        var commands = new AutonomousCommands(mDrive);
+        var commands = new AutonomousCommands(mRobotState, mDrive);
         autonomousModeChooser.addDefaultOption("Demo", commands.demo());
         autonomousModeChooser.addOption("Four Piece", commands.fourPiece());
         autonomousModeChooser.addOption("Four Piece Planner", new PathPlannerAuto("FourPiece"));
@@ -176,9 +178,8 @@ public class RobotContainer {
 
     private void setupStateTriggers() {
         var teleopTrigger = new Trigger(DriverStation::isTeleopEnabled);
-        teleopTrigger.onTrue(runOnce(() -> mDrive.zeroGyroscope(
-                        PoseEstimator.getInstance().getPose2d().getRotation()))
-                .withName("ZeroGyroscopeToPose"));
+        teleopTrigger.onTrue(
+                runOnce(() -> mDrive.zeroGyroscope(mRobotState.getHeading())).withName("ZeroGyroscopeToPose"));
     }
 
     public Optional<Command> getAutonomousCommand() {
