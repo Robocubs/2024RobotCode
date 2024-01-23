@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.encoders.EncoderIO;
@@ -45,7 +46,6 @@ public class RobotContainer {
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
-    private final boolean kAllianceIsBlue;
 
     public RobotContainer() {
         Optional<Drive> drive = Optional.empty();
@@ -55,8 +55,6 @@ public class RobotContainer {
         if (Configuration.getMode() != Mode.REPLAY) {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kAllianceIsBlue = Configuration.getAlliance().equals(Alliance.Blue) ? true : false;
-
                     drive = Optional.of(new Drive(new GyroIOPigeon2(10), new SwerveModuleIO[] {
                         new SwerveModuleIO(
                                 DriveMotorFactory.createDriveMotorIOSparkMax(10),
@@ -81,7 +79,6 @@ public class RobotContainer {
                             ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterDeviceId)));
                     break;
                 case SIMULATION_BOT:
-                    kAllianceIsBlue = true;
                     var gyroIO = new GyroIOSim(
                             () -> PoseEstimator.getInstance().getPose2d().getRotation());
                     var simDrive = new Drive(
@@ -96,7 +93,6 @@ public class RobotContainer {
                     shooter = Optional.of(new Shooter(Shooter.createSim(DCMotor.getNeoVortex(1))));
                     break;
                 default:
-                    kAllianceIsBlue = true;
                     break;
             }
 
@@ -105,8 +101,6 @@ public class RobotContainer {
             new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontRightCameraName),
             new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackLeftCameraName),
             new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackRightCameraName))); */
-        } else {
-            kAllianceIsBlue = true;
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(
@@ -159,9 +153,7 @@ public class RobotContainer {
     }
 
     private void setupAutonomous() {
-
         var poseEstimator = PoseEstimator.getInstance();
-        boolean mFlipPath = kAllianceIsBlue ? false : true;
 
         AutoBuilder.configureHolonomic(
                 poseEstimator::getPose2d,
@@ -169,7 +161,7 @@ public class RobotContainer {
                 mDrive::getVelocity,
                 mDrive::setVelocity,
                 Constants.Drive.kPathFollowerConfig,
-                () -> mFlipPath,
+                () -> Configuration.getAlliance() == Alliance.Red,
                 mDrive);
 
         PathPlannerLogging.setLogTargetPoseCallback(pose -> Logger.recordOutput("PathPlanner/TargetPose", pose));
@@ -178,6 +170,8 @@ public class RobotContainer {
 
         var commands = new AutonomousCommands(mDrive);
         autonomousModeChooser.addDefaultOption("Demo", commands.demo());
+        autonomousModeChooser.addOption("Four Piece", commands.fourPiece());
+        autonomousModeChooser.addOption("Four Piece Planner", new PathPlannerAuto("FourPiece"));
     }
 
     private void setupStateTriggers() {
