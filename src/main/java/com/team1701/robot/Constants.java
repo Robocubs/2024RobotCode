@@ -195,4 +195,20 @@ public final class Constants {
         public static final LoggedTunableNumber kElevatorKp = new LoggedTunableNumber("Elevator/Motor/Kp");
         public static final LoggedTunableNumber kElevatorKd = new LoggedTunableNumber("Elevator/Motor/Kd");
     }
+
+    public static final class Indexer {
+        // TODO: Update values and set names
+        public static final double kIndexerReduction = 1;
+        public static final int kIndexerDeviceId = 3;
+        public static final int kIndexerDeviceId2 = 4;
+        public static final double kIndexerLoadPercent = 25;
+        public static final double kIndexerFeedPercent = 25;
+
+        public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
+        public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
+        public static final LoggedTunableNumber kIndexerKd = new LoggedTunableNumber("Indexer/Motor/Kd");
+        
+        public static int kIndexerEntranceSensorPort;
+        public static int kIndexerExitSensorPort; 
+    }
 }
