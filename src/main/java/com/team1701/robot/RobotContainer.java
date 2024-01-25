@@ -78,7 +78,12 @@ public class RobotContainer {
 
                     // TODO: update ID
                     shooter = Optional.of(new Shooter(
-                            ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterDeviceId)));
+                            ShooterMotorFactory.createDriveMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterUpperRollerMotorId),
+                            ShooterMotorFactory.createDriveMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterUpperRollerMotorId),
+                            ShooterMotorFactory.createDriveMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterRotationMotorId)));
                     break;
                 case SIMULATION_BOT:
                     kAllianceIsBlue = true;
@@ -93,7 +98,10 @@ public class RobotContainer {
                             () -> simDrive.getVelocity().omegaRadiansPerSecond, Constants.kLoopPeriodSeconds);
 
                     drive = Optional.of(simDrive);
-                    shooter = Optional.of(new Shooter(Shooter.createSim(DCMotor.getNeoVortex(1))));
+                    shooter = Optional.of(new Shooter(
+                            Shooter.createSim(DCMotor.getNeoVortex(1)),
+                            Shooter.createSim(DCMotor.getNeoVortex(1)),
+                            Shooter.createSim(DCMotor.getNeoVortex(1))));
                     break;
                 default:
                     kAllianceIsBlue = true;
@@ -121,8 +129,10 @@ public class RobotContainer {
         new AprilTagCameraIO() {},
         new AprilTagCameraIO() {})); */
 
-        this.mShooter = shooter.orElseGet(
-                () -> new Shooter(ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterDeviceId)));
+        this.mShooter = shooter.orElseGet(() -> new Shooter(
+                ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterUpperRollerMotorId),
+                ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterUpperRollerMotorId),
+                ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterRotationMotorId)));
 
         setupControllerBindings();
         setupAutonomous();
@@ -145,6 +155,7 @@ public class RobotContainer {
                 () -> mDriverController.rightTrigger().getAsBoolean()
                         ? Constants.Drive.kSlowKinematicLimits
                         : Constants.Drive.kFastKinematicLimits));
+
         mDriverController
                 .x()
                 .onTrue(runOnce(() -> mDrive.zeroGyroscope(

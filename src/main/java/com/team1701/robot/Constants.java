@@ -155,7 +155,9 @@ public final class Constants {
     public static final class Shooter {
         // TODO: Update values
         public static final double kShooterReduction = 1;
-        public static final int kShooterDeviceId = 0;
+        public static final int kShooterUpperRollerMotorId = 0;
+        public static final int kShooterLowerRollerMotorId = 0;
+        public static final int kShooterRotationMotorId = 0;
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(10);
         public static final double kShooterAxisOffset = Units.inchesToMeters(10); // + is toward front of bot
