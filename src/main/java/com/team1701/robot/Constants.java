@@ -158,26 +158,47 @@ public final class Constants {
     public static final class Shooter {
         // TODO: Update values
         public static final double kShooterReduction = 1;
-        public static final int kShooterDeviceId = 0;
+        public static final int kShooterUpperRollerMotorId = 0;
+        public static final int kShooterLowerRollerMotorId = 1;
+        public static final int kShooterRotationMotorId = 2;
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(10);
         public static final double kShooterAxisOffset = Units.inchesToMeters(10); // + is toward front of bot
 
-        public static final LoggedTunableNumber kShooterKff = new LoggedTunableNumber("Shooter/Motor/Kff");
-        public static final LoggedTunableNumber kShooterKp = new LoggedTunableNumber("Shooter/Motor/Kp");
-        public static final LoggedTunableNumber kShooterKd = new LoggedTunableNumber("Shooter/Motor/Kd");
+        public static final LoggedTunableNumber kRollerKff = new LoggedTunableNumber("Shooter/Motor/Roller/Kff");
+        public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");
+        public static final LoggedTunableNumber kRollerKd = new LoggedTunableNumber("Shooter/Motor/Roller/Kd");
+
+        public static final LoggedTunableNumber kRotationKff = new LoggedTunableNumber("Shooter/Motor/Rotation/Kff");
+        public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
+        public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
+
+        public static int kShooterEntranceSensorId;
+        public static int kShooterExitSensorId;
+        public static int kShooterThroughBoreEncoderId;
+
+        public static double kThroughBoreEncoderDistancePerRotation;
 
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kShooterKd.initDefault(1);
-                    kShooterKp.initDefault(0.6);
-                    kShooterKff.initDefault(0);
+                    kRollerKd.initDefault(1);
+                    kRollerKp.initDefault(0.6);
+                    kRollerKff.initDefault(0);
+
+                    kRotationKd.initDefault(1);
+                    kRotationKp.initDefault(0.6);
+                    kRotationKff.initDefault(0);
+
                     break;
                 case SIMULATION_BOT:
-                    kShooterKd.initDefault(1);
-                    kShooterKp.initDefault(0.6);
-                    kShooterKff.initDefault(0);
+                    kRollerKd.initDefault(1);
+                    kRollerKp.initDefault(0.6);
+                    kRollerKff.initDefault(0);
+
+                    kRotationKd.initDefault(1);
+                    kRotationKp.initDefault(0.6);
+                    kRotationKff.initDefault(0);
                     break;
                 default:
                     throw new UnsupportedOperationException("No shooter configuration for " + Configuration.getRobot());

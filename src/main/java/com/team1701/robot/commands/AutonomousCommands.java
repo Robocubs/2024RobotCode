@@ -11,20 +11,21 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
-import com.team1701.robot.estimation.PoseEstimator;
+import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import static com.team1701.lib.commands.LoggedCommands.*;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 public class AutonomousCommands {
+    private final RobotState mRobotState;
     private final Drive mDrive;
 
-    public AutonomousCommands(Drive drive) {
+    public AutonomousCommands(RobotState robotState, Drive drive) {
+        mRobotState = robotState;
         mDrive = drive;
 
         NamedCommands.registerCommand("printHello", print("Hello from autonomous path"));
@@ -35,7 +36,7 @@ public class AutonomousCommands {
                 FieldConstants.kFieldLongLengthMeters - pose.getX(),
                 pose.getY(),
                 GeometryUtil.kRotationPi.minus(pose.getRotation()));
-        return Configuration.getAlliance() == Alliance.Red ? flippedPose : pose;
+        return Configuration.isRedAlliance() ? flippedPose : pose;
     }
 
     private Command resetPose(Pose2d pose) {
@@ -43,7 +44,7 @@ public class AutonomousCommands {
     }
 
     private Command resetPose(Supplier<Pose2d> pose) {
-        return runOnce(() -> PoseEstimator.getInstance().setPose(pose.get())).withName("ResetPose");
+        return runOnce(() -> mRobotState.resetPose(pose.get())).withName("ResetPose");
     }
 
     private Command driveToPose(Pose2d pose) {
@@ -59,7 +60,8 @@ public class AutonomousCommands {
     }
 
     private Command driveToPose(Pose2d pose, KinematicLimits kinematicLimits, boolean finishAtPose) {
-        return DriveCommands.driveToPose(mDrive, () -> autoFlipPose(pose), kinematicLimits, finishAtPose);
+        return DriveCommands.driveToPose(
+                mDrive, () -> autoFlipPose(pose), mRobotState::getPose2d, kinematicLimits, finishAtPose);
     }
 
     private Command followPath(String pathName) {
@@ -91,7 +93,7 @@ public class AutonomousCommands {
             return idle(); // Prevent auto mode from continuing if trajectory failed to load
         }
 
-        return new DriveChoreoTrajectory(mDrive, trajectory, resetPose);
+        return new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose);
     }
 
     public Command demo() {

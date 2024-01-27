@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -20,8 +21,20 @@ public class DriveCommands {
     }
 
     public static Command driveToPose(
-            Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits, boolean finishAtPose) {
-        return new DriveToPose(drive, poseSupplier, kinematicLimits, finishAtPose);
+            Drive drive,
+            Supplier<Pose2d> poseSupplier,
+            Supplier<Pose2d> robotPoseSupplier,
+            KinematicLimits kinematicLimits,
+            boolean finishAtPose) {
+        return new DriveToPose(drive, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose);
+    }
+
+    public static RotateRelativeToRobot rotateRelativeToRobot(
+            Drive drive,
+            Rotation2d rotationRelativeToRobot,
+            KinematicLimits kinematicLimits,
+            boolean finishAtRotation) {
+        return new RotateRelativeToRobot(drive, rotationRelativeToRobot, kinematicLimits, finishAtRotation);
     }
 
     public static Command swerveLock(Drive drive) {
