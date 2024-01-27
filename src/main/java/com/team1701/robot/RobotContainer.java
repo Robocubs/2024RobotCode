@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
+import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
 import com.team1701.lib.drivers.gyros.GyroIO;
@@ -17,6 +18,7 @@ import com.team1701.lib.drivers.gyros.GyroIOPigeon2;
 import com.team1701.lib.drivers.gyros.GyroIOSim;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.estimation.PoseEstimator;
@@ -25,14 +27,18 @@ import com.team1701.robot.subsystems.drive.DriveMotorFactory;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.shooter.ShooterMotorFactory;
+import com.team1701.robot.subsystems.shooter.ShooterMotorFactory.ShooterMotorUsage;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import static com.team1701.robot.commands.DriveCommands.*;
@@ -44,6 +50,7 @@ public class RobotContainer {
     // public final Vision mVision;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
+    // Trigger bButton = mDriverController.b();
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
     private final boolean kAllianceIsBlue;
 
@@ -76,14 +83,17 @@ public class RobotContainer {
                                 new EncoderIOAnalog(2)),
                     }));
 
-                    // TODO: update ID
+                    // TODO: update IDs
                     shooter = Optional.of(new Shooter(
-                            ShooterMotorFactory.createDriveMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterUpperRollerMotorId),
-                            ShooterMotorFactory.createDriveMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterUpperRollerMotorId),
-                            ShooterMotorFactory.createDriveMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterRotationMotorId)));
+                            ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
+                            ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
+                            ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
+                            new DigitalIOSensor(Constants.Shooter.kShooterEntranceSensorId),
+                            new DigitalIOSensor(Constants.Shooter.kShooterExitSensorId),
+                            new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
                     break;
                 case SIMULATION_BOT:
                     kAllianceIsBlue = true;
@@ -99,9 +109,16 @@ public class RobotContainer {
 
                     drive = Optional.of(simDrive);
                     shooter = Optional.of(new Shooter(
-                            Shooter.createSim(DCMotor.getNeoVortex(1)),
-                            Shooter.createSim(DCMotor.getNeoVortex(1)),
-                            Shooter.createSim(DCMotor.getNeoVortex(1))));
+                            Shooter.createMotorSim(DCMotor.getNeoVortex(1)),
+                            Shooter.createMotorSim(DCMotor.getNeoVortex(1)),
+                            Shooter.createMotorSim(DCMotor.getNeoVortex(1)),
+                            Shooter.createDigitalSim(() ->
+                                    new LoggedDashboardBoolean("SimulatedShooter/EntranceSensorBlocked", false).get()),
+                            Shooter.createDigitalSim(() ->
+                                    new LoggedDashboardBoolean("SimulatedShooter/ExitSensorBlocked", false).get()),
+                            Shooter.createEncoderSim(() -> new Rotation2d(Units.degreesToRadians(
+                                    new LoggedTunableNumber("SimulatedThroughBoreEncoder/InitialAngleDegrees", 30)
+                                            .get())))));
                     break;
                 default:
                     kAllianceIsBlue = true;
@@ -130,9 +147,15 @@ public class RobotContainer {
         new AprilTagCameraIO() {})); */
 
         this.mShooter = shooter.orElseGet(() -> new Shooter(
-                ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterUpperRollerMotorId),
-                ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterUpperRollerMotorId),
-                ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterRotationMotorId)));
+                ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                        Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
+                ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                        Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
+                ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                        Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
+                new DigitalIOSensor(Constants.Shooter.kShooterEntranceSensorId),
+                new DigitalIOSensor(Constants.Shooter.kShooterExitSensorId),
+                new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
 
         setupControllerBindings();
         setupAutonomous();
@@ -155,6 +178,13 @@ public class RobotContainer {
                 () -> mDriverController.rightTrigger().getAsBoolean()
                         ? Constants.Drive.kSlowKinematicLimits
                         : Constants.Drive.kFastKinematicLimits));
+        /*  mDriverController
+                .b()
+                .onTrue(runOnce(
+                        () -> DriveCommands.rotateRelativeToRobot(
+                                mDrive, new Rotation2d(2.5), Constants.Drive.kFastKinematicLimits, true),
+                        mDrive));
+        TriggeredAlert.info("Driver B button pressed", mDriverController.b()); */
 
         mDriverController
                 .x()

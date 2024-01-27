@@ -42,6 +42,7 @@ public class Shoot extends Command {
         shooterAngleFromHorizontal = new Rotation2d(
                 distanceToTarget - Constants.Shooter.kShooterAxisOffset,
                 FieldConstants.kBlueSpeakerOpeningCenter.getZ() - Constants.Shooter.kShooterAxisHeight);
+        mShooter.setRotationBrake(true);
     }
 
     @Override
@@ -51,13 +52,10 @@ public class Shoot extends Command {
                     mDrive, robotRelativeRotationDemand, Constants.Drive.kFastKinematicLimits, true);
         }
         // TODO add throughBoreEncoder
-        if (true /* TODO throughBoreEncoder is not at position (within tolerance) */) {
-            mShooter.setRotationAngle(shooterAngleFromHorizontal);
-        } else {
-            // TODO: add check for value change
-            mShooter.setRotationBrake(true);
-            mShooter.setRollerSpeed(Units.rotationsPerMinuteToRadiansPerSecond(Constants.Motors.kMaxKrakenRPM));
-        }
+        mShooter.setRotationAngle(shooterAngleFromHorizontal);
+
+        // TODO: add check for value change
+        mShooter.setRollerSpeed(Units.rotationsPerMinuteToRadiansPerSecond(Constants.Motors.kMaxKrakenRPM));
         // TODO: implement autostart/stop with sensors
 
         if (true /* TODO !shooterHasPiece */) {
@@ -69,7 +67,6 @@ public class Shoot extends Command {
     @Override
     public void end(boolean interrupted) {
         mShooter.stopRollers();
-        mShooter.setRotationBrake(false); // so angle can be continually adjusted
     }
 
     @Override
