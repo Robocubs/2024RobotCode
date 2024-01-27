@@ -13,7 +13,7 @@ import com.team1701.lib.util.SignalSamplingThread;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
-import com.team1701.robot.estimation.PoseEstimator;
+import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -28,7 +28,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
-    private final PoseEstimator mPoseEstimator = PoseEstimator.getInstance();
+    private final RobotState mRobotState;
     private final GyroInputsAutoLogged mGyroInputs = new GyroInputsAutoLogged();
     private final GyroIO mGyroIO;
     private final SwerveModule[] mModules;
@@ -50,10 +50,12 @@ public class Drive extends SubsystemBase {
     @AutoLogOutput(key = "Drive/MeasuredStates")
     private SwerveModuleState[] mMeasuredModuleStates;
 
-    public Drive(GyroIO gyroIO, SwerveModuleIO[] moduleIOs) {
+    public Drive(GyroIO gyroIO, SwerveModuleIO[] moduleIOs, RobotState robotState) {
         if (moduleIOs.length != Constants.Drive.kNumModules) {
             throw new IllegalArgumentException("Module IOs must have length " + Constants.Drive.kNumModules);
         }
+
+        mRobotState = robotState;
 
         mDesiredModuleOrientations = new Rotation2d[moduleIOs.length];
         Arrays.setAll(mDesiredModuleOrientations, i -> GeometryUtil.kRotationIdentity);
@@ -143,11 +145,11 @@ public class Drive extends SubsystemBase {
                 modulePositions[j] = modulePositionSamples[j][i];
             }
 
-            mPoseEstimator.updateWithTime(sampleTime, yawSamples[i], modulePositions);
+            mRobotState.updateWithTime(sampleTime, yawSamples[i], modulePositions);
             sampleTime += sampleDt;
         }
 
-        mPoseEstimator.update(mGyroInputs.yaw, mMeasuredModulePositions);
+        mRobotState.update(mGyroInputs.yaw, mMeasuredModulePositions);
 
         mPreviousOdometryTimestamp = timestamp;
     }
@@ -276,7 +278,7 @@ public class Drive extends SubsystemBase {
         mMeasuredModulePositions =
                 Stream.of(mModules).map(SwerveModule::getPosition).toArray(SwerveModulePosition[]::new);
 
-        mPoseEstimator.resetPosition(mGyroInputs.yaw, mMeasuredModulePositions, mPoseEstimator.getPose2d());
+        mRobotState.resetPose(mGyroInputs.yaw, mMeasuredModulePositions, mRobotState.getPose2d());
     }
 
     public void stop() {

@@ -10,7 +10,7 @@ import com.team1701.lib.drivers.motors.MotorIOSparkFlex;
 import com.team1701.robot.Constants;
 
 public class ShooterMotorFactory {
-    public static MotorIOSparkFlex createDriveMotorIOSparkFlex(int deviceId) {
+    public static MotorIOSparkFlex createShooterMotorIOSparkFlex(int deviceId, ShooterMotorUsage motorUse) {
         var motor = new CANSparkFlex(deviceId, MotorType.kBrushless);
         var encoder = motor.getEncoder();
         var controller = motor.getPIDController();
@@ -28,9 +28,20 @@ public class ShooterMotorFactory {
         configureWithRetry(() -> encoder.setMeasurementPeriod(10), errorAlert);
         configureWithRetry(() -> encoder.setAverageDepth(2), errorAlert);
 
-        configureWithRetry(() -> controller.setP(Constants.Shooter.kShooterKp.get()), errorAlert);
-        configureWithRetry(() -> controller.setD(Constants.Shooter.kShooterKd.get()), errorAlert);
-        configureWithRetry(() -> controller.setFF(Constants.Shooter.kShooterKff.get()), errorAlert);
+        switch (motorUse) {
+            case ROLLER:
+                configureWithRetry(() -> controller.setP(Constants.Shooter.kRollerKp.get()), errorAlert);
+                configureWithRetry(() -> controller.setD(Constants.Shooter.kRollerKd.get()), errorAlert);
+                configureWithRetry(() -> controller.setFF(Constants.Shooter.kRollerKff.get()), errorAlert);
+                break;
+            case ROTATION:
+                configureWithRetry(() -> controller.setP(Constants.Shooter.kRotationKp.get()), errorAlert);
+                configureWithRetry(() -> controller.setD(Constants.Shooter.kRotationKd.get()), errorAlert);
+                configureWithRetry(() -> controller.setFF(Constants.Shooter.kRotationKff.get()), errorAlert);
+                break;
+            default:
+                break;
+        }
 
         configureWithRetry(() -> motor.burnFlash(), errorAlert);
 
@@ -49,5 +60,10 @@ public class ShooterMotorFactory {
         }
 
         failureAlert.enable(error);
+    }
+
+    public enum ShooterMotorUsage {
+        ROLLER,
+        ROTATION
     }
 }
