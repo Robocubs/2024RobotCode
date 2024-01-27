@@ -1,0 +1,9 @@
+.wpilib
+.github
+.git
+vendordeps
+*License.md
+package-lock.json
+simgui*.json
+networktables.json
+navgrid.json

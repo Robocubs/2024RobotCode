@@ -18,12 +18,12 @@
     {
       "name": "WPIlibUnitTests",
       "workingDirectory": "${workspaceFolder}/build/jni/release",
-      "vmargs": [ "-Djava.library.path=${workspaceFolder}/build/jni/release" ],
+      "vmargs": ["-Djava.library.path=${workspaceFolder}/build/jni/release"],
       "env": {
-        "LD_LIBRARY_PATH": "${workspaceFolder}/build/jni/release" ,
+        "LD_LIBRARY_PATH": "${workspaceFolder}/build/jni/release",
         "DYLD_LIBRARY_PATH": "${workspaceFolder}/build/jni/release"
       }
-    },
+    }
   ],
   "java.test.defaultConfig": "WPIlibUnitTests",
   "editor.formatOnSave": true,
@@ -34,19 +34,35 @@
     "spotlessGradle.format.enable": true,
     "editor.defaultFormatter": "richardwillis.vscode-spotless-gradle",
     "editor.codeActionsOnSave": {
-      "source.fixAll.spotlessGradle": "always"
+      "source.fixAll.spotlessGradle": "explicit"
     },
     "editor.detectIndentation": false,
     "editor.indentSize": 4
   },
-  "[json]": {
-    "files.insertFinalNewline": true,
+  "[json][jsonc][html][css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.indentSize": 2
   },
-  "[jsonc]": {
-    "files.insertFinalNewline": true,
-    "editor.indentSize": 2
+  "[javascript][typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.indentSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
   },
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode",
+    "editor.indentSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "svelte.enable-ts-plugin": true,
+  "eslint.rules.customizations": [
+    { "rule": "*", "severity": "warn" },
+    { "rule": "prettier/prettier", "severity": "off" }
+  ],
+  "eslint.validate": ["javascript", "typescript", "svelte"],
   "cSpell.words": [
     "Brushless",
     "Deadband",
@@ -54,6 +70,7 @@
     "Holonomic",
     "Odometry",
     "Reprojection",
+    "robocub",
     "Setpoint",
     "Setpoints",
     "teleop",

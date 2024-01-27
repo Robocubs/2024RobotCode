@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "eamodio.gitlens",
+    "streetsidesoftware.code-spell-checker",
+    "richardwillis.vscode-spotless-gradle",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "svelte.svelte-vscode"
+  ]
+}
