@@ -20,8 +20,12 @@ public class DriveCommands {
     }
 
     public static Command driveToPose(
-            Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits, boolean finishAtPose) {
-        return new DriveToPose(drive, poseSupplier, kinematicLimits, finishAtPose);
+            Drive drive,
+            Supplier<Pose2d> poseSupplier,
+            Supplier<Pose2d> robotPoseSupplier,
+            KinematicLimits kinematicLimits,
+            boolean finishAtPose) {
+        return new DriveToPose(drive, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose);
     }
 
     public static Command swerveLock(Drive drive) {
