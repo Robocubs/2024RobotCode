@@ -22,6 +22,7 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
+import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.DriveMotorFactory;
@@ -191,6 +192,10 @@ public class RobotContainer {
                                         ? GeometryUtil.kRotationIdentity
                                         : GeometryUtil.kRotationPi))
                         .withName("ZeroGyroscopeToHeading"));
+        mDriverController
+                .rightBumper()
+                .whileTrue(DriveCommands.rotateRelativeToRobot(
+                        mDrive, new Rotation2d(2), Constants.Drive.kFastKinematicLimits, true));
         mDriverController.leftTrigger().whileTrue(swerveLock(mDrive));
         TriggeredAlert.info("Driver right bumper pressed", mDriverController.rightBumper());
 

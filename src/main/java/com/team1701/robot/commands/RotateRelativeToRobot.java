@@ -5,7 +5,7 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
-import com.team1701.robot.estimation.PoseEstimator;
+import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -18,6 +18,7 @@ import org.littletonrobotics.junction.Logger;
 /* Note: positive rotations are counterclockwise (turning left) */
 
 public class RotateRelativeToRobot extends Command {
+    private RobotState mRobotState = new RobotState();
     private static final String kLoggingPrefix = "Command/RotateRelativeToRobot/";
     private static final double kModuleRadius = Constants.Drive.kModuleRadius;
     private static final KinematicLimits kMaxKinematicLimits = Constants.Drive.kFastTrapezoidalKinematicLimits;
@@ -63,14 +64,14 @@ public class RotateRelativeToRobot extends Command {
     @Override
     public void initialize() {
         mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits);
-        mRotationalOffset = PoseEstimator.getInstance().getPose2d().getRotation();
+        mRotationalOffset = mRobotState.getPose2d().getRotation();
 
-        Logger.recordOutput(kLoggingPrefix + "/requestedRotation/robotRelative", mTargetRelativeRotation);
-        Logger.recordOutput(kLoggingPrefix + "/requestedRotation/fieldRelative", mTargetFieldRotation);
+        Logger.recordOutput(kLoggingPrefix + "requestedRotation/robotRelative", mTargetRelativeRotation);
+        Logger.recordOutput(kLoggingPrefix + "requestedRotation/fieldRelative", mTargetFieldRotation);
 
         mRotationController.reset();
 
-        var currentActualRotation = PoseEstimator.getInstance().getPose2d().getRotation();
+        var currentActualRotation = mRobotState.getPose2d().getRotation();
         mTargetFieldRotation = currentActualRotation.plus(mTargetRelativeRotation);
         var fieldRelativeChassisSpeeds = mDrive.getFieldRelativeVelocity();
         mRotationState = new TrapezoidProfile.State(
@@ -96,7 +97,7 @@ public class RotateRelativeToRobot extends Command {
             mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
         }
 
-        var currentActualRotation = PoseEstimator.getInstance().getPose2d().getRotation();
+        var currentActualRotation = mRobotState.getPose2d().getRotation();
 
         // Calculate rotational velocity
         var rotationPidOutput =
@@ -112,7 +113,7 @@ public class RotateRelativeToRobot extends Command {
                 Rotation2d.fromRadians(kRotationToleranceRadians.get()));
         if (atTargetRotation) {
             mDrive.stop();
-            currentActualRotation = PoseEstimator.getInstance().getPose2d().getRotation();
+            currentActualRotation = mRobotState.getPose2d().getRotation();
         } else {
             mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, rotationalVelocity, currentActualRotation));
             currentActualRotation = Rotation2d.fromRadians(mRotationState.position);
@@ -135,7 +136,7 @@ public class RotateRelativeToRobot extends Command {
     }
 
     public boolean atTargetPose() {
-        var currentRotation = PoseEstimator.getInstance().getPose2d().getRotation();
+        var currentRotation = mRobotState.getPose2d().getRotation();
         var rotationError = (mTargetRelativeRotation.plus(mRotationalOffset)).minus(currentRotation);
 
         return Util.inRange(rotationError.getRadians(), kRotationToleranceRadians.get())
