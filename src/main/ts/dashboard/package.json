@@ -1,0 +1,24 @@
+{
+  "name": "@frc-team-1701/lit",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --fix",
+    "lint:ci": "eslint .",
+    "dev": "vite",
+    "build": "vite build",
+    "watch": "vite build --watch",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5"
+  },
+  "dependencies": {
+    "@frc-web-components/fwc": "^2.3.1",
+    "lit": "^3.0.1"
+  }
+}
