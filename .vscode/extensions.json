@@ -8,5 +8,6 @@
     "esbenp.prettier-vscode",
     "runem.lit-plugin",
     "bradlc.vscode-tailwindcss"
-  ]
+  ],
+  "unwantedRecommendations": ["vscjava.vscode-java-pack"]
 }
