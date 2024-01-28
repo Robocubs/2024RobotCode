@@ -29,6 +29,9 @@
   "editor.formatOnSave": true,
   "files.eol": "\n",
   "java.format.enabled": false,
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
   "[java]": {
     "files.trimTrailingWhitespace": false,
     "spotlessGradle.format.enable": true,

@@ -220,7 +220,7 @@ task npmRunLintCi(type: NpmTask) {
 }
 
 task npmRunBuild(type: NpmTask) {
-    dependsOn npmRunLint
+    dependsOn npmInstall
     args = ['run', 'build:deploy']
     inputs.dir fileTree('src/main/ts') {
         exclude '**/dist/**', '**/node_modules/.vite/**'
@@ -242,6 +242,8 @@ task prettierApply(type: NpxTask) {
     }
     outputs.upToDateWhen { true }
 }
+
+compileJava.dependsOn(prettierApply)
 
 task prettierCheck(type: NpxTask) {
     dependsOn(npmInstall)

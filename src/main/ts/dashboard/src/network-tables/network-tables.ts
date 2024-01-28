@@ -1,7 +1,8 @@
-import { FrcDashboard, dashboardElementConfigs } from '@frc-web-components/fwc';
+import { dashboardElementConfigs } from '@frc-web-components/fwc/components';
 import { Nt4Provider } from '@frc-web-components/fwc/source-providers';
 import { createContext } from '@lit/context';
 import { Store } from '@webbitjs/store';
+import { WebbitConfig, WebbitConnector } from '@webbitjs/webbit';
 import { DirectiveResult } from 'lit/directive.js';
 import { SourcePose2d, SourceValue, ntPose2dDirective, ntValueDirective } from './directives';
 
@@ -12,17 +13,18 @@ export class NetworkTables {
   private readonly nt4Pose2dDirective;
 
   constructor(address: string) {
-    const dashboard = new FrcDashboard(document.body);
-    const provider = new Nt4Provider();
-    dashboard.addSourceProvider('NetworkTables', provider);
-    dashboard.setDefaultSourceProvider('NetworkTables');
-    dashboard.addElements(dashboardElementConfigs, 'FRC');
-    provider.connect(address);
+    this.provider = new Nt4Provider();
+    this.store = new Store();
+    this.store.addSourceProvider('NetworkTables', this.provider);
+    this.store.setDefaultSourceProvider('NetworkTables');
+    this.provider.connect(address);
 
-    this.store = dashboard.getStore();
-    this.provider = provider;
     this.nt4ValueDirective = ntValueDirective(this.store);
     this.nt4Pose2dDirective = ntPose2dDirective(this.store);
+  }
+
+  bindConnection(rootElement: HTMLElement) {
+    new WebbitConnector(rootElement, this.store).addElementConfigs(dashboardElementConfigs as Record<string, Partial<WebbitConfig>>, 'FRC');
   }
 
   getValue<T>(key: string, defaultValue: T): T {
@@ -69,7 +71,5 @@ export class NetworkTables {
     return this.nt4Pose2dDirective(key, value);
   }
 }
-
-export default NetworkTables;
 
 export const nt4Context = createContext<NetworkTables>('nt4');

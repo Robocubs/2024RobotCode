@@ -1,4 +1,4 @@
-import NetworkTables from './network-tables';
+import { NetworkTables } from './network-tables';
 
 export function ensureSendableChooserInitialized(nt: NetworkTables, key: string) {
   // TODO: handle restarts of robot after initial page load

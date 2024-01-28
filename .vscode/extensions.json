@@ -6,6 +6,7 @@
     "richardwillis.vscode-spotless-gradle",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "runem.lit-plugin"
+    "runem.lit-plugin",
+    "bradlc.vscode-tailwindcss"
   ]
 }

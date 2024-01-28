@@ -15,6 +15,9 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
   },
@@ -22,6 +25,8 @@
     "@frc-web-components/fwc": "^2.3.1",
     "@lit/context": "^1.1.0",
     "@lit/reactive-element": "^2.0.0",
+    "@webbitjs/store": "^5.7.0",
+    "@webbitjs/webbit": "^5.11.0",
     "lit": "^3.0.1"
   }
 }
