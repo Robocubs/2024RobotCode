@@ -50,14 +50,6 @@
       "source.fixAll.eslint": "explicit"
     }
   },
-  "[svelte]": {
-    "editor.defaultFormatter": "svelte.svelte-vscode",
-    "editor.indentSize": 2,
-    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit"
-    }
-  },
-  "svelte.enable-ts-plugin": true,
   "eslint.rules.customizations": [
     { "rule": "*", "severity": "warn" },
     { "rule": "prettier/prettier", "severity": "off" }

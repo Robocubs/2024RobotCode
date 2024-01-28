@@ -3,6 +3,7 @@ plugins {
     id "edu.wpi.first.GradleRIO" version "2024.2.1"
     id "com.diffplug.spotless" version "6.23.3"
     id "com.peterabeles.gversion" version "1.10.2"
+    id "com.github.node-gradle.node" version "7.0.1"
 }
 
 java {
@@ -149,7 +150,7 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', 'src/main/java/com/team1701/robot/BuildConstants.java', 'bin/generated-sources/**', '**/node_modules/**'
+            exclude '.*/**', '**/build/**', '**/build-*/**', 'src/main/java/com/team1701/robot/BuildConstants.java', 'bin/generated-sources/**', 'src/main/deploy/**', '**/dist/**', '**/node_modules/**'
         }
         removeUnusedImports()
         palantirJavaFormat()
@@ -159,7 +160,7 @@ spotless {
     groovyGradle {
         target fileTree('.') {
             include '**/*.gradle'
-            exclude '**/build/**', '**/build-*/**', '**/node_modules/**'
+            exclude '.*/**', '**/build/**', '**/build-*/**', 'src/main/deploy/**', '**/node_modules/**'
         }
         greclipse()
         indentWithSpaces(4)
@@ -169,7 +170,7 @@ spotless {
     format 'xml', {
         target fileTree('.') {
             include '**/*.xml'
-            exclude '**/build/**', '**/build-*/**', '**/node_modules/**'
+            exclude '.*/**', '**/build/**', '**/build-*/**', 'src/main/deploy/**', '**/dist/**', '**/node_modules/**'
         }
         eclipseWtp('xml')
         trimTrailingWhitespace()
@@ -179,10 +180,79 @@ spotless {
     format 'misc', {
         target fileTree('.') {
             include '**/*.md', '**/.gitignore'
-            exclude '**/build/**', '**/build-*/**', '**/node_modules/**'
+            exclude '.*/**', '**/build/**', '**/build-*/**', 'src/main/deploy/**', '**/dist/**', '**/node_modules/**'
         }
         trimTrailingWhitespace()
         indentWithSpaces(2)
         endWithNewline()
     }
+}
+
+// NPM Bundles
+node {
+    download = true
+    version = '20.11.0'
+    npmInstallCommand = System.getenv('CI') ? 'ci' : 'install';
+}
+
+npmInstall {
+    args = System.getenv('CI') ? [] : ['--workspaces']
+    inputs.files 'package.json', 'package-lock.json'
+    inputs.dir fileTree('.') {
+        include 'node_modules/**'
+        exclude 'node_modules/.cache/**'
+    }
+}
+
+task npmRunLint(type: NpmTask) {
+    dependsOn npmInstall
+    args = ['run', 'lint']
+    inputs.files '.eslintrc.json', '.prettierrc', '.prettierignore'
+    inputs.dir fileTree('src/main/ts') {
+        exclude '**/dist/**', '**/node_modules/**'
+    }
+    outputs.upToDateWhen { true }
+}
+
+task npmRunLintCi(type: NpmTask) {
+    dependsOn npmInstall
+    args = ['run', 'lint:ci']
+}
+
+task npmRunBuild(type: NpmTask) {
+    dependsOn npmRunLint
+    args = ['run', 'build:deploy']
+    inputs.dir fileTree('src/main/ts') {
+        exclude '**/dist/**', '**/node_modules/.vite/**'
+    }
+    outputs.dir 'src/main/deploy/web'
+}
+
+compileJava.dependsOn(npmRunBuild)
+
+// Prettier formatting
+task prettierApply(type: NpxTask) {
+    dependsOn(npmInstall)
+    command = 'prettier'
+    args = ['.', '--write']
+    inputs.files '.prettierrc', '.prettierignore'
+    inputs.dir fileTree('.') {
+        include '**/*.json', '**/*.js', '**/*.ts', '**/*.css', '**/*.html'
+        exclude '**/build/**', '**/build-*/**', 'src/main/deploy/**', '**/dist/**', '**/node_modules/**'
+    }
+    outputs.upToDateWhen { true }
+}
+
+task prettierCheck(type: NpxTask) {
+    dependsOn(npmInstall)
+    command = 'prettier'
+    args = ['.', '--check']
+}
+
+
+// Task groups
+task lint() {
+    dependsOn System.getenv('CI') ? spotlessCheck : spotlessApply
+    dependsOn System.getenv('CI') ? prettierCheck : prettierApply
+    dependsOn System.getenv('CI') ? npmRunLintCi : npmRunLint
 }

@@ -3,7 +3,7 @@
     "browser": true,
     "es2020": true
   },
-  "ignorePatterns": ["src/main/deploy", "node_modules", "dist", "vite.config.ts", "svelte.config.js"],
+  "ignorePatterns": ["src/main/deploy", "node_modules", "dist", "vite.config.ts"],
   "extends": [
     "eslint:recommended",
     "prettier",
@@ -25,7 +25,7 @@
   },
   "overrides": [
     {
-      "files": ["*.ts", "*.svelte"],
+      "files": ["*.ts"],
       "parser": "@typescript-eslint/parser",
       "parserOptions": {
         "project": true
@@ -40,21 +40,7 @@
         "@typescript-eslint/no-unused-vars": ["error", { "args": "none", "ignoreRestSiblings": true }],
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/prefer-nullish-coalescing": "off"
-      },
-      "overrides": [
-        {
-          "files": ["*.svelte"],
-          "extends": ["plugin:svelte/recommended"],
-          "parser": "svelte-eslint-parser",
-          "parserOptions": {
-            "parser": "@typescript-eslint/parser",
-            "extraFileExtensions": [".svelte"]
-          },
-          "rules": {
-            "@typescript-eslint/no-unsafe-argument": "off"
-          }
-        }
-      ]
+      }
     }
   ]
 }

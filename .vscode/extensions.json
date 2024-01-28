@@ -2,9 +2,10 @@
   "recommendations": [
     "eamodio.gitlens",
     "streetsidesoftware.code-spell-checker",
+    "vscjava.vscode-gradle",
     "richardwillis.vscode-spotless-gradle",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "svelte.svelte-vscode"
+    "runem.lit-plugin"
   ]
 }

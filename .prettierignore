@@ -1,8 +1,8 @@
 .wpilib
 .github
-.git
+src/main/deploy
 vendordeps
-*License.md
+*.md
 package-lock.json
 simgui*.json
 networktables.json
