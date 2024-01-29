@@ -11,22 +11,28 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
+import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
+import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
 import com.team1701.lib.drivers.gyros.GyroIO;
 import com.team1701.lib.drivers.gyros.GyroIOPigeon2;
 import com.team1701.lib.drivers.gyros.GyroIOSim;
 import com.team1701.lib.drivers.motors.MotorIO;
+import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
+import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.DriveMotorFactory;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
+import com.team1701.robot.subsystems.indexer.Indexer;
+import com.team1701.robot.subsystems.indexer.IndexerMotorFactory;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.shooter.ShooterMotorFactory;
 import com.team1701.robot.subsystems.shooter.ShooterMotorFactory.ShooterMotorUsage;
@@ -49,6 +55,8 @@ public class RobotContainer {
     private final RobotState mRobotState = new RobotState();
     public final Drive mDrive;
     public final Shooter mShooter;
+    public final Indexer mIndexer;
+
     // public final Vision mVision;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
@@ -59,6 +67,7 @@ public class RobotContainer {
         Optional<Drive> drive = Optional.empty();
         // Optional<Vision> vision = Optional.empty();
         Optional<Shooter> shooter = Optional.empty();
+        Optional<Indexer> indexer = Optional.empty();
 
         if (Configuration.getMode() != Mode.REPLAY) {
             switch (Configuration.getRobot()) {
@@ -96,6 +105,10 @@ public class RobotContainer {
                             new DigitalIOSensor(Constants.Shooter.kShooterEntranceSensorId),
                             new DigitalIOSensor(Constants.Shooter.kShooterExitSensorId),
                             new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
+                    indexer = Optional.of(new Indexer(
+                            IndexerMotorFactory.createDriveMotorIOSparkFlex(Constants.Indexer.kIndexerDeviceId),
+                            new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
+                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
                     break;
                 case SIMULATION_BOT:
                     var gyroIO = new GyroIOSim(mRobotState::getHeading);
@@ -120,6 +133,10 @@ public class RobotContainer {
                             Shooter.createEncoderSim(() -> new Rotation2d(Units.degreesToRadians(
                                     new LoggedTunableNumber("SimulatedThroughBoreEncoder/InitialAngleDegrees", 30)
                                             .get())))));
+                    indexer = Optional.of(new Indexer(
+                            new MotorIOSim(DCMotor.getNeoVortex(1), 1, 0.001, Constants.kLoopPeriodSeconds),
+                            new DigitalIOSim(() -> false),
+                            new DigitalIOSim(() -> false)));
                     break;
                 default:
                     break;
@@ -156,6 +173,8 @@ public class RobotContainer {
                 new DigitalIOSensor(Constants.Shooter.kShooterExitSensorId),
                 new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
 
+        this.mIndexer = indexer.orElseGet(() -> new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
+
         setupControllerBindings();
         setupAutonomous();
         setupStateTriggers();
@@ -177,13 +196,9 @@ public class RobotContainer {
                 () -> mDriverController.rightTrigger().getAsBoolean()
                         ? Constants.Drive.kSlowKinematicLimits
                         : Constants.Drive.kFastKinematicLimits));
-        /*  mDriverController
-                .b()
-                .onTrue(runOnce(
-                        () -> DriveCommands.rotateRelativeToRobot(
-                                mDrive, new Rotation2d(2.5), Constants.Drive.kFastKinematicLimits, true),
-                        mDrive));
-        TriggeredAlert.info("Driver B button pressed", mDriverController.b()); */
+
+        // TODO: update should load when intake is completed
+        mIndexer.setDefaultCommand(new IndexCommand(mIndexer, () -> true));
 
         mDriverController
                 .x()

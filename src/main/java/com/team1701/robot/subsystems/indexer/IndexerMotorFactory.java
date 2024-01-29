@@ -20,7 +20,7 @@ public class IndexerMotorFactory {
 
         configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
 
-        configureWithRetry(() -> motor.setSmartCurrentLimit(80), errorAlert);
+        configureWithRetry(() -> motor.setSmartCurrentLimit(20), errorAlert);
         configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);
 
         configureWithRetry(() -> encoder.setPosition(0), errorAlert);
