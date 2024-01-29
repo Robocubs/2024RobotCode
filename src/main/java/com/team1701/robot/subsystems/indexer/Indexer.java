@@ -40,9 +40,6 @@ public class Indexer extends SubsystemBase {
         Logger.processInputs("Indexer/EntranceSensor", mEntranceSensorInputs);
         Logger.processInputs("Indexer/Motor", mIndexerMotorInputsAutoLogged);
         Logger.processInputs("Indexer/ExitSensor", mExitSensorInputs);
-
-
-
     }
 
     public boolean noteIsLoaded() {
