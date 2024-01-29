@@ -8,8 +8,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 public class IndexCommand extends Command {
     private final Indexer mIndexer;
     private final BooleanSupplier mShouldLoad;
-    // private boolean elevatorReady = elevator is down
-    // private boolean intakeSensor = intake has piece
 
     public IndexCommand(Indexer indexer, BooleanSupplier shouldLoad) {
         mIndexer = indexer;

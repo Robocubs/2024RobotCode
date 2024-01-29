@@ -220,8 +220,10 @@ public final class Constants {
     public static final class Indexer {
         // TODO: Update values and set names
         public static final double kIndexerReduction = 1;
-        public static final int kIndexerDeviceId = 3;
-        public static final int kIndexerDeviceId2 = 4;
+        public static final int kIntakeEntranceId = 1;
+        public static final int kIntakeExitId = 3;
+        public static final int kShooterEnterId = 4;
+        public static final int kShooterExitId = 5;
         public static final double kIndexerLoadPercent = .25;
         public static final double kIndexerFeedPercent = 1;
 

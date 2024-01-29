@@ -41,7 +41,7 @@ public class Indexer extends SubsystemBase {
         Logger.processInputs("Indexer/Motor", mIndexerMotorInputsAutoLogged);
         Logger.processInputs("Indexer/ExitSensor", mExitSensorInputs);
 
-        // TODO: update sensor values
+
 
     }
 
