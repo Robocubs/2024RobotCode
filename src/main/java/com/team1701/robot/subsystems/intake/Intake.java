@@ -1,17 +1,10 @@
 package com.team1701.robot.subsystems.intake;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import org.littletonrobotics.junction.AutoLog;
-import org.littletonrobotics.junction.AutoLogOutput;
-
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
-import com.team1701.lib.util.LoggedTunableNumber;
-import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-
-
 
 public class Intake extends SubsystemBase {
     private final MotorIO mIntakeMotor;
@@ -23,7 +16,6 @@ public class Intake extends SubsystemBase {
         mIntakeMotor = intakeMotor;
         mIntakeIO = intakeIO;
     }
-
 
     @Override
     public void periodic() {
@@ -39,8 +31,8 @@ public class Intake extends SubsystemBase {
 
     @AutoLogOutput
     public boolean hasNoteAtInput() {
-        if(mIntakeInputDetectsPiece == true){
-        return true;
+        if (mIntakeInputDetectsPiece == true) {
+            return true;
         }
 
         throw new UnsupportedOperationException("Not implemented");
