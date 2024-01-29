@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 
 public class EncoderIOAnalog implements EncoderIO {
-    private final AnalogEncoder mEncoder;
+    public final AnalogEncoder mEncoder;
 
     public EncoderIOAnalog(int channel) {
         mEncoder = new AnalogEncoder(channel);

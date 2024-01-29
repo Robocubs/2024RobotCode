@@ -11,7 +11,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
-import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
 import com.team1701.lib.drivers.gyros.GyroIO;
@@ -39,7 +38,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import static com.team1701.robot.commands.DriveCommands.*;
@@ -93,8 +91,6 @@ public class RobotContainer {
                                     Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
                             ShooterMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
-                            new DigitalIOSensor(Constants.Shooter.kShooterEntranceSensorId),
-                            new DigitalIOSensor(Constants.Shooter.kShooterExitSensorId),
                             new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
                     break;
                 case SIMULATION_BOT:
@@ -113,10 +109,6 @@ public class RobotContainer {
                             Shooter.createMotorSim(DCMotor.getNeoVortex(1)),
                             Shooter.createMotorSim(DCMotor.getNeoVortex(1)),
                             Shooter.createMotorSim(DCMotor.getNeoVortex(1)),
-                            Shooter.createDigitalSim(() ->
-                                    new LoggedDashboardBoolean("SimulatedShooter/EntranceSensorBlocked", false).get()),
-                            Shooter.createDigitalSim(() ->
-                                    new LoggedDashboardBoolean("SimulatedShooter/ExitSensorBlocked", false).get()),
                             Shooter.createEncoderSim(() -> new Rotation2d(Units.degreesToRadians(
                                     new LoggedTunableNumber("SimulatedThroughBoreEncoder/InitialAngleDegrees", 30)
                                             .get())))));
@@ -152,8 +144,6 @@ public class RobotContainer {
                         Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
                 ShooterMotorFactory.createShooterMotorIOSparkFlex(
                         Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
-                new DigitalIOSensor(Constants.Shooter.kShooterEntranceSensorId),
-                new DigitalIOSensor(Constants.Shooter.kShooterExitSensorId),
                 new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
 
         setupControllerBindings();

@@ -5,10 +5,12 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Rotation2d;
 
 public class EncoderIOSim implements EncoderIO {
-    private final Supplier<Rotation2d> mRotationSupplier;
+    public final Supplier<Rotation2d> mRotationSupplier;
+    public double rotations;
 
     public EncoderIOSim(Supplier<Rotation2d> rotationSupplier) {
         mRotationSupplier = rotationSupplier;
+        rotations = mRotationSupplier.get().getRotations();
     }
 
     @Override

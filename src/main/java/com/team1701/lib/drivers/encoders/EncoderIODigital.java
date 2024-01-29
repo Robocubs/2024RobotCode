@@ -6,7 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 public class EncoderIODigital implements EncoderIO {
-    private final DutyCycleEncoder mEncoder;
+    public final DutyCycleEncoder mEncoder;
 
     public EncoderIODigital(int channel) {
         mEncoder = new DutyCycleEncoder(Constants.Shooter.kShooterThroughBoreEncoderId);
