@@ -2,19 +2,19 @@ package com.team1701.robot.subsystems.shooter;
 
 import java.util.function.Supplier;
 
-import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
-import com.team1701.lib.drivers.digitalinputs.DigitalInputsAutoLogged;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOSim;
 import com.team1701.lib.drivers.encoders.EncoderInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
+import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
@@ -23,23 +23,18 @@ public class Shooter extends SubsystemBase {
     private MotorIO mRotationShooterMotorIO;
 
     private EncoderIO mThroughBoreEncoderIO;
-    private DigitalIO mEntranceSensorIO;
-    private DigitalIO mExitSensorIO;
+
+    private final double mInitialShooterAngleRadians;
 
     private final MotorInputsAutoLogged mUpperShooterMotorInputsAutoLogged = new MotorInputsAutoLogged();
     private final MotorInputsAutoLogged mLowerShooterMotorInputsAutoLogged = new MotorInputsAutoLogged();
     private final MotorInputsAutoLogged mRotationShooterMotorInputsAutoLogged = new MotorInputsAutoLogged();
-    private final DigitalInputsAutoLogged mEntranceSensorInputsAutoLogged = new DigitalInputsAutoLogged();
-    private final DigitalInputsAutoLogged mExitSensorInputsAutoLogged = new DigitalInputsAutoLogged();
     private final EncoderInputsAutoLogged mEncoderInputsAutoLogged = new EncoderInputsAutoLogged();
 
-    public Shooter(
-            MotorIO upperMotor,
-            MotorIO lowerMotor,
-            MotorIO rotationMotor,
-            DigitalIO entranceSensor,
-            DigitalIO exitSensor,
-            EncoderIO throughBoreEncoder) {
+    @AutoLogOutput(key = "Shooter/HasPiece")
+    private TimeLockedBoolean mShooterHasPiece;
+
+    public Shooter(MotorIO upperMotor, MotorIO lowerMotor, MotorIO rotationMotor, EncoderIO throughBoreEncoder) {
 
         mUpperShooterMotorIO = upperMotor;
         mLowerShooterMotorIO = lowerMotor;
@@ -61,9 +56,9 @@ public class Shooter extends SubsystemBase {
                 0,
                 Constants.Shooter.kRotationKd.get());
 
-        mEntranceSensorIO = entranceSensor;
-        mExitSensorIO = exitSensor;
         mThroughBoreEncoderIO = throughBoreEncoder;
+
+        mInitialShooterAngleRadians = mEncoderInputsAutoLogged.position.getRadians();
     }
 
     public static MotorIOSim createMotorSim(DCMotor shooterMotor) {
@@ -85,16 +80,12 @@ public class Shooter extends SubsystemBase {
         mLowerShooterMotorIO.updateInputs(mLowerShooterMotorInputsAutoLogged);
         mRotationShooterMotorIO.updateInputs(mRotationShooterMotorInputsAutoLogged);
 
-        mEntranceSensorIO.updateInputs(mEntranceSensorInputsAutoLogged);
-        mExitSensorIO.updateInputs(mExitSensorInputsAutoLogged);
         mThroughBoreEncoderIO.updateInputs(mEncoderInputsAutoLogged);
 
         Logger.processInputs("Shooter/Motors/Rollers/Upper", mUpperShooterMotorInputsAutoLogged);
         Logger.processInputs("Shooter/Motors/Rollers/Lower", mLowerShooterMotorInputsAutoLogged);
         Logger.processInputs("Shooter/Motors/Rotation", mRotationShooterMotorInputsAutoLogged);
 
-        Logger.processInputs("Shooter/DigitalSensors/Entrance", mEntranceSensorInputsAutoLogged);
-        Logger.processInputs("Shooter/DigitalSensors/Exit", mExitSensorInputsAutoLogged);
         Logger.processInputs("Shooter/Encoder", mRotationShooterMotorInputsAutoLogged);
 
         if (Constants.Shooter.kRollerKff.hasChanged(hash)
@@ -134,8 +125,12 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setRotationAngle(Rotation2d rotation) {
-        Logger.recordOutput("Shooter/Motors/Rotation/Demand", rotation);
-        mRotationShooterMotorIO.setPositionControl(rotation);
+        var motorRotationDemand = rotation.minus(new Rotation2d(mInitialShooterAngleRadians));
+
+        Logger.recordOutput("Shooter/Motors/Rotation/RawDemand", rotation);
+        Logger.recordOutput("Shooter/Motors/Rotation/CalculatedDemand", motorRotationDemand);
+
+        mRotationShooterMotorIO.setPositionControl(motorRotationDemand);
     }
 
     public void stopRollers() {

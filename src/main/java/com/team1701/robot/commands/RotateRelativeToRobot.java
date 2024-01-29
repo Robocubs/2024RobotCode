@@ -64,14 +64,14 @@ public class RotateRelativeToRobot extends Command {
     @Override
     public void initialize() {
         mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits);
-        mRotationalOffset = mRobotState.getPose2d().getRotation();
+        mRotationalOffset = mRobotState.getHeading();
 
         Logger.recordOutput(kLoggingPrefix + "requestedRotation/robotRelative", mTargetRelativeRotation);
         Logger.recordOutput(kLoggingPrefix + "requestedRotation/fieldRelative", mTargetFieldRotation);
 
         mRotationController.reset();
 
-        var currentActualRotation = mRobotState.getPose2d().getRotation();
+        var currentActualRotation = mRobotState.getHeading();
         mTargetFieldRotation = currentActualRotation.plus(mTargetRelativeRotation);
         var fieldRelativeChassisSpeeds = mDrive.getFieldRelativeVelocity();
         mRotationState = new TrapezoidProfile.State(
@@ -136,7 +136,7 @@ public class RotateRelativeToRobot extends Command {
     }
 
     public boolean atTargetPose() {
-        var currentRotation = mRobotState.getPose2d().getRotation();
+        var currentRotation = mRobotState.getHeading();
         var rotationError = (mTargetRelativeRotation.plus(mRotationalOffset)).minus(currentRotation);
 
         return Util.inRange(rotationError.getRadians(), kRotationToleranceRadians.get())
