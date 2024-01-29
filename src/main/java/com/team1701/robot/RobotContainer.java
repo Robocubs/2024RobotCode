@@ -20,15 +20,13 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.Configuration.Mode;
+import com.team1701.robot.SparkFlexMotorFactory.ShooterMotorUsage;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
-import com.team1701.robot.subsystems.drive.DriveMotorFactory;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
 import com.team1701.robot.subsystems.shooter.Shooter;
-import com.team1701.robot.subsystems.shooter.ShooterMotorFactory;
-import com.team1701.robot.subsystems.shooter.ShooterMotorFactory.ShooterMotorUsage;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -65,31 +63,31 @@ public class RobotContainer {
                             new GyroIOPigeon2(10),
                             new SwerveModuleIO[] {
                                 new SwerveModuleIO(
-                                        DriveMotorFactory.createDriveMotorIOSparkMax(10),
-                                        DriveMotorFactory.createSteerMotorIOSparkMax(11),
+                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(10),
+                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(11),
                                         new EncoderIOAnalog(0)),
                                 new SwerveModuleIO(
-                                        DriveMotorFactory.createDriveMotorIOSparkMax(12),
-                                        DriveMotorFactory.createSteerMotorIOSparkMax(13),
+                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(12),
+                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(13),
                                         new EncoderIOAnalog(1)),
                                 new SwerveModuleIO(
-                                        DriveMotorFactory.createDriveMotorIOSparkMax(16),
-                                        DriveMotorFactory.createSteerMotorIOSparkMax(17),
+                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(16),
+                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(17),
                                         new EncoderIOAnalog(3)),
                                 new SwerveModuleIO(
-                                        DriveMotorFactory.createDriveMotorIOSparkMax(14),
-                                        DriveMotorFactory.createSteerMotorIOSparkMax(15),
+                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(14),
+                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(15),
                                         new EncoderIOAnalog(2)),
                             },
                             mRobotState));
 
                     // TODO: update IDs
                     shooter = Optional.of(new Shooter(
-                            ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                            SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                            ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                            SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                            ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                            SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
                             new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
                     break;
@@ -138,11 +136,11 @@ public class RobotContainer {
         new AprilTagCameraIO() {})); */
 
         this.mShooter = shooter.orElseGet(() -> new Shooter(
-                ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
                         Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
                         Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                ShooterMotorFactory.createShooterMotorIOSparkFlex(
+                SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
                         Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
                 new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
 
