@@ -14,17 +14,19 @@ import org.littletonrobotics.junction.Logger;
 public class Indexer extends SubsystemBase {
     private final MotorIO mIndexerMotorIO;
     private final MotorInputsAutoLogged mIndexerMotorInputsAutoLogged = new MotorInputsAutoLogged();
-    private final DigitalIO mEntranceSensor;
-    private final DigitalInputsAutoLogged mEntranceSensorInputs = new DigitalInputsAutoLogged();
-    private final DigitalIO mExitSensor;
-    private final DigitalInputsAutoLogged mExitSensorInputs = new DigitalInputsAutoLogged();
+
+    private final DigitalIO mIndexerEntranceSensor;
+    private final DigitalIO mIndexerExitSensor;
+
+    private final DigitalInputsAutoLogged mIndexerEntranceSensorInputs = new DigitalInputsAutoLogged();
+    private final DigitalInputsAutoLogged mIndexerExitSensorInputs = new DigitalInputsAutoLogged();
 
     @AutoLogOutput(key = "Indexer/Motor/DemandRadiansPerSecond")
     private double mDemandRadiansPerSecond;
 
-    public Indexer(MotorIO motor, DigitalIO entranceSensor, DigitalIO exitSensor) {
-        mEntranceSensor = entranceSensor;
-        mExitSensor = exitSensor;
+    public Indexer(MotorIO motor, DigitalIO indexerEntranceSensor, DigitalIO indexerExitSensor) {
+        mIndexerEntranceSensor = indexerEntranceSensor;
+        mIndexerExitSensor = indexerExitSensor;
         mIndexerMotorIO = motor;
     }
 
@@ -35,15 +37,16 @@ public class Indexer extends SubsystemBase {
     @Override
     public void periodic() {
         mIndexerMotorIO.updateInputs(mIndexerMotorInputsAutoLogged);
-        mEntranceSensor.updateInputs(mEntranceSensorInputs);
-        mExitSensor.updateInputs(mExitSensorInputs);
-        Logger.processInputs("Indexer/EntranceSensor", mEntranceSensorInputs);
+        mIndexerEntranceSensor.updateInputs(mIndexerEntranceSensorInputs);
+        mIndexerExitSensor.updateInputs(mIndexerExitSensorInputs);
+
+        Logger.processInputs("Indexer/EntranceSensor", mIndexerEntranceSensorInputs);
+        Logger.processInputs("Indexer/ExitSensor", mIndexerExitSensorInputs);
         Logger.processInputs("Indexer/Motor", mIndexerMotorInputsAutoLogged);
-        Logger.processInputs("Indexer/ExitSensor", mExitSensorInputs);
     }
 
     public boolean noteIsLoaded() {
-        return mExitSensorInputs.blocked;
+        return mIndexerExitSensorInputs.blocked;
     }
 
     public void setForwardLoad() {

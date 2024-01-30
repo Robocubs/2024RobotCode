@@ -101,7 +101,7 @@ public class RobotContainer {
                                     Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
                             new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
                     indexer = Optional.of(new Indexer(
-                            IndexerMotorFactory.createDriveMotorIOSparkFlex(Constants.Indexer.kIntakeExitId),
+                            IndexerMotorFactory.createDriveMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
                             new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
                             new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
                     break;

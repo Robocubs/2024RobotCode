@@ -219,23 +219,17 @@ public final class Constants {
 
     public static final class Indexer {
         // TODO: Update values and set names
+        public static final int kIndexerMotorId = 0;
         public static final double kIndexerReduction = 1;
-        public static final int kIntakeEntranceId = 1;
-        public static final int kIntakeExitId = 3;
-        public static final int kShooterEnterId = 4;
-        public static final int kShooterExitId = 5;
+
+        public static final int kIndexerEntranceSensorId = 1;
+        public static final int kIndexerExitSensorId = 3;
+
         public static final double kIndexerLoadPercent = .25;
         public static final double kIndexerFeedPercent = 1;
 
         public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
         public static final LoggedTunableNumber kIndexerKd = new LoggedTunableNumber("Indexer/Motor/Kd");
-
-        // TODO: Add IDs for Sensors
-        public static final int kIndexerExitSensorId = 0;
-        public static final int kIndexerEntranceSensorId = 1;
-
-        public static int kIndexerEntranceSensorPort;
-        public static int kIndexerExitSensorPort;
     }
 }
