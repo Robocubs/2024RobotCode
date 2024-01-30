@@ -1,4 +1,4 @@
-package com.team1701.robot;
+package com.team1701.robot.util;
 
 import java.util.function.Supplier;
 
@@ -9,6 +9,7 @@ import com.revrobotics.REVLibError;
 import com.team1701.lib.alerts.REVAlert;
 import com.team1701.lib.drivers.motors.MotorIOSparkFlex;
 import com.team1701.lib.drivers.motors.MotorIOSparkMax;
+import com.team1701.robot.Constants;
 
 public class SparkFlexMotorFactory {
     public static MotorIOSparkFlex createShooterMotorIOSparkFlex(int deviceId, ShooterMotorUsage motorUse) {
@@ -43,6 +44,34 @@ public class SparkFlexMotorFactory {
             default:
                 break;
         }
+
+        configureWithRetry(() -> motor.burnFlash(), errorAlert);
+
+        motor.setCANTimeout(0);
+
+        return new MotorIOSparkFlex(motor, Constants.Shooter.kShooterReduction);
+    }
+
+    public static MotorIOSparkFlex createIndexerMotorFactory(int deviceId) {
+        var motor = new CANSparkFlex(deviceId, MotorType.kBrushless);
+        var encoder = motor.getEncoder();
+        var controller = motor.getPIDController();
+        var errorAlert = new REVAlert(motor, deviceId);
+
+        motor.setCANTimeout(200);
+
+        configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
+
+        configureWithRetry(() -> motor.setSmartCurrentLimit(20), errorAlert);
+        configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);
+
+        configureWithRetry(() -> encoder.setPosition(0), errorAlert);
+        configureWithRetry(() -> encoder.setMeasurementPeriod(10), errorAlert);
+        configureWithRetry(() -> encoder.setAverageDepth(2), errorAlert);
+
+        configureWithRetry(() -> controller.setP(Constants.Indexer.kIndexerKp.get()), errorAlert);
+        configureWithRetry(() -> controller.setD(Constants.Indexer.kIndexerKd.get()), errorAlert);
+        configureWithRetry(() -> controller.setFF(Constants.Indexer.kIndexerKff.get()), errorAlert);
 
         configureWithRetry(() -> motor.burnFlash(), errorAlert);
 

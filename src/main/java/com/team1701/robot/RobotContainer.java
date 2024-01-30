@@ -24,7 +24,6 @@ import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.Configuration.Mode;
-import com.team1701.robot.SparkFlexMotorFactory.ShooterMotorUsage;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
@@ -32,8 +31,9 @@ import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
 import com.team1701.robot.subsystems.indexer.Indexer;
-import com.team1701.robot.subsystems.indexer.IndexerMotorFactory;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import com.team1701.robot.util.SparkFlexMotorFactory;
+import com.team1701.robot.util.SparkFlexMotorFactory.ShooterMotorUsage;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -101,7 +101,7 @@ public class RobotContainer {
                                     Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
                             new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
                     indexer = Optional.of(new Indexer(
-                            IndexerMotorFactory.createDriveMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
+                            SparkFlexMotorFactory.createIndexerMotorFactory(Constants.Indexer.kIndexerMotorId),
                             new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
                             new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
                     break;
@@ -153,14 +153,8 @@ public class RobotContainer {
         new AprilTagCameraIO() {},
         new AprilTagCameraIO() {})); */
 
-        this.mShooter = shooter.orElseGet(() -> new Shooter(
-                SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
-                        Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
-                        Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
-                        Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
-                new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
+        this.mShooter = shooter.orElseGet(
+                () -> new Shooter(new MotorIO() {}, new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}));
 
         this.mIndexer = indexer.orElseGet(() -> new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
@@ -199,7 +193,7 @@ public class RobotContainer {
         mDriverController
                 .rightBumper()
                 .whileTrue(DriveCommands.rotateRelativeToRobot(
-                        mDrive, new Rotation2d(2), Constants.Drive.kFastKinematicLimits, true));
+                        mDrive, () -> mRobotState.getSpeakerHeading(), Constants.Drive.kFastKinematicLimits, true));
         mDriverController.leftTrigger().whileTrue(swerveLock(mDrive));
         TriggeredAlert.info("Driver right bumper pressed", mDriverController.rightBumper());
 

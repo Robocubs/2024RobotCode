@@ -22,9 +22,6 @@ public class Shoot extends Command {
     @AutoLogOutput(key = "Commands/Shoot/calculatedShooterAngleFromHorizontal")
     private Rotation2d shooterAngleFromHorizontal;
 
-    @AutoLogOutput(key = "Commands/Shoot/robotRelativeRotationDemand")
-    private Rotation2d robotRelativeRotationDemand;
-
     @AutoLogOutput(key = "Commands/Shoot/shotFired")
     private boolean shotFired;
 
@@ -41,8 +38,6 @@ public class Shoot extends Command {
                 .getPose2d()
                 .getTranslation()
                 .getDistance(mRobotState.getSpeakerPose().toTranslation2d());
-        robotRelativeRotationDemand =
-                mRobotState.getSpeakerHeading().minus(mRobotState.getPose2d().getRotation());
         shooterAngleFromHorizontal = new Rotation2d(
                 distanceToTarget - Constants.Shooter.kShooterAxisOffset,
                 FieldConstants.kBlueSpeakerOpeningCenter.getZ() - Constants.Shooter.kShooterAxisHeight);
@@ -53,7 +48,7 @@ public class Shoot extends Command {
     public void execute() {
         if (mRobotState.getPose2d().getRotation() != mRobotState.getSpeakerHeading()) {
             DriveCommands.rotateRelativeToRobot(
-                    mDrive, robotRelativeRotationDemand, Constants.Drive.kFastKinematicLimits, true);
+                    mDrive, () -> mRobotState.getSpeakerHeading(), Constants.Drive.kFastKinematicLimits, true);
         }
 
         mShooter.setRotationAngle(shooterAngleFromHorizontal);

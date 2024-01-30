@@ -29,12 +29,12 @@ public class DriveCommands {
         return new DriveToPose(drive, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose);
     }
 
-    public static RotateRelativeToRobot rotateRelativeToRobot(
+    public static RotateToFieldHeading rotateRelativeToRobot(
             Drive drive,
-            Rotation2d rotationRelativeToRobot,
+            Supplier<Rotation2d> targetFieldHeading,
             KinematicLimits kinematicLimits,
             boolean finishAtRotation) {
-        return new RotateRelativeToRobot(drive, rotationRelativeToRobot, kinematicLimits, finishAtRotation);
+        return new RotateToFieldHeading(drive, targetFieldHeading, kinematicLimits, finishAtRotation);
     }
 
     public static Command swerveLock(Drive drive) {
