@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "eamodio.gitlens",
+    "streetsidesoftware.code-spell-checker",
+    "vscjava.vscode-gradle",
+    "richardwillis.vscode-spotless-gradle",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "runem.lit-plugin",
+    "bradlc.vscode-tailwindcss"
+  ],
+  "unwantedRecommendations": ["vscjava.vscode-java-pack"]
+}
