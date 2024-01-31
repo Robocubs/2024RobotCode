@@ -200,10 +200,6 @@ node {
 npmInstall {
     args = System.getenv('CI') ? [] : ['--workspaces']
     inputs.files 'package.json', 'package-lock.json'
-    inputs.dir fileTree('.') {
-        include 'node_modules/**'
-        exclude 'node_modules/.cache/**'
-    }
 }
 
 task npmRunLint(type: NpmTask) {
