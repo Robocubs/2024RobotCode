@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -34,6 +35,11 @@ public class RobotState {
     public void periodic() {
         var timeout = Timer.getFPGATimestamp() - kDetectedNoteTimeout;
         mDetectedNotes.removeIf(note -> note.lastDetectedTimestamp < timeout);
+    }
+
+    @AutoLogOutput
+    public double getMatchTime() {
+        return DriverStation.getMatchTime();
     }
 
     @AutoLogOutput
