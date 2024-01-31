@@ -11,6 +11,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
+import com.team1701.lib.drivers.cameras.AprilTagCameraIO;
+import com.team1701.lib.drivers.cameras.AprilTagCameraIOCubVision;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
 import com.team1701.lib.drivers.gyros.GyroIO;
@@ -26,6 +28,7 @@ import com.team1701.robot.subsystems.drive.DriveMotorFactory;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.shooter.ShooterMotorFactory;
+import com.team1701.robot.subsystems.vision.Vision;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -42,14 +45,14 @@ public class RobotContainer {
     private final RobotState mRobotState = new RobotState();
     public final Drive mDrive;
     public final Shooter mShooter;
-    // public final Vision mVision;
+    public final Vision mVision;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
 
     public RobotContainer() {
         Optional<Drive> drive = Optional.empty();
-        // Optional<Vision> vision = Optional.empty();
+        Optional<Vision> vision = Optional.empty();
         Optional<Shooter> shooter = Optional.empty();
 
         if (Configuration.getMode() != Mode.REPLAY) {
@@ -99,11 +102,16 @@ public class RobotContainer {
                     break;
             }
 
-            /*vision = Optional.of(new Vision(
-            new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontLeftCameraName),
-            new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontRightCameraName),
-            new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackLeftCameraName),
-            new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackRightCameraName))); */
+            vision = Optional.of(new Vision(
+                    mRobotState,
+                    new AprilTagCameraIOCubVision(
+                            Constants.Vision.kFrontLeftCameraName, Constants.Vision.kFrontLeftCameraID),
+                    new AprilTagCameraIOCubVision(
+                            Constants.Vision.kFrontRightCameraName, Constants.Vision.kFrontRightCameraID),
+                    new AprilTagCameraIOCubVision(
+                            Constants.Vision.kBackLeftCameraName, Constants.Vision.kBackLeftCameraID),
+                    new AprilTagCameraIOCubVision(
+                            Constants.Vision.kBackRightCameraName, Constants.Vision.kBackLeftCameraID)));
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(
@@ -113,11 +121,12 @@ public class RobotContainer {
                         .toArray(SwerveModuleIO[]::new),
                 mRobotState));
 
-        /*  this.mVision = vision.orElseGet(() -> new Vision(
-        new AprilTagCameraIO() {},
-        new AprilTagCameraIO() {},
-        new AprilTagCameraIO() {},
-        new AprilTagCameraIO() {})); */
+        this.mVision = vision.orElseGet(() -> new Vision(
+                mRobotState,
+                new AprilTagCameraIO() {},
+                new AprilTagCameraIO() {},
+                new AprilTagCameraIO() {},
+                new AprilTagCameraIO() {}));
 
         this.mShooter = shooter.orElseGet(
                 () -> new Shooter(ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterDeviceId)));

@@ -6,13 +6,51 @@ import com.pathplanner.lib.util.ReplanningConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.LoggedTunableNumber;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public final class Constants {
     public static final double kLoopPeriodSeconds = 0.02;
 
     public static final class Robot {}
+
+    public static final class Vision {
+        public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
+        // TODO: Structure CubVision constants
+        public static final int cameraResolutionWidth = 1280;
+        public static final int cameraResolutionHeight = 720;
+        public static final int cameraAutoExposure = 0;
+        public static final int cameraExposure = 0;
+        public static final int cameraGain = 0;
+
+        public static final String kFrontLeftCameraName = "CubVisionFL";
+        public static final Transform3d kRobotToFrontLeftCamPose =
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
+        public static final int kFrontLeftCameraID = 1;
+
+        public static final String kFrontRightCameraName = "CubVisionFR";
+        public static final Transform3d kRobotToFrontRightCamPose =
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
+        public static final int kFrontRightCameraID = 1;
+
+        public static final String kBackLeftCameraName = "CubVisionBL";
+        public static final Transform3d kRobotToBackLeftCamPose =
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
+        public static final int kBackLeftCameraID = 1;
+
+        public static final String kBackRightCameraName = "CubVisionBR";
+        public static final Transform3d kRobotToBackRightCamPose =
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
+        public static final int kBackRightCameraID = 1;
+
+        public static final double kMaxPoseAmbiguity = 0.03;
+        public static final PoseStrategy kPoseStrategy = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
+        public static final PoseStrategy kFallbackPoseStrategy = PoseStrategy.LOWEST_AMBIGUITY;
+    }
 
     public static final class Controls {
         public static final double kDriverDeadband = 0.09;
