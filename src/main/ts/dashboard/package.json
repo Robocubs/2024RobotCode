@@ -11,6 +11,7 @@
     "build": "vite build",
     "build:deploy": "cross-env DASHBOARD_BASE='dashboard' DASHBOARD_OUT_DIR='../../deploy/web/dashboard' vite build",
     "watch": "vite build --watch",
+    "watch:deploy": "cross-env DASHBOARD_BASE='dashboard' DASHBOARD_OUT_DIR='../../deploy/web/dashboard' vite build --watch",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
