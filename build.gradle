@@ -198,7 +198,10 @@ node {
 }
 
 npmInstall {
-    args = System.getenv('CI') ? [] : ['--workspaces']
+    args = System.getenv('CI') ? [] : [
+        '--workspaces',
+        '--include-workspace-root'
+    ]
     inputs.files 'package.json', 'package-lock.json'
 }
 
