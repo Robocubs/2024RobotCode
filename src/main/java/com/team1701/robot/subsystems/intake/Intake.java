@@ -2,6 +2,8 @@ package com.team1701.robot.subsystems.intake;
 
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
+import com.team1701.robot.Constants;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -11,6 +13,8 @@ public class Intake extends SubsystemBase {
     private final MotorInputsAutoLogged mIntakeMotorInputs = new MotorInputsAutoLogged();
     private final IntakeIO mIntakeIO;
     private final IntakeInputsAutoLogged mIntakeInputs = new IntakeInputsAutoLogged();
+    @AutoLogOutput(key = "Intake/HasPiece")
+    private final boolean mIntakeHasPiece = false;
 
     public Intake(MotorIO intakeMotor, IntakeIO intakeIO) {
         mIntakeMotor = intakeMotor;
@@ -31,22 +35,23 @@ public class Intake extends SubsystemBase {
 
     @AutoLogOutput
     public boolean hasNoteAtInput() {
-        if (mIntakeInputDetectsPiece == true) {
-            return true;
-        }
-
-        throw new UnsupportedOperationException("Not implemented");
+        return mIntakeInputs.inputSensor;
     }
 
     public void setForward() {
-        mIntakeMotor.setPercentOutput(0.3);
+        mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed);
     }
 
     public void setReverse() {
-        mIntakeMotor.setPercentOutput(-0.3);
+        mIntakeMotor.setPercentOutput(Constants.Intake.kOuttakeSpeed);
     }
 
     public void stop() {
         mIntakeMotor.setPercentOutput(0);
     }
+//TODO: Add Reject Contingency
+    public void execute() {
+        
+    }
+
 }

@@ -149,4 +149,7 @@ public final class Constants {
                     kLoopPeriodSeconds);
         }
     }
+    public class Intake {
+        public static final double kIntakeSpeed = 0.5;
+        public static final double kOuttakeSpeed = -0.5;    }
 }
