@@ -198,12 +198,11 @@ node {
 }
 
 npmInstall {
-    args = System.getenv('CI') ? [] : ['--workspaces']
+    args = System.getenv('CI') ? [] : [
+        '--workspaces',
+        '--include-workspace-root'
+    ]
     inputs.files 'package.json', 'package-lock.json'
-    inputs.dir fileTree('.') {
-        include 'node_modules/**'
-        exclude 'node_modules/.cache/**'
-    }
 }
 
 task npmRunLint(type: NpmTask) {
