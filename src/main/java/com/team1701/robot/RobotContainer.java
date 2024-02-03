@@ -33,7 +33,6 @@ import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
-import com.team1701.robot.subsystems.shooter.ShooterMotorFactory;
 import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.SparkFlexMotorFactory;
 import com.team1701.robot.util.SparkFlexMotorFactory.ShooterMotorUsage;
