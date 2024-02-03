@@ -9,10 +9,11 @@ public final class FieldConstants {
     public static double kCenterLine = kFieldLongLengthMeters / 2.0;
     public static double kWingLength = Units.inchesToMeters(231.2);
 
+    public static double kSpeakerHeight = 204.5;
     public static Translation3d kBlueSpeakerOpeningCenter =
-            new Translation3d(Units.inchesToMeters(0.9), Units.inchesToMeters(218.42), 204.5);
+            new Translation3d(Units.inchesToMeters(0.9), Units.inchesToMeters(218.42), kSpeakerHeight);
     public static Translation3d kRedSpeakerOpeningCenter = new Translation3d(
             kFieldLongLengthMeters - kBlueSpeakerOpeningCenter.getX(),
             kBlueSpeakerOpeningCenter.getY(),
-            kBlueSpeakerOpeningCenter.getZ());
+            kSpeakerHeight);
 }

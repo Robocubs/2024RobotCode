@@ -13,6 +13,8 @@ import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
+import com.team1701.robot.subsystems.indexer.Indexer;
+import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,10 +25,14 @@ import static edu.wpi.first.wpilibj2.command.Commands.*;
 public class AutonomousCommands {
     private final RobotState mRobotState;
     private final Drive mDrive;
+    private final Shooter mShooter;
+    private final Indexer mIndexer;
 
-    public AutonomousCommands(RobotState robotState, Drive drive) {
+    public AutonomousCommands(RobotState robotState, Drive drive, Shooter shooter, Indexer indexer) {
         mRobotState = robotState;
         mDrive = drive;
+        mShooter = shooter;
+        mIndexer = indexer;
 
         NamedCommands.registerCommand("printHello", print("Hello from autonomous path"));
     }
@@ -96,10 +102,15 @@ public class AutonomousCommands {
         return new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose);
     }
 
+    private Command aimAndShoot() {
+        return ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState);
+    }
+
     public Command demo() {
         return loggedSequence(
                         print("Starting demo"),
                         followPath("demo1", true),
+                        aimAndShoot(),
                         driveToPose(new Pose2d(2.0, 1.0, Rotation2d.fromRadians(-Math.PI * 2.0 / 3.0))),
                         driveToPose(new Pose2d(10.0, 1.0, GeometryUtil.kRotationHalfPi)),
                         driveToPose(

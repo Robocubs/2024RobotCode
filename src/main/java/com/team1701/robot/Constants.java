@@ -6,6 +6,7 @@ import com.pathplanner.lib.util.ReplanningConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.LoggedTunableNumber;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
@@ -157,27 +158,56 @@ public final class Constants {
 
     public static final class Shooter {
         // TODO: Update values
-        public static final double kShooterReduction = 1;
-        public static final int kShooterDeviceId = 0;
+        public static final double kRollerReduction = 1.0;
+        public static final double kAngleReduction = 1.0 / 105.0;
+        public static final int kShooterUpperRollerMotorId = 0;
+        public static final int kShooterLowerRollerMotorId = 1;
+        public static final int kShooterRotationMotorId = 2;
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(10);
         public static final double kShooterAxisOffset = Units.inchesToMeters(10); // + is toward front of bot
 
-        public static final LoggedTunableNumber kShooterKff = new LoggedTunableNumber("Shooter/Motor/Kff");
-        public static final LoggedTunableNumber kShooterKp = new LoggedTunableNumber("Shooter/Motor/Kp");
-        public static final LoggedTunableNumber kShooterKd = new LoggedTunableNumber("Shooter/Motor/Kd");
+        public static final LoggedTunableNumber kRollerKff = new LoggedTunableNumber("Shooter/Motor/Roller/Kff");
+        public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");
+        public static final LoggedTunableNumber kRollerKd = new LoggedTunableNumber("Shooter/Motor/Roller/Kd");
+
+        public static final LoggedTunableNumber kRotationKff = new LoggedTunableNumber("Shooter/Motor/Rotation/Kff");
+        public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
+        public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
+
+        public static final Rotation2d kShooterAngleEncoderOffset;
+
+        public static int kShooterEntranceSensorId;
+        public static int kShooterExitSensorId;
+        public static int kShooterThroughBoreEncoderId;
+
+        public static double kThroughBoreEncoderDistancePerRotation;
 
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kShooterKd.initDefault(1);
-                    kShooterKp.initDefault(0.6);
-                    kShooterKff.initDefault(0);
+                    kRollerKff.initDefault(0.0);
+                    kRollerKp.initDefault(0.0);
+                    kRollerKd.initDefault(0.0);
+
+                    kRotationKff.initDefault(0.0);
+                    kRotationKp.initDefault(0.0);
+                    kRotationKd.initDefault(0.0);
+
+                    kShooterAngleEncoderOffset = Rotation2d.fromRotations(0); // TODO: Update value
+
                     break;
                 case SIMULATION_BOT:
-                    kShooterKd.initDefault(1);
-                    kShooterKp.initDefault(0.6);
-                    kShooterKff.initDefault(0);
+                    kRollerKff.initDefault(0.017);
+                    kRollerKp.initDefault(0.1);
+                    kRollerKd.initDefault(0.0);
+
+                    kRotationKff.initDefault(0.0);
+                    kRotationKp.initDefault(2.0);
+                    kRotationKd.initDefault(0.0);
+
+                    kShooterAngleEncoderOffset = Rotation2d.fromRotations(Math.random());
+
                     break;
                 default:
                     throw new UnsupportedOperationException("No shooter configuration for " + Configuration.getRobot());
@@ -194,5 +224,21 @@ public final class Constants {
         public static final LoggedTunableNumber kElevatorKff = new LoggedTunableNumber("Elevator/Motor/Kff");
         public static final LoggedTunableNumber kElevatorKp = new LoggedTunableNumber("Elevator/Motor/Kp");
         public static final LoggedTunableNumber kElevatorKd = new LoggedTunableNumber("Elevator/Motor/Kd");
+    }
+
+    public static final class Indexer {
+        // TODO: Update values and set names
+        public static final int kIndexerMotorId = 0;
+        public static final double kIndexerReduction = 1;
+
+        public static final int kIndexerEntranceSensorId = 1;
+        public static final int kIndexerExitSensorId = 3;
+
+        public static final double kIndexerLoadPercent = .25;
+        public static final double kIndexerFeedPercent = 1;
+
+        public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
+        public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
+        public static final LoggedTunableNumber kIndexerKd = new LoggedTunableNumber("Indexer/Motor/Kd");
     }
 }

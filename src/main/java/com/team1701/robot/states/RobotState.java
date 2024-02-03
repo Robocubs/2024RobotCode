@@ -30,8 +30,6 @@ public class RobotState {
             Constants.Drive.kKinematics, mGyroAngle, mModulePositions, GeometryUtil.kPoseIdentity);
     private List<NoteState> mDetectedNotes = new ArrayList<>();
 
-    public RobotState() {}
-
     public void periodic() {
         var timeout = Timer.getFPGATimestamp() - kDetectedNoteTimeout;
         mDetectedNotes.removeIf(note -> note.lastDetectedTimestamp < timeout);
@@ -130,5 +128,11 @@ public class RobotState {
         }
 
         mDetectedNotes.addAll(notes);
+    }
+
+    @AutoLogOutput
+    public boolean hasNote() {
+        // TODO: implement
+        return false;
     }
 }
