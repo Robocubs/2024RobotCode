@@ -1,14 +1,16 @@
 package com.team1701.lib.drivers.encoders;
 
+import com.team1701.robot.Constants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.AnalogEncoder;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
-public class EncoderIOAnalog implements EncoderIO {
-    public final AnalogEncoder mEncoder;
+public class EncoderIODigital implements EncoderIO {
+    public final DutyCycleEncoder mEncoder;
 
-    public EncoderIOAnalog(int channel) {
-        mEncoder = new AnalogEncoder(channel);
+    public EncoderIODigital(int channel) {
+        mEncoder = new DutyCycleEncoder(Constants.Shooter.kShooterThroughBoreEncoderId);
+        mEncoder.setDistancePerRotation(Constants.Shooter.kThroughBoreEncoderDistancePerRotation);
     }
 
     @Override
@@ -20,5 +22,9 @@ public class EncoderIOAnalog implements EncoderIO {
 
     public void setPositionOffset(Rotation2d offset) {
         mEncoder.setPositionOffset(MathUtil.inputModulus(offset.getRotations(), 0.0, 1.0));
+    }
+
+    public void setDistancePerRotation(double distancePerRotation) {
+        mEncoder.setDistancePerRotation(distancePerRotation);
     }
 }

@@ -4,13 +4,18 @@
 
 package com.team1701.robot;
 
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import com.team1701.robot.Configuration.Mode;
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import io.javalin.Javalin;
+import io.javalin.http.staticfiles.Location;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -91,12 +96,27 @@ public class Robot extends LoggedRobot {
         // Start AdvantageKit logger
         setUseTiming(Configuration.getMode() != Configuration.Mode.REPLAY);
         Logger.start();
+
+        // Build robot container
         mRobotContainer = new RobotContainer();
+
+        // Enable command logging
+        SmartDashboard.putData(CommandScheduler.getInstance());
+
+        // Launch web server
+        Javalin.create(config -> {
+                    config.staticFiles.add(
+                            Paths.get(Filesystem.getDeployDirectory().getAbsolutePath(), "web")
+                                    .toString(),
+                            Location.EXTERNAL);
+                })
+                .start(5800);
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+        mRobotContainer.getRobotState().periodic();
     }
 
     @Override

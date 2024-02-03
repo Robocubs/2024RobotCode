@@ -19,6 +19,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -41,11 +42,14 @@ public class RobotState {
             VecBuilder.fill(0.9, 0.9, 0.9));
     private List<NoteState> mDetectedNotes = new ArrayList<>();
 
-    public RobotState() {}
-
     public void periodic() {
         var timeout = Timer.getFPGATimestamp() - kDetectedNoteTimeout;
         mDetectedNotes.removeIf(note -> note.lastDetectedTimestamp < timeout);
+    }
+
+    @AutoLogOutput
+    public double getMatchTime() {
+        return DriverStation.getMatchTime();
     }
 
     @AutoLogOutput
@@ -141,5 +145,11 @@ public class RobotState {
         }
 
         mDetectedNotes.addAll(notes);
+    }
+
+    @AutoLogOutput
+    public boolean hasNote() {
+        // TODO: implement
+        return false;
     }
 }
