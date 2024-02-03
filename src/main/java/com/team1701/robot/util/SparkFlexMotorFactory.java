@@ -30,16 +30,19 @@ public class SparkFlexMotorFactory {
         configureWithRetry(() -> encoder.setMeasurementPeriod(10), errorAlert);
         configureWithRetry(() -> encoder.setAverageDepth(2), errorAlert);
 
+        double reduction = 1.0;
         switch (motorUse) {
             case ROLLER:
                 configureWithRetry(() -> controller.setP(Constants.Shooter.kRollerKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Shooter.kRollerKd.get()), errorAlert);
                 configureWithRetry(() -> controller.setFF(Constants.Shooter.kRollerKff.get()), errorAlert);
+                reduction = Constants.Shooter.kRollerReduction;
                 break;
             case ROTATION:
                 configureWithRetry(() -> controller.setP(Constants.Shooter.kRotationKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Shooter.kRotationKd.get()), errorAlert);
                 configureWithRetry(() -> controller.setFF(Constants.Shooter.kRotationKff.get()), errorAlert);
+                reduction = Constants.Shooter.kAngleReduction;
                 break;
             default:
                 break;
@@ -49,10 +52,10 @@ public class SparkFlexMotorFactory {
 
         motor.setCANTimeout(0);
 
-        return new MotorIOSparkFlex(motor, Constants.Shooter.kShooterReduction);
+        return new MotorIOSparkFlex(motor, reduction);
     }
 
-    public static MotorIOSparkFlex createIndexerMotorFactory(int deviceId) {
+    public static MotorIOSparkFlex createIndexerMotorIOSparkFlex(int deviceId) {
         var motor = new CANSparkFlex(deviceId, MotorType.kBrushless);
         var encoder = motor.getEncoder();
         var controller = motor.getPIDController();
@@ -77,7 +80,7 @@ public class SparkFlexMotorFactory {
 
         motor.setCANTimeout(0);
 
-        return new MotorIOSparkFlex(motor, Constants.Shooter.kShooterReduction);
+        return new MotorIOSparkFlex(motor, Constants.Indexer.kIndexerReduction);
     }
 
     public static MotorIOSparkMax createDriveMotorIOSparkMax(int deviceId) {

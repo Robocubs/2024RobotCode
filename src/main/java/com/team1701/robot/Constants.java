@@ -6,6 +6,7 @@ import com.pathplanner.lib.util.ReplanningConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.LoggedTunableNumber;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
@@ -157,7 +158,8 @@ public final class Constants {
 
     public static final class Shooter {
         // TODO: Update values
-        public static final double kShooterReduction = 1;
+        public static final double kRollerReduction = 1.0;
+        public static final double kAngleReduction = 1.0 / 105.0;
         public static final int kShooterUpperRollerMotorId = 0;
         public static final int kShooterLowerRollerMotorId = 1;
         public static final int kShooterRotationMotorId = 2;
@@ -173,6 +175,8 @@ public final class Constants {
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
+        public static final Rotation2d kShooterAngleEncoderOffset;
+
         public static int kShooterEntranceSensorId;
         public static int kShooterExitSensorId;
         public static int kShooterThroughBoreEncoderId;
@@ -182,23 +186,28 @@ public final class Constants {
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kRollerKd.initDefault(1);
-                    kRollerKp.initDefault(0.6);
-                    kRollerKff.initDefault(0);
+                    kRollerKff.initDefault(0.0);
+                    kRollerKp.initDefault(0.0);
+                    kRollerKd.initDefault(0.0);
 
-                    kRotationKd.initDefault(1);
-                    kRotationKp.initDefault(0.6);
-                    kRotationKff.initDefault(0);
+                    kRotationKff.initDefault(0.0);
+                    kRotationKp.initDefault(0.0);
+                    kRotationKd.initDefault(0.0);
+
+                    kShooterAngleEncoderOffset = Rotation2d.fromRotations(0); // TODO: Update value
 
                     break;
                 case SIMULATION_BOT:
-                    kRollerKd.initDefault(1);
-                    kRollerKp.initDefault(0.6);
-                    kRollerKff.initDefault(0);
+                    kRollerKff.initDefault(0.017);
+                    kRollerKp.initDefault(0.1);
+                    kRollerKd.initDefault(0.0);
 
-                    kRotationKd.initDefault(1);
-                    kRotationKp.initDefault(0.6);
-                    kRotationKff.initDefault(0);
+                    kRotationKff.initDefault(0.0);
+                    kRotationKp.initDefault(2.0);
+                    kRotationKd.initDefault(0.0);
+
+                    kShooterAngleEncoderOffset = Rotation2d.fromRotations(Math.random());
+
                     break;
                 default:
                     throw new UnsupportedOperationException("No shooter configuration for " + Configuration.getRobot());

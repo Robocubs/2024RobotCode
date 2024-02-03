@@ -5,9 +5,7 @@ import java.util.function.Supplier;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
-import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
-import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -20,7 +18,6 @@ import org.littletonrobotics.junction.Logger;
 /* Note: positive rotations are counterclockwise (turning left) */
 
 public class RotateToFieldHeading extends Command {
-    private RobotState mRobotState = new RobotState();
     private static final String kLoggingPrefix = "Command/RotateRelativeToRobot/";
     private static final double kModuleRadius = Constants.Drive.kModuleRadius;
     private static final KinematicLimits kMaxKinematicLimits = Constants.Drive.kFastTrapezoidalKinematicLimits;
@@ -36,21 +33,25 @@ public class RotateToFieldHeading extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "RotationToleranceRadians", 0.01);
 
     private final Drive mDrive;
-    private Supplier<Rotation2d> mTargetFieldHeading;
+    private final Supplier<Rotation2d> mTargetHeadingSupplier;
+    private final Supplier<Rotation2d> mRobotHeadingSupplier;
     private final KinematicLimits mKinematicLimits;
     private final boolean mFinishAtRotation;
     private final PIDController mRotationController;
 
     private TrapezoidProfile mRotationProfile;
     private TrapezoidProfile.State mRotationState = new TrapezoidProfile.State();
+    private boolean mAtTargetRotation = false;
 
     RotateToFieldHeading(
             Drive drive,
-            Supplier<Rotation2d> targetHeading,
+            Supplier<Rotation2d> targetHeadingSupplier,
+            Supplier<Rotation2d> robotHeadingSupplier,
             KinematicLimits kinematicLimits,
             boolean finishAtRotation) {
         mDrive = drive;
-        mTargetFieldHeading = targetHeading;
+        mTargetHeadingSupplier = targetHeadingSupplier;
+        mRobotHeadingSupplier = robotHeadingSupplier;
         mKinematicLimits = kinematicLimits;
         mFinishAtRotation = finishAtRotation;
 
@@ -67,19 +68,17 @@ public class RotateToFieldHeading extends Command {
     public void initialize() {
         mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits);
 
-        Logger.recordOutput(kLoggingPrefix + "requestedRotation/fieldRelative", mTargetFieldHeading.get());
-
         mRotationController.reset();
+        mAtTargetRotation = false;
 
-        var currentHeading = mRobotState.getHeading();
+        var currentHeading = mRobotHeadingSupplier.get();
         var fieldRelativeChassisSpeeds = mDrive.getFieldRelativeVelocity();
         mRotationState = new TrapezoidProfile.State(
                 MathUtil.inputModulus(
                         currentHeading.getRadians(),
-                        mTargetFieldHeading.get().getRadians() - Math.PI,
-                        mTargetFieldHeading.get().getRadians() + Math.PI),
+                        mTargetHeadingSupplier.get().getRadians() - Math.PI,
+                        mTargetHeadingSupplier.get().getRadians() + Math.PI),
                 fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
-        Logger.recordOutput(kLoggingPrefix + "SuccessfullyInitialized", true);
     }
 
     @Override
@@ -96,30 +95,32 @@ public class RotateToFieldHeading extends Command {
             mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
         }
 
-        var currentHeading = mRobotState.getPose2d().getRotation();
-
-        // Calculate rotational velocity
-        var rotationPidOutput = mRotationController.calculate(currentHeading.getRadians(), mRotationState.position);
-        var rotationTargetState =
-                new TrapezoidProfile.State(mTargetFieldHeading.get().getRadians(), 0.0);
-        mRotationState = mRotationProfile.calculate(Constants.kLoopPeriodSeconds, mRotationState, rotationTargetState);
-        var rotationalVelocity = mRotationState.velocity + rotationPidOutput;
-
-        // Set drive outputs
-        var atTargetRotation = GeometryUtil.isNear(
-                mTargetFieldHeading.get(), currentHeading, Rotation2d.fromRadians(kRotationToleranceRadians.get()));
-        if (atTargetRotation) {
+        var currentHeading = mRobotHeadingSupplier.get();
+        var targetHeading = mTargetHeadingSupplier.get();
+        Rotation2d setpoint;
+        mAtTargetRotation = GeometryUtil.isNear(
+                targetHeading, currentHeading, Rotation2d.fromRadians(kRotationToleranceRadians.get()));
+        if (mAtTargetRotation) {
             mDrive.stop();
-            currentHeading = mRobotState.getPose2d().getRotation();
+            setpoint = currentHeading;
         } else {
+
+            // Calculate rotational velocity
+            var rotationPidOutput = mRotationController.calculate(currentHeading.getRadians(), mRotationState.position);
+            var rotationTargetState = new TrapezoidProfile.State(targetHeading.getRadians(), 0.0);
+            mRotationState =
+                    mRotationProfile.calculate(Constants.kLoopPeriodSeconds, mRotationState, rotationTargetState);
+            var rotationalVelocity = mRotationState.velocity + rotationPidOutput;
+
+            // Set drive outputs
             mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, rotationalVelocity, currentHeading));
-            currentHeading = Rotation2d.fromRadians(mRotationState.position);
+            setpoint = Rotation2d.fromRadians(mRotationState.position);
         }
 
         Logger.recordOutput(
                 kLoggingPrefix + "RotationError", Rotation2d.fromRadians(mRotationController.getPositionError()));
-        Logger.recordOutput(kLoggingPrefix + "ActualHeading", currentHeading);
-        Logger.recordOutput(kLoggingPrefix + "TargetHeading", mTargetFieldHeading.get());
+        Logger.recordOutput(kLoggingPrefix + "Setpoint", setpoint);
+        Logger.recordOutput(kLoggingPrefix + "TargetHeading", targetHeading);
     }
 
     @Override
@@ -129,17 +130,6 @@ public class RotateToFieldHeading extends Command {
 
     @Override
     public boolean isFinished() {
-        return mFinishAtRotation && atTargetPose();
-    }
-
-    public boolean atTargetPose() {
-        var currentRotation = mRobotState.getHeading();
-        var rotationError = mTargetFieldHeading.get().minus(currentRotation);
-
-        return Util.inRange(rotationError.getRadians(), kRotationToleranceRadians.get())
-                && GeometryUtil.isNear(
-                        mTargetFieldHeading.get(),
-                        currentRotation,
-                        Rotation2d.fromRadians(kRotationToleranceRadians.get()));
+        return mFinishAtRotation && mAtTargetRotation == false;
     }
 }

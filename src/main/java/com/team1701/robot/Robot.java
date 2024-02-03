@@ -11,6 +11,7 @@ import com.team1701.robot.Configuration.Mode;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import io.javalin.Javalin;
@@ -99,6 +100,9 @@ public class Robot extends LoggedRobot {
         // Build robot container
         mRobotContainer = new RobotContainer();
 
+        // Enable command logging
+        SmartDashboard.putData(CommandScheduler.getInstance());
+
         // Launch web server
         Javalin.create(config -> {
                     config.staticFiles.add(
@@ -112,6 +116,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+        mRobotContainer.getRobotState().periodic();
     }
 
     @Override

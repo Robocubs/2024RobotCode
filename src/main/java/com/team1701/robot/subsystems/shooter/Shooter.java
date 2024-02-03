@@ -1,15 +1,15 @@
 package com.team1701.robot.subsystems.shooter;
 
-import java.util.function.Supplier;
+import java.util.Optional;
 
-import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOSim;
 import com.team1701.lib.drivers.encoders.EncoderInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
-import com.team1701.lib.util.TimeLockedBoolean;
+import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -18,24 +18,19 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
-    private MotorIO mUpperShooterMotorIO;
-    private MotorIO mLowerShooterMotorIO;
-    private MotorIO mRotationShooterMotorIO;
+    private final MotorIO mUpperShooterMotorIO;
+    private final MotorIO mLowerShooterMotorIO;
+    private final MotorIO mRotationShooterMotorIO;
+    private final EncoderIO mAngleEncoderIO;
 
-    private EncoderIO mThroughBoreEncoderIO;
+    private final MotorInputsAutoLogged mUpperShooterMotorInputs = new MotorInputsAutoLogged();
+    private final MotorInputsAutoLogged mLowerShooterMotorInputs = new MotorInputsAutoLogged();
+    private final MotorInputsAutoLogged mRotationShooterMotorInputs = new MotorInputsAutoLogged();
+    private final EncoderInputsAutoLogged mAngleEncoderInputs = new EncoderInputsAutoLogged();
 
-    private final double mInitialShooterAngleRadians;
+    private Optional<Rotation2d> mRotationMotorOffset = Optional.empty();
 
-    private final MotorInputsAutoLogged mUpperShooterMotorInputsAutoLogged = new MotorInputsAutoLogged();
-    private final MotorInputsAutoLogged mLowerShooterMotorInputsAutoLogged = new MotorInputsAutoLogged();
-    private final MotorInputsAutoLogged mRotationShooterMotorInputsAutoLogged = new MotorInputsAutoLogged();
-    private final EncoderInputsAutoLogged mEncoderInputsAutoLogged = new EncoderInputsAutoLogged();
-
-    @AutoLogOutput(key = "Shooter/HasPiece")
-    private TimeLockedBoolean mShooterHasPiece;
-
-    public Shooter(MotorIO upperMotor, MotorIO lowerMotor, MotorIO rotationMotor, EncoderIO throughBoreEncoder) {
-
+    public Shooter(MotorIO upperMotor, MotorIO lowerMotor, MotorIO rotationMotor, EncoderIO angleEncoder) {
         mUpperShooterMotorIO = upperMotor;
         mLowerShooterMotorIO = lowerMotor;
         mRotationShooterMotorIO = rotationMotor;
@@ -56,37 +51,38 @@ public class Shooter extends SubsystemBase {
                 0,
                 Constants.Shooter.kRotationKd.get());
 
-        mThroughBoreEncoderIO = throughBoreEncoder;
-
-        mInitialShooterAngleRadians = mEncoderInputsAutoLogged.position.getRadians();
+        mAngleEncoderIO = angleEncoder;
     }
 
-    public static MotorIOSim createMotorSim(DCMotor shooterMotor) {
-        return new MotorIOSim(shooterMotor, Constants.Shooter.kShooterReduction, 0.025, Constants.kLoopPeriodSeconds);
+    public static MotorIOSim createRollerMotorSim(DCMotor shooterMotor) {
+        return new MotorIOSim(shooterMotor, Constants.Shooter.kRollerReduction, 0.0023, Constants.kLoopPeriodSeconds);
     }
 
-    public static DigitalIOSim createDigitalSim(Supplier<Boolean> blockedSupplier) {
-        return new DigitalIOSim(blockedSupplier);
+    public static MotorIOSim createRotationMotorSim(DCMotor shooterMotor) {
+        return new MotorIOSim(shooterMotor, Constants.Shooter.kAngleReduction, 0.14, Constants.kLoopPeriodSeconds);
     }
 
-    public static EncoderIOSim createEncoderSim(Supplier<Rotation2d> rotationSupplier) {
-        return new EncoderIOSim(rotationSupplier);
+    public static EncoderIOSim createEncoderSim(MotorIOSim rotationMotor) {
+        var randomStartingAngle = Rotation2d.fromRotations(0.25);
+        var startingValue = randomStartingAngle.plus(Constants.Shooter.kShooterAngleEncoderOffset);
+        var offset = startingValue.minus(rotationMotor.getPosition());
+        return new EncoderIOSim(() -> rotationMotor.getPosition().plus(offset));
     }
 
     @Override
     public void periodic() {
         var hash = hashCode();
-        mUpperShooterMotorIO.updateInputs(mUpperShooterMotorInputsAutoLogged);
-        mLowerShooterMotorIO.updateInputs(mLowerShooterMotorInputsAutoLogged);
-        mRotationShooterMotorIO.updateInputs(mRotationShooterMotorInputsAutoLogged);
+        mUpperShooterMotorIO.updateInputs(mUpperShooterMotorInputs);
+        mLowerShooterMotorIO.updateInputs(mLowerShooterMotorInputs);
+        mRotationShooterMotorIO.updateInputs(mRotationShooterMotorInputs);
 
-        mThroughBoreEncoderIO.updateInputs(mEncoderInputsAutoLogged);
+        mAngleEncoderIO.updateInputs(mAngleEncoderInputs);
 
-        Logger.processInputs("Shooter/Motors/Rollers/Upper", mUpperShooterMotorInputsAutoLogged);
-        Logger.processInputs("Shooter/Motors/Rollers/Lower", mLowerShooterMotorInputsAutoLogged);
-        Logger.processInputs("Shooter/Motors/Rotation", mRotationShooterMotorInputsAutoLogged);
+        Logger.processInputs("Shooter/Motors/Rollers/Upper", mUpperShooterMotorInputs);
+        Logger.processInputs("Shooter/Motors/Rollers/Lower", mLowerShooterMotorInputs);
+        Logger.processInputs("Shooter/Motors/Rotation", mRotationShooterMotorInputs);
 
-        Logger.processInputs("Shooter/Encoder", mRotationShooterMotorInputsAutoLogged);
+        Logger.processInputs("Shooter/Encoder", mRotationShooterMotorInputs);
 
         if (Constants.Shooter.kRollerKff.hasChanged(hash)
                 || Constants.Shooter.kRollerKp.hasChanged(hash)
@@ -107,15 +103,35 @@ public class Shooter extends SubsystemBase {
                     0,
                     Constants.Shooter.kRotationKd.get());
         }
+
+        // Initialize the rotation motor offset once the angle encoder is sending values
+        if (mRotationMotorOffset.isEmpty() && !Util.epsilonEquals(mAngleEncoderInputs.position.getRadians(), 0)) {
+            mRotationMotorOffset = Optional.of(mAngleEncoderInputs
+                    .position
+                    .minus(Constants.Shooter.kShooterAngleEncoderOffset)
+                    .minus(Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians)));
+        }
     }
 
-    public void setRollerPID(double ff, double p, double i, double d) {
+    private void setRollerPID(double ff, double p, double i, double d) {
         mUpperShooterMotorIO.setPID(ff, p, i, d);
         mLowerShooterMotorIO.setPID(ff, p, i, d);
     }
 
-    public void setRotationPID(double ff, double p, double i, double d) {
+    private void setRotationPID(double ff, double p, double i, double d) {
         mRotationShooterMotorIO.setPID(ff, p, i, d);
+    }
+
+    @AutoLogOutput
+    public Rotation2d getAngle() {
+        return Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians)
+                .plus(mRotationMotorOffset.orElse(GeometryUtil.kRotationIdentity));
+    }
+
+    public double[] getRollerSpeedsRadiansPerSecond() {
+        return new double[] {
+            mUpperShooterMotorInputs.velocityRadiansPerSecond, mLowerShooterMotorInputs.velocityRadiansPerSecond
+        };
     }
 
     public void setRollerSpeed(double radiansPerSecond) {
@@ -125,19 +141,24 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setRotationAngle(Rotation2d rotation) {
-        var motorRotationDemand = rotation.minus(new Rotation2d(mInitialShooterAngleRadians));
+        Logger.recordOutput("Shooter/AngleDemand", rotation);
+        if (mRotationMotorOffset.isEmpty()) {
+            mRotationShooterMotorIO.setPercentOutput(0.0);
+            return;
+        }
 
-        Logger.recordOutput("Shooter/Motors/Rotation/RawDemand", rotation);
-        Logger.recordOutput("Shooter/Motors/Rotation/CalculatedDemand", motorRotationDemand);
-
+        var motorRotationDemand = rotation.minus(mRotationMotorOffset.get());
         mRotationShooterMotorIO.setPositionControl(motorRotationDemand);
+
+        Logger.recordOutput("Shooter/Motors/Rotation/Demand", motorRotationDemand);
     }
 
     public void stopRollers() {
         mUpperShooterMotorIO.setPercentOutput(0);
+        mLowerShooterMotorIO.setPercentOutput(0);
     }
 
-    public void setRotationBrake(boolean enable) {
-        mRotationShooterMotorIO.setBrakeMode(enable);
+    public void stopRotation() {
+        mRotationShooterMotorIO.setPercentOutput(0);
     }
 }
