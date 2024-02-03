@@ -49,6 +49,10 @@ public class Indexer extends SubsystemBase {
         return mIndexerExitSensorInputs.blocked;
     }
 
+    public boolean hasNote() {
+        return mIndexerEntranceSensorInputs.blocked || mIndexerExitSensorInputs.blocked;
+    }
+
     public void setForwardLoad() {
         mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerLoadPercent);
     }
