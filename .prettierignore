@@ -1,0 +1,9 @@
+.wpilib
+.github
+src/main/deploy
+vendordeps
+*.md
+package-lock.json
+simgui*.json
+networktables.json
+navgrid.json

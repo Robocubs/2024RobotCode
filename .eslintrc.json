@@ -1,0 +1,45 @@
+{
+  "env": {
+    "browser": true,
+    "es2020": true
+  },
+  "ignorePatterns": ["src/main/deploy", "node_modules", "dist"],
+  "extends": ["eslint:recommended", "prettier"],
+  "plugins": ["import", "prettier", "@typescript-eslint"],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    "prefer-const": ["error", { "destructuring": "all", "ignoreReadBeforeAssign": false }],
+    "sort-imports": ["error", { "ignoreDeclarationSort": true }],
+    "import/order": ["error", { "alphabetize": { "order": "asc" } }],
+    "prettier/prettier": "error"
+  },
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "extends": [
+        "plugin:import/typescript",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended-type-checked",
+        "plugin:@typescript-eslint/stylistic-type-checked"
+      ],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "project": true
+      },
+      "rules": {
+        "@typescript-eslint/consistent-indexed-object-style": "off",
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-empty-interface": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-inferrable-types": ["error", { "ignoreParameters": true }],
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unused-vars": ["error", { "args": "none", "ignoreRestSiblings": true }],
+        "@typescript-eslint/no-var-requires": "error",
+        "@typescript-eslint/prefer-nullish-coalescing": "off"
+      }
+    }
+  ]
+}

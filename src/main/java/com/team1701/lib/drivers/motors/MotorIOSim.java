@@ -71,7 +71,7 @@ public class MotorIOSim implements MotorIO {
     }
 
     @Override
-    public void setBreakMode(boolean enable) {}
+    public void setBrakeMode(boolean enable) {}
 
     @Override
     public void setPID(double ff, double p, double i, double d) {

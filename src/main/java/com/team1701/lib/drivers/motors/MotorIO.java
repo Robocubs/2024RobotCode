@@ -23,7 +23,7 @@ public interface MotorIO {
 
     public default void setVoltageOutput(double volts) {}
 
-    public default void setBreakMode(boolean enable) {}
+    public default void setBrakeMode(boolean enable) {}
 
     public default void setPID(double ff, double p, double i, double d) {}
 

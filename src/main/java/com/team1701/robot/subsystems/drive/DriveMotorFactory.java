@@ -29,7 +29,7 @@ public final class DriveMotorFactory {
 
         configureWithRetry(() -> controller.setP(Constants.Drive.kDriveKp.get()), errorAlert);
         configureWithRetry(() -> controller.setD(Constants.Drive.kDriveKd.get()), errorAlert);
-        configureWithRetry(() -> controller.setFF(Constants.Drive.kDriveKf.get()), errorAlert);
+        configureWithRetry(() -> controller.setFF(Constants.Drive.kDriveKff.get()), errorAlert);
 
         configureWithRetry(() -> motor.burnFlash(), errorAlert);
 

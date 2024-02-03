@@ -50,7 +50,7 @@ public class SwerveModule {
         mSteerEncoderIO = moduleIO.steerEncoderIO;
 
         mDriveMotorIO.setPID(
-                Constants.Drive.kDriveKf.get(), Constants.Drive.kDriveKp.get(), 0, Constants.Drive.kDriveKd.get());
+                Constants.Drive.kDriveKff.get(), Constants.Drive.kDriveKp.get(), 0, Constants.Drive.kDriveKd.get());
         mSteerMotorIO.setPID(0, Constants.Drive.kSteerKp.get(), 0, Constants.Drive.kSteerKd.get());
     }
 
@@ -75,11 +75,11 @@ public class SwerveModule {
         mMeasuredAngle = toModuleAngle(Rotation2d.fromRadians(mSteerMotorInputs.positionRadians));
 
         var hashCode = hashCode();
-        if (Constants.Drive.kDriveKf.hasChanged(hashCode)
+        if (Constants.Drive.kDriveKff.hasChanged(hashCode)
                 || Constants.Drive.kDriveKp.hasChanged(hashCode)
                 || Constants.Drive.kDriveKd.hasChanged(hashCode)) {
             mDriveMotorIO.setPID(
-                    Constants.Drive.kDriveKf.get(), Constants.Drive.kDriveKp.get(), 0, Constants.Drive.kDriveKd.get());
+                    Constants.Drive.kDriveKff.get(), Constants.Drive.kDriveKp.get(), 0, Constants.Drive.kDriveKd.get());
         }
 
         if (Constants.Drive.kSteerKp.hasChanged(hashCode) || Constants.Drive.kSteerKd.hasChanged(hashCode)) {
@@ -127,11 +127,11 @@ public class SwerveModule {
     }
 
     public void setDriveBrakeMode(boolean enable) {
-        mDriveMotorIO.setBreakMode(enable);
+        mDriveMotorIO.setBrakeMode(enable);
     }
 
     public void setSteerBrakeMode(boolean enable) {
-        mSteerMotorIO.setBreakMode(enable);
+        mSteerMotorIO.setBrakeMode(enable);
     }
 
     public void zeroSteeringMotor() {
