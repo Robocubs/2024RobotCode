@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
@@ -19,6 +20,44 @@ public final class Constants {
     public static final class Robot {}
 
     public static final class Vision {
+        /*
+         * The below system improves upon last season's reliance on the provided standard
+         * deviation values for vision in the WPI pose estimation library:
+         *
+         * In the lab, standard deviations for the XY direction and theta were collected at various distances and angles.
+         * We plug these *measured* distances and angles and their corresponding standard deviations into interpolation maps.
+         * So there is a key and value system similar to HashMaps.
+         * These maps will return these std. dev. values when the exact key (i.e. either distance (m) or angle (radians))
+         * is provided. If there is no such key, then it uses math to derive a value for the key using the nearest existing keys.
+         * Think about it like the "line of best fit" you found in math class.
+         *
+         * Remember:
+         *
+         * For a given distance from the camera to an AprilTag, what is a mostly-accurate std. dev. I can use?
+         * Keys are MEASURED distances or angles collected in the lab at KNOWN standard deviations.
+         * Values are standard deviations, either calculated or stored.
+         */
+        public static final boolean kUseInterpolatedVisionStdDevValues = false;
+
+        // TODO: Collect values
+        public static final double[][] kMeasuredDistanceToXYStdDevValues = {{}};
+        public static final double[][] kMeasuredDistanceToAngleStdDevValues = {{}};
+        public static InterpolatingDoubleTreeMap kVisionXYStdDevInterpolater = new InterpolatingDoubleTreeMap();
+        public static InterpolatingDoubleTreeMap kVisionThetaStdDevInterpolater = new InterpolatingDoubleTreeMap();
+
+        static {
+            if (kUseInterpolatedVisionStdDevValues) {
+                for (double[] pair : kMeasuredDistanceToXYStdDevValues) {
+                    kVisionXYStdDevInterpolater.put(pair[0], pair[1]);
+                }
+
+                for (double[] pair : kMeasuredDistanceToAngleStdDevValues) {
+                    kVisionThetaStdDevInterpolater.put(pair[0], pair[1]);
+                }
+            }
+        }
+
+        public static final double kAmbiguityThreshold = 0.15;
         public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
         // TODO: Structure CubVision constants
         public static final int cameraResolutionWidth = 1280;
@@ -30,7 +69,7 @@ public final class Constants {
         public static final String kFrontLeftCameraName = "CubVisionFL";
         public static final Transform3d kRobotToFrontLeftCamPose =
                 new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
-        public static final int kFrontLeftCameraID = 1;
+        public static final int kFrontLeftCameraID = 0;
 
         public static final String kFrontRightCameraName = "CubVisionFR";
         public static final Transform3d kRobotToFrontRightCamPose =

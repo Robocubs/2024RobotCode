@@ -42,6 +42,9 @@ public interface AprilTagCameraIO {
                 table.put(targetNamespace + "FiducialID", target.getFiducialId());
                 table.put(targetNamespace + "PoseAmbiguity", target.getPoseAmbiguity());
                 table.put(targetNamespace + "Pose", target.getBestCameraToTarget());
+                table.put(
+                        targetNamespace + "YawRadians",
+                        target.getBestCameraToTarget().getRotation().getZ());
                 table.put(targetNamespace + "AltPose", target.getBestCameraToTarget());
 
                 var minAreaRectCorners = target.getMinAreaRectCorners().stream()

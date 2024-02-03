@@ -2,6 +2,7 @@ package com.team1701.robot.subsystems.vision;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,12 +15,14 @@ import com.team1701.robot.Robot;
 import com.team1701.robot.states.RobotState;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Vision extends SubsystemBase {
     private final RobotState mRobotState;
@@ -97,10 +100,43 @@ public class Vision extends SubsystemBase {
             mVisionSim = Optional.of(visionSim);
         }
 
-        mCameras.forEach(camera -> {
-            camera.addEstimatedPoseConsumer(estimation ->
-                    mRobotState.addVisionMeasurement(estimation.estimatedPose.toPose2d(), estimation.timestampSeconds));
-        });
+        Consumer<? super AprilTagCamera> addMainEstimatedPoseConsumer;
+        if (Constants.Vision.kUseInterpolatedVisionStdDevValues) {
+            addMainEstimatedPoseConsumer = camera -> {
+                camera.addEstimatedPoseConsumer(estimation -> {
+                    double avgDistanceToTarget = 0.0;
+
+                    for (PhotonTrackedTarget target : estimation.targetsUsed) {
+                        // TODO: can I always use the bestCamToTarget here?
+                        avgDistanceToTarget +=
+                                target.getBestCameraToTarget().getTranslation().getNorm();
+                    }
+                    avgDistanceToTarget /= estimation.targetsUsed.size();
+
+                    double interpolatedXYStdDeviation =
+                            Constants.Vision.kVisionXYStdDevInterpolater.get(avgDistanceToTarget);
+                    double interpolatedThetaStdDeviation =
+                            Constants.Vision.kVisionThetaStdDevInterpolater.get(avgDistanceToTarget);
+
+                    mRobotState.addVisionMeasurement(
+                            estimation.estimatedPose.toPose2d(),
+                            estimation.timestampSeconds,
+                            VecBuilder.fill(
+                                    interpolatedXYStdDeviation,
+                                    interpolatedXYStdDeviation,
+                                    interpolatedThetaStdDeviation));
+                });
+            };
+        } else {
+            addMainEstimatedPoseConsumer = camera -> {
+                camera.addEstimatedPoseConsumer(estimation -> mRobotState.addVisionMeasurement(
+                        estimation.estimatedPose.toPose2d(), estimation.timestampSeconds));
+            };
+        }
+
+        mCameras.forEach(addMainEstimatedPoseConsumer);
+        mCameras.forEach(camera ->
+                camera.addTargetFilter(target -> target.getPoseAmbiguity() < Constants.Vision.kAmbiguityThreshold));
     }
 
     @Override

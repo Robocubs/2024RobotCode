@@ -26,8 +26,6 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public class CubVisionCamera {
-    private static final double kAmbiguityThreshold = 0.15;
-
     private final CubVisionCameraIO mCameraIO;
     private final CubVisionCameraInputs mCubVisionCamInputs;
 
@@ -166,13 +164,13 @@ public class CubVisionCamera {
                             new Rotation3d(new Quaternion(values[14], values[15], values[16], values[17])));
 
                     // Select pose using projection errors
-                    if (error0 < error1 * kAmbiguityThreshold) {
+                    if (error0 < error1 * Constants.Vision.kAmbiguityThreshold) {
                         estimatedRobotPoses.add(new EstimatedRobotPose(
                                 cameraPose0.transformBy(mCamToRobotPose),
                                 timestamp,
                                 Collections.emptyList(),
                                 PoseStrategy.LOWEST_AMBIGUITY));
-                    } else if (error1 < error0 * kAmbiguityThreshold) {
+                    } else if (error1 < error0 * Constants.Vision.kAmbiguityThreshold) {
                         estimatedRobotPoses.add(new EstimatedRobotPose(
                                 cameraPose1.transformBy(mCamToRobotPose),
                                 timestamp,
