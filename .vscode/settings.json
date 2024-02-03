@@ -54,13 +54,20 @@
     }
   },
   "eslint.rules.customizations": [
-    { "rule": "*", "severity": "warn" },
-    { "rule": "prettier/prettier", "severity": "off" }
+    {
+      "rule": "*",
+      "severity": "warn"
+    },
+    {
+      "rule": "prettier/prettier",
+      "severity": "off"
+    }
   ],
   "eslint.validate": ["javascript", "typescript", "svelte"],
   "cSpell.words": [
     "Brushless",
     "Deadband",
+    "digitalinputs",
     "dtheta",
     "Holonomic",
     "Odometry",
@@ -70,6 +77,7 @@
     "Setpoints",
     "teleop",
     "Uncomitted",
+    "wpilibj",
     "WPILOG"
   ]
 }

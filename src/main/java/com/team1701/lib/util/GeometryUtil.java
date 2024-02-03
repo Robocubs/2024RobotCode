@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Twist2d;
 
@@ -31,5 +32,16 @@ public final class GeometryUtil {
     public static boolean isNear(Rotation2d expected, Rotation2d actual, Rotation2d tolerance) {
         var difference = MathUtil.angleModulus(expected.minus(actual).getRadians());
         return MathUtil.isNear(difference, 0.0, tolerance.getRadians());
+    }
+
+    public static boolean isNear(Translation2d expected, Translation2d actual, double tolerance) {
+        var difference = expected.minus(actual).getNorm();
+        return MathUtil.isNear(difference, 0.0, tolerance);
+    }
+
+    public static boolean isNear(
+            Pose2d expected, Pose2d actual, double translationTolerance, Rotation2d rotationTolerance) {
+        return isNear(expected.getTranslation(), actual.getTranslation(), translationTolerance)
+                && isNear(expected.getRotation(), actual.getRotation(), rotationTolerance);
     }
 }

@@ -11,21 +11,28 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
+import com.team1701.lib.drivers.digitalinputs.DigitalIO;
+import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
+import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
 import com.team1701.lib.drivers.gyros.GyroIO;
 import com.team1701.lib.drivers.gyros.GyroIOPigeon2;
 import com.team1701.lib.drivers.gyros.GyroIOSim;
 import com.team1701.lib.drivers.motors.MotorIO;
+import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
+import com.team1701.robot.commands.DriveCommands;
+import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
-import com.team1701.robot.subsystems.drive.DriveMotorFactory;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
+import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
-import com.team1701.robot.subsystems.shooter.ShooterMotorFactory;
+import com.team1701.robot.util.SparkFlexMotorFactory;
+import com.team1701.robot.util.SparkFlexMotorFactory.ShooterMotorUsage;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -40,8 +47,10 @@ import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 public class RobotContainer {
     private final RobotState mRobotState = new RobotState();
-    public final Drive mDrive;
-    public final Shooter mShooter;
+    private final Drive mDrive;
+    private final Shooter mShooter;
+    private final Indexer mIndexer;
+
     // public final Vision mVision;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
@@ -51,6 +60,7 @@ public class RobotContainer {
         Optional<Drive> drive = Optional.empty();
         // Optional<Vision> vision = Optional.empty();
         Optional<Shooter> shooter = Optional.empty();
+        Optional<Indexer> indexer = Optional.empty();
 
         if (Configuration.getMode() != Mode.REPLAY) {
             switch (Configuration.getRobot()) {
@@ -59,27 +69,37 @@ public class RobotContainer {
                             new GyroIOPigeon2(10),
                             new SwerveModuleIO[] {
                                 new SwerveModuleIO(
-                                        DriveMotorFactory.createDriveMotorIOSparkMax(10),
-                                        DriveMotorFactory.createSteerMotorIOSparkMax(11),
+                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(10),
+                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(11),
                                         new EncoderIOAnalog(0)),
                                 new SwerveModuleIO(
-                                        DriveMotorFactory.createDriveMotorIOSparkMax(12),
-                                        DriveMotorFactory.createSteerMotorIOSparkMax(13),
+                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(12),
+                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(13),
                                         new EncoderIOAnalog(1)),
                                 new SwerveModuleIO(
-                                        DriveMotorFactory.createDriveMotorIOSparkMax(16),
-                                        DriveMotorFactory.createSteerMotorIOSparkMax(17),
+                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(16),
+                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(17),
                                         new EncoderIOAnalog(3)),
                                 new SwerveModuleIO(
-                                        DriveMotorFactory.createDriveMotorIOSparkMax(14),
-                                        DriveMotorFactory.createSteerMotorIOSparkMax(15),
+                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(14),
+                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(15),
                                         new EncoderIOAnalog(2)),
                             },
                             mRobotState));
 
-                    // TODO: update ID
+                    // TODO: update IDs
                     shooter = Optional.of(new Shooter(
-                            ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterDeviceId)));
+                            SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
+                            SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
+                            SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
+                            new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
+                    indexer = Optional.of(new Indexer(
+                            SparkFlexMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
+                            new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
+                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
                     break;
                 case SIMULATION_BOT:
                     var gyroIO = new GyroIOSim(mRobotState::getHeading);
@@ -93,7 +113,18 @@ public class RobotContainer {
                             () -> simDrive.getVelocity().omegaRadiansPerSecond, Constants.kLoopPeriodSeconds);
 
                     drive = Optional.of(simDrive);
-                    shooter = Optional.of(new Shooter(Shooter.createSim(DCMotor.getNeoVortex(1))));
+
+                    var rotationMotor = Shooter.createRotationMotorSim(DCMotor.getNeoVortex(1));
+                    shooter = Optional.of(new Shooter(
+                            Shooter.createRollerMotorSim(DCMotor.getNeoVortex(1)),
+                            Shooter.createRollerMotorSim(DCMotor.getNeoVortex(1)),
+                            rotationMotor,
+                            Shooter.createEncoderSim(rotationMotor)));
+
+                    indexer = Optional.of(new Indexer(
+                            new MotorIOSim(DCMotor.getNeoVortex(1), 1, 0.001, Constants.kLoopPeriodSeconds),
+                            new DigitalIOSim(() -> false),
+                            new DigitalIOSim(() -> false)));
                     break;
                 default:
                     break;
@@ -120,7 +151,9 @@ public class RobotContainer {
         new AprilTagCameraIO() {})); */
 
         this.mShooter = shooter.orElseGet(
-                () -> new Shooter(ShooterMotorFactory.createDriveMotorIOSparkFlex(Constants.Shooter.kShooterDeviceId)));
+                () -> new Shooter(new MotorIO() {}, new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}));
+
+        this.mIndexer = indexer.orElseGet(() -> new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
         setupControllerBindings();
         setupAutonomous();
@@ -143,6 +176,10 @@ public class RobotContainer {
                 () -> mDriverController.rightTrigger().getAsBoolean()
                         ? Constants.Drive.kSlowKinematicLimits
                         : Constants.Drive.kFastKinematicLimits));
+
+        // TODO: update should load when intake is completed
+        mIndexer.setDefaultCommand(new IndexCommand(mIndexer, () -> true));
+
         mDriverController
                 .x()
                 .onTrue(runOnce(() -> mDrive.zeroGyroscope(
@@ -150,8 +187,11 @@ public class RobotContainer {
                                         ? GeometryUtil.kRotationIdentity
                                         : GeometryUtil.kRotationPi))
                         .withName("ZeroGyroscopeToHeading"));
+        mDriverController
+                .rightBumper()
+                .whileTrue(
+                        DriveCommands.rotateToSpeaker(mDrive, mRobotState, Constants.Drive.kFastKinematicLimits, true));
         mDriverController.leftTrigger().whileTrue(swerveLock(mDrive));
-        TriggeredAlert.info("Driver right bumper pressed", mDriverController.rightBumper());
 
         DriverStation.silenceJoystickConnectionWarning(true);
     }
@@ -170,7 +210,7 @@ public class RobotContainer {
         PathPlannerLogging.setLogActivePathCallback(
                 poses -> Logger.recordOutput("PathPlanner/Path", poses.toArray(Pose2d[]::new)));
 
-        var commands = new AutonomousCommands(mRobotState, mDrive);
+        var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         autonomousModeChooser.addDefaultOption("Demo", commands.demo());
         autonomousModeChooser.addOption("Four Piece", commands.fourPiece());
         autonomousModeChooser.addOption("Four Piece Planner", new PathPlannerAuto("FourPiece"));
@@ -184,5 +224,9 @@ public class RobotContainer {
 
     public Optional<Command> getAutonomousCommand() {
         return Optional.ofNullable(autonomousModeChooser.get());
+    }
+
+    public RobotState getRobotState() {
+        return mRobotState;
     }
 }
