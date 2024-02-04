@@ -210,10 +210,37 @@ public class RobotContainer {
         PathPlannerLogging.setLogActivePathCallback(
                 poses -> Logger.recordOutput("PathPlanner/Path", poses.toArray(Pose2d[]::new)));
 
+        // TODO: Create wrapper class for autonomous chooser
+        // TODO: Also update on change to team color
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
-        autonomousModeChooser.addDefaultOption("Demo", commands.demo());
-        autonomousModeChooser.addOption("Four Piece", commands.fourPiece());
+        var demoCommand = commands.demo();
+        var fourPieceCommand = commands.fourPiece();
+
+        autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
+        autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
         autonomousModeChooser.addOption("Four Piece Planner", new PathPlannerAuto("FourPiece"));
+
+        autonomousModeChooser.getSendableChooser().onChange(name -> {
+            Pose2d[] path;
+            switch (name) {
+                case "Demo":
+                    path = demoCommand.path();
+                    break;
+                case "Four Piece":
+                    path = fourPieceCommand.path();
+                    break;
+                default:
+                    path = new Pose2d[] {};
+                    break;
+            }
+
+            if (Configuration.isRedAlliance()) {
+                path = GeometryUtil.flipX(path, FieldConstants.kFieldLongLengthMeters);
+            }
+
+            // TODO: Also export as Translation2d[]
+            Logger.recordOutput("Autonomous/PathPose2d", path);
+        });
     }
 
     private void setupStateTriggers() {

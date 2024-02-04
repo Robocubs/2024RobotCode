@@ -22,7 +22,16 @@ public final class GeometryUtil {
     public static final Rotation3d kRotation3dIdentity = new Rotation3d();
 
     public static Rotation2d flipX(Rotation2d rotation) {
-        return rotation.getRadians() < 0 ? kRotationMinusPi.minus(rotation) : kRotationPi.minus(rotation);
+        return kRotationPi.minus(rotation);
+    }
+
+    public static Pose2d flipX(Pose2d pose, double fieldLength) {
+        return new Pose2d(fieldLength - pose.getX(), pose.getY(), flipX(pose.getRotation()));
+    }
+
+    public static Pose2d[] flipX(Pose2d[] poses, double fieldLength) {
+        // TODO: Flip poses
+        return poses;
     }
 
     public static Rotation2d angleModulus(Rotation2d rotation) {
