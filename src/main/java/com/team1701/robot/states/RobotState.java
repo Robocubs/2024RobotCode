@@ -8,6 +8,8 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -15,6 +17,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -27,7 +31,15 @@ public class RobotState {
             .limit(Constants.Drive.kNumModules)
             .toArray(SwerveModulePosition[]::new);
     private SwerveDrivePoseEstimator mPoseEstimator = new SwerveDrivePoseEstimator(
-            Constants.Drive.kKinematics, mGyroAngle, mModulePositions, GeometryUtil.kPoseIdentity);
+            Constants.Drive.kKinematics,
+            mGyroAngle,
+            mModulePositions,
+            GeometryUtil.kPoseIdentity,
+            // TODO: Collect values for standard state deviation
+            // Standard state deviation defaults to 6328's
+            // Vision is the default we've been using anyways.
+            VecBuilder.fill(0.005, 0.005, 0.0005),
+            VecBuilder.fill(0.9, 0.9, 0.9));
     private List<NoteState> mDetectedNotes = new ArrayList<>();
 
     public void periodic() {
@@ -68,6 +80,11 @@ public class RobotState {
 
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
         mPoseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
+    }
+
+    public void addVisionMeasurement(
+            Pose2d visionRobotPoseMeters, double timestampSeconds, Matrix<N3, N1> visionMeasurementStdDevs) {
+        mPoseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
     }
 
     public void resetPose(Pose2d pose) {

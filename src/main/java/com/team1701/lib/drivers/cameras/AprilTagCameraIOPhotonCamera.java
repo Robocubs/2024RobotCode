@@ -14,7 +14,7 @@ public class AprilTagCameraIOPhotonCamera implements AprilTagCameraIO {
     }
 
     @Override
-    public void updateInputs(PhotonCameraInputs inputs) {
+    public void updateInputs(AprilTagInputs inputs) {
         inputs.isConnected = mCamera.isConnected();
         inputs.pipelineResult = mCamera.getLatestResult();
     }
