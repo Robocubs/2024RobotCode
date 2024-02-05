@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import com.team1701.lib.drivers.gyros.GyroIO;
 import com.team1701.lib.drivers.gyros.GyroInputsAutoLogged;
+import com.team1701.lib.estimation.PoseEstimator1.DriveMeasurement;
 import com.team1701.lib.swerve.SwerveSetpoint;
 import com.team1701.lib.swerve.SwerveSetpointGenerator;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
@@ -34,7 +35,7 @@ public class Drive extends SubsystemBase {
     private final SwerveModule[] mModules;
     private final SwerveSetpointGenerator mSetpointGenerator = new SwerveSetpointGenerator(Constants.Drive.kKinematics);
     private final SignalSamplingThread mOdometryThread =
-            new SignalSamplingThread("OdometryThread", 1 / Constants.Drive.kOdometryFrequency);
+            new SignalSamplingThread("OdometryThread", Constants.Drive.kOdometryFrequency);
 
     private KinematicLimits mKinematicLimits = Constants.Drive.kFastKinematicLimits;
     private ChassisSpeeds mDesiredChassisSpeeds = new ChassisSpeeds();
@@ -145,11 +146,11 @@ public class Drive extends SubsystemBase {
                 modulePositions[j] = modulePositionSamples[j][i];
             }
 
-            mRobotState.updateWithTime(sampleTime, yawSamples[i], modulePositions);
+            mRobotState.addDriveMeasurement(new DriveMeasurement(sampleTime, yawSamples[i], modulePositions));
             sampleTime += sampleDt;
         }
 
-        mRobotState.update(mGyroInputs.yaw, mMeasuredModulePositions);
+        mRobotState.addDriveMeasurement(new DriveMeasurement(timestamp, mGyroInputs.yaw, mMeasuredModulePositions));
 
         mPreviousOdometryTimestamp = timestamp;
     }
@@ -278,7 +279,9 @@ public class Drive extends SubsystemBase {
         mMeasuredModulePositions =
                 Stream.of(mModules).map(SwerveModule::getPosition).toArray(SwerveModulePosition[]::new);
 
-        mRobotState.resetPose(mGyroInputs.yaw, mMeasuredModulePositions, mRobotState.getPose2d());
+        mRobotState.addDriveMeasurement(
+                new DriveMeasurement(Timer.getFPGATimestamp(), mGyroInputs.yaw, mMeasuredModulePositions));
+        mRobotState.resetPose(mRobotState.getPose2d());
     }
 
     public void stop() {

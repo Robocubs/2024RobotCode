@@ -1,8 +1,8 @@
 package com.team1701.robot.subsystems.vision;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,24 +10,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.AprilTagCamera;
 import com.team1701.lib.drivers.cameras.AprilTagCameraIO;
+import com.team1701.lib.estimation.PoseEstimator1;
 import com.team1701.robot.Constants;
 import com.team1701.robot.Robot;
 import com.team1701.robot.states.RobotState;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Vision extends SubsystemBase {
+    private static final Vector<N3> kDefaultStdDevs = VecBuilder.fill(0.05, 0.05, 0.05);
+
     private final RobotState mRobotState;
     private AprilTagFieldLayout mAprilTagFieldLayout = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
-    private final ArrayList<AprilTagCamera> mCameras = new ArrayList<AprilTagCamera>();
+    private final List<AprilTagCamera> mCameras = new ArrayList<>();
+    private final List<EstimatedRobotPose> mEstimatedRobotPoses = new ArrayList<>();
     private Optional<VisionSystemSim> mVisionSim = Optional.empty();
 
     public Vision(
@@ -90,20 +97,33 @@ public class Vision extends SubsystemBase {
 
             var cameraProperties = new SimCameraProperties();
             cameraProperties.setCalibration(960, 720, Rotation2d.fromDegrees(90));
-            cameraProperties.setCalibError(0.35, 0.10);
-            cameraProperties.setFPS(15);
-            cameraProperties.setAvgLatencyMs(50);
-            cameraProperties.setLatencyStdDevMs(15);
+            cameraProperties.setCalibError(0.035, 0.010);
+            cameraProperties.setFPS(70);
+            cameraProperties.setAvgLatencyMs(10);
+            cameraProperties.setLatencyStdDevMs(5);
 
             mCameras.forEach(camera -> camera.addToVisionSim(visionSim, cameraProperties));
 
             mVisionSim = Optional.of(visionSim);
         }
 
-        Consumer<? super AprilTagCamera> addMainEstimatedPoseConsumer;
-        if (Constants.Vision.kUseInterpolatedVisionStdDevValues) {
-            addMainEstimatedPoseConsumer = camera -> {
-                camera.addEstimatedPoseConsumer(estimation -> {
+        mCameras.forEach(camera -> {
+            camera.addEstimatedPoseConsumer(mEstimatedRobotPoses::add);
+            camera.addTargetFilter(target -> target.getPoseAmbiguity() < Constants.Vision.kAmbiguityThreshold);
+        });
+    }
+
+    @Override
+    public void periodic() {
+        mCameras.forEach(AprilTagCamera::periodic);
+
+        mRobotState.addVisionMeasurements(mEstimatedRobotPoses.stream()
+                .map(estimation -> {
+                    if (!Constants.Vision.kUseInterpolatedVisionStdDevValues) {
+                        return new PoseEstimator1.VisionMeasurement(
+                                estimation.timestampSeconds, estimation.estimatedPose.toPose2d(), kDefaultStdDevs);
+                    }
+
                     double avgDistanceToTarget = 0.0;
 
                     for (PhotonTrackedTarget target : estimation.targetsUsed) {
@@ -118,30 +138,17 @@ public class Vision extends SubsystemBase {
                     double interpolatedThetaStdDeviation =
                             Constants.Vision.kVisionThetaStdDevInterpolater.get(avgDistanceToTarget);
 
-                    mRobotState.addVisionMeasurement(
-                            estimation.estimatedPose.toPose2d(),
+                    return new PoseEstimator1.VisionMeasurement(
                             estimation.timestampSeconds,
+                            estimation.estimatedPose.toPose2d(),
                             VecBuilder.fill(
                                     interpolatedXYStdDeviation,
                                     interpolatedXYStdDeviation,
                                     interpolatedThetaStdDeviation));
-                });
-            };
-        } else {
-            addMainEstimatedPoseConsumer = camera -> {
-                camera.addEstimatedPoseConsumer(estimation -> mRobotState.addVisionMeasurement(
-                        estimation.estimatedPose.toPose2d(), estimation.timestampSeconds));
-            };
-        }
+                })
+                .toArray(PoseEstimator1.VisionMeasurement[]::new));
 
-        mCameras.forEach(addMainEstimatedPoseConsumer);
-        mCameras.forEach(camera ->
-                camera.addTargetFilter(target -> target.getPoseAmbiguity() < Constants.Vision.kAmbiguityThreshold));
-    }
-
-    @Override
-    public void periodic() {
-        mCameras.forEach(AprilTagCamera::periodic);
+        mEstimatedRobotPoses.clear();
     }
 
     @Override

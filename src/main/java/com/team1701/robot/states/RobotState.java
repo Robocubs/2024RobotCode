@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.team1701.lib.estimation.PoseEstimator1;
+import com.team1701.lib.estimation.PoseEstimator1.DriveMeasurement;
+import com.team1701.lib.estimation.PoseEstimator2;
+import com.team1701.lib.estimation.PoseEstimator3;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -16,31 +19,39 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
     private static final double kDetectedNoteTimeout = 1.0;
 
-    private Rotation2d mGyroAngle = GeometryUtil.kRotationIdentity;
-    private SwerveModulePosition[] mModulePositions = Stream.generate(SwerveModulePosition::new)
-            .limit(Constants.Drive.kNumModules)
-            .toArray(SwerveModulePosition[]::new);
-    private SwerveDrivePoseEstimator mPoseEstimator = new SwerveDrivePoseEstimator(
+    private Rotation2d mLastGyroAngle = GeometryUtil.kRotationIdentity;
+    private SwerveDriveWheelPositions mLastSwerveModulePositions =
+            new SwerveDriveWheelPositions(Stream.generate(SwerveModulePosition::new)
+                    .limit(Constants.Drive.kNumModules)
+                    .toArray(SwerveModulePosition[]::new));
+
+    private final PoseEstimator1 mPoseEstimator1 =
+            new PoseEstimator1(Constants.Drive.kKinematics, VecBuilder.fill(0.005, 0.005, 0.0005));
+    private final PoseEstimator2 mPoseEstimator2 = new PoseEstimator2(VecBuilder.fill(0.005, 0.005, 0.0005));
+    private final PoseEstimator3 mPoseEstimator3 = new PoseEstimator3(VecBuilder.fill(0.005, 0.005, 0.0005));
+    private final SwerveDrivePoseEstimator mPoseEstimator = new SwerveDrivePoseEstimator(
             Constants.Drive.kKinematics,
-            mGyroAngle,
-            mModulePositions,
+            mLastGyroAngle,
+            mLastSwerveModulePositions.positions,
             GeometryUtil.kPoseIdentity,
             // TODO: Collect values for standard state deviation
             // Standard state deviation defaults to 6328's
             // Vision is the default we've been using anyways.
             VecBuilder.fill(0.005, 0.005, 0.0005),
             VecBuilder.fill(0.9, 0.9, 0.9));
-    private List<NoteState> mDetectedNotes = new ArrayList<>();
+
+    private final List<NoteState> mDetectedNotes = new ArrayList<>();
 
     public void periodic() {
         var timeout = Timer.getFPGATimestamp() - kDetectedNoteTimeout;
@@ -54,47 +65,117 @@ public class RobotState {
 
     @AutoLogOutput
     public Pose2d getPose2d() {
-        return mPoseEstimator.getEstimatedPosition();
+        return mPoseEstimator1.getEstimatedPose();
     }
 
     @AutoLogOutput
     public Pose3d getPose3d() {
-        return new Pose3d(mPoseEstimator.getEstimatedPosition());
+        return new Pose3d(mPoseEstimator1.getEstimatedPose());
     }
 
     public Rotation2d getHeading() {
         return getPose2d().getRotation();
     }
 
-    public void update(Rotation2d gyroAngle, SwerveModulePosition[] modulePositions) {
-        mGyroAngle = gyroAngle;
-        mModulePositions = modulePositions;
-        mPoseEstimator.update(gyroAngle, modulePositions);
+    public void addDriveMeasurement(DriveMeasurement... driveMeasurements) {
+        var driveMeasurements2 = new PoseEstimator2.DriveMeasurement[driveMeasurements.length];
+        var driveMeasurements3 = new PoseEstimator3.DriveMeasurement[driveMeasurements.length];
+        for (int i = 0; i < driveMeasurements.length; i++) {
+            var measurement = driveMeasurements[i];
+            var twist =
+                    Constants.Drive.kKinematics.toTwist2d(mLastSwerveModulePositions, measurement.modulePositions());
+            twist = new Twist2d(
+                    twist.dx,
+                    twist.dy,
+                    measurement.gyroAngle().minus(mLastGyroAngle).getRadians());
+
+            driveMeasurements2[i] = new PoseEstimator2.DriveMeasurement(measurement.timestampSeconds(), twist);
+            driveMeasurements3[i] = new PoseEstimator3.DriveMeasurement(measurement.timestampSeconds(), twist);
+
+            mLastGyroAngle = measurement.gyroAngle();
+            mLastSwerveModulePositions = measurement.modulePositions();
+        }
+
+        var start = Logger.getRealTimestamp();
+        for (var driveMeasurement : driveMeasurements) {
+            mPoseEstimator.updateWithTime(
+                    driveMeasurement.timestampSeconds(),
+                    driveMeasurement.gyroAngle(),
+                    driveMeasurement.modulePositions().positions);
+        }
+        var stop = Logger.getRealTimestamp();
+
+        Logger.recordOutput("PoseEstimatorTuning/0/Time", stop - start);
+        Logger.recordOutput("PoseEstimatorTuning/0/Pose", mPoseEstimator.getEstimatedPosition());
+
+        start = Logger.getRealTimestamp();
+        for (var driveMeasurement : driveMeasurements) {
+            mPoseEstimator1.addDriveMeasurement(driveMeasurement);
+        }
+        stop = Logger.getRealTimestamp();
+
+        Logger.recordOutput("PoseEstimatorTuning/1/Time", stop - start);
+        Logger.recordOutput("PoseEstimatorTuning/1/Pose", mPoseEstimator1.getEstimatedPose());
+
+        start = Logger.getRealTimestamp();
+        mPoseEstimator2.addDriveMeasurements(driveMeasurements2);
+        stop = Logger.getRealTimestamp();
+
+        Logger.recordOutput("PoseEstimatorTuning/2/Time", stop - start);
+        Logger.recordOutput("PoseEstimatorTuning/2/Pose", mPoseEstimator2.getEstimatedPose());
+
+        start = Logger.getRealTimestamp();
+        mPoseEstimator3.addDriveMeasurements(driveMeasurements3);
+        stop = Logger.getRealTimestamp();
+
+        Logger.recordOutput("PoseEstimatorTuning/3/Time", stop - start);
+        Logger.recordOutput("PoseEstimatorTuning/3/Pose", mPoseEstimator3.getEstimatedPose());
     }
 
-    public void updateWithTime(double timeSeconds, Rotation2d gyroAngle, SwerveModulePosition[] modulePositions) {
-        mGyroAngle = gyroAngle;
-        mModulePositions = modulePositions;
-        mPoseEstimator.updateWithTime(timeSeconds, gyroAngle, modulePositions);
-    }
+    public void addVisionMeasurements(PoseEstimator1.VisionMeasurement... visionMeasurements) {
+        mPoseEstimator1.addVisionMeasurements(visionMeasurements);
 
-    public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
-        mPoseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
-    }
+        var visionMeasurements2 = new PoseEstimator2.VisionMeasurement[visionMeasurements.length];
+        var visionMeasurements3 = new PoseEstimator3.VisionMeasurement[visionMeasurements.length];
+        for (int i = 0; i < visionMeasurements.length; i++) {
+            var measurement = visionMeasurements[i];
+            visionMeasurements2[i] = new PoseEstimator2.VisionMeasurement(
+                    measurement.timestampSeconds(), measurement.pose(), measurement.stdDevs());
+            visionMeasurements3[i] = new PoseEstimator3.VisionMeasurement(
+                    measurement.timestampSeconds(), measurement.pose(), measurement.stdDevs());
+        }
 
-    public void addVisionMeasurement(
-            Pose2d visionRobotPoseMeters, double timestampSeconds, Matrix<N3, N1> visionMeasurementStdDevs) {
-        mPoseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+        var start = Logger.getRealTimestamp();
+        for (var visionMeasurement : visionMeasurements) {
+            mPoseEstimator.addVisionMeasurement(visionMeasurement.pose(), visionMeasurement.timestampSeconds());
+        }
+        var stop = Logger.getRealTimestamp();
+
+        Logger.recordOutput("PoseEstimatorTuning/0/VisionTime", stop - start);
+
+        start = Logger.getRealTimestamp();
+        mPoseEstimator1.addVisionMeasurements(visionMeasurements);
+        stop = Logger.getRealTimestamp();
+
+        Logger.recordOutput("PoseEstimatorTuning/1/VisionTime", stop - start);
+
+        start = Logger.getRealTimestamp();
+        mPoseEstimator2.addVisionMeasurements(visionMeasurements2);
+        stop = Logger.getRealTimestamp();
+
+        Logger.recordOutput("PoseEstimatorTuning/2/VisionTime", stop - start);
+
+        start = Logger.getRealTimestamp();
+        mPoseEstimator3.addVisionMeasurements(visionMeasurements3);
+        stop = Logger.getRealTimestamp();
+
+        Logger.recordOutput("PoseEstimatorTuning/3/VisionTime", stop - start);
     }
 
     public void resetPose(Pose2d pose) {
-        resetPose(mGyroAngle, mModulePositions, pose);
-    }
-
-    public void resetPose(Rotation2d gyroAngle, SwerveModulePosition[] modulePositions, Pose2d pose) {
-        mGyroAngle = gyroAngle;
-        mModulePositions = modulePositions;
-        mPoseEstimator.resetPosition(gyroAngle, modulePositions, pose);
+        mPoseEstimator1.resetPose(pose);
+        mPoseEstimator2.resetPose(pose);
+        mPoseEstimator3.resetPose(pose);
     }
 
     @AutoLogOutput

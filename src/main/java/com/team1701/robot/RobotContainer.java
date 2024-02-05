@@ -13,6 +13,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.cameras.AprilTagCameraIO;
 import com.team1701.lib.drivers.cameras.AprilTagCameraIOCubVision;
+import com.team1701.lib.drivers.cameras.AprilTagCameraIOPhotonCamera;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
@@ -98,10 +99,22 @@ public class RobotContainer {
                             SparkFlexMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
                             new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
+
                     indexer = Optional.of(new Indexer(
                             SparkFlexMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
                             new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
                             new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
+
+                    vision = Optional.of(new Vision(
+                            mRobotState,
+                            new AprilTagCameraIOCubVision(
+                                    Constants.Vision.kFrontLeftCameraName, Constants.Vision.kFrontLeftCameraID),
+                            new AprilTagCameraIOCubVision(
+                                    Constants.Vision.kFrontRightCameraName, Constants.Vision.kFrontRightCameraID),
+                            new AprilTagCameraIOCubVision(
+                                    Constants.Vision.kBackLeftCameraName, Constants.Vision.kBackLeftCameraID),
+                            new AprilTagCameraIOCubVision(
+                                    Constants.Vision.kBackRightCameraName, Constants.Vision.kBackLeftCameraID)));
                     break;
                 case SIMULATION_BOT:
                     var gyroIO = new GyroIOSim(mRobotState::getHeading);
@@ -127,21 +140,17 @@ public class RobotContainer {
                             new MotorIOSim(DCMotor.getNeoVortex(1), 1, 0.001, Constants.kLoopPeriodSeconds),
                             new DigitalIOSim(() -> false),
                             new DigitalIOSim(() -> false)));
+
+                    vision = Optional.of(new Vision(
+                            mRobotState,
+                            new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontLeftCameraName),
+                            new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontRightCameraName),
+                            new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackLeftCameraName),
+                            new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackRightCameraName)));
                     break;
                 default:
                     break;
             }
-
-            vision = Optional.of(new Vision(
-                    mRobotState,
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kFrontLeftCameraName, Constants.Vision.kFrontLeftCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kFrontRightCameraName, Constants.Vision.kFrontRightCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kBackLeftCameraName, Constants.Vision.kBackLeftCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kBackRightCameraName, Constants.Vision.kBackLeftCameraID)));
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(

@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public class GyroIOSim implements GyroIO {
     private Supplier<Rotation2d> mYawSupplier;
     private boolean mYawSamplingEnabled;
+    private Rotation2d mYaw = GeometryUtil.kRotationIdentity;
+    private int mSamples = 0;
 
     public GyroIOSim() {
         mYawSupplier = () -> GeometryUtil.kRotationIdentity;
@@ -29,6 +31,18 @@ public class GyroIOSim implements GyroIO {
         if (mYawSamplingEnabled) {
             inputs.yawSamples = new Rotation2d[] {inputs.yaw};
         }
+
+        if (mYawSamplingEnabled) {
+            var samples = mSamples;
+            inputs.yawSamples = new Rotation2d[samples];
+            var lerp = inputs.yaw.minus(mYaw).div(samples + 1);
+            for (int i = 0; i < samples; i++) {
+                inputs.yawSamples[i] = mYaw.plus(lerp.times(i + 1));
+            }
+        }
+
+        mYaw = inputs.yaw;
+        mSamples = 0;
     }
 
     @Override
@@ -36,6 +50,11 @@ public class GyroIOSim implements GyroIO {
         if (mYawSamplingEnabled) {
             throw new IllegalStateException("Yaw sampling already enabled");
         }
+
+        samplingThread.addSignal(() -> {
+            mSamples++;
+            return 0.0; // We will interpolate in updateInputs
+        });
 
         mYawSamplingEnabled = true;
     }
