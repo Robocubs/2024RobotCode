@@ -1,17 +1,14 @@
 package com.team1701.robot.commands;
 
-import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class IntakeCommand extends Command {
     private Intake mIntake;
-    private Indexer mIndexer;
     private boolean mIntaking;
 
-    IntakeCommand(Intake intake, Indexer indexer) {
+    IntakeCommand(Intake intake) {
         mIntake = intake;
-        mIndexer = indexer;
     }
 
     @Override
