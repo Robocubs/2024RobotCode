@@ -5,7 +5,6 @@ import com.team1701.lib.drivers.digitalinputs.DigitalInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.robot.Constants;
-
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -13,11 +12,10 @@ import org.littletonrobotics.junction.Logger;
 public class Intake extends SubsystemBase {
     private final MotorIO mIntakeMotor;
     private final MotorInputsAutoLogged mIntakeMotorInputs = new MotorInputsAutoLogged();
-    private final IntakeInputsAutoLogged mIntakeInputs = new IntakeInputsAutoLogged();
-    
+
     private final DigitalInputsAutoLogged mIntakeEntranceSensorInputs = new DigitalInputsAutoLogged();
     private final DigitalInputsAutoLogged mIntakeExitSensorInputs = new DigitalInputsAutoLogged();
-    
+
     private final DigitalIO mIntakeEntranceSensor;
     private final DigitalIO mIntakeExitSensor;
 
@@ -67,9 +65,4 @@ public class Intake extends SubsystemBase {
     public void stop() {
         mIntakeMotor.setPercentOutput(0);
     }
-//TODO: Add Reject Contingency
-    public void execute() {
-        
-    }
-
 }

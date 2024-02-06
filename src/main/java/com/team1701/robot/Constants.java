@@ -240,10 +240,17 @@ public final class Constants {
         public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
         public static final LoggedTunableNumber kIndexerKd = new LoggedTunableNumber("Indexer/Motor/Kd");
+        public static double kIntakeReduction;
     }
-    
+
     public class Intake {
+        public static final double kIntakeReduction = 32;
+        public static final int kIntakeMotorId = 32;
+
         public static final double kIntakeSpeed = 0.5;
-        public static final double kOuttakeSpeed = -0.5;    
+        public static final double kOuttakeSpeed = -0.5;
+
+        public static final int kIntakeEntranceSensorId = 33;
+        public static final int kIntakeExitSensorId = 34;
     }
 }

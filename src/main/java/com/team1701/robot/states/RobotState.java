@@ -5,9 +5,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
+import com.team1701.robot.subsystems.indexer.Indexer;
+import com.team1701.robot.subsystems.intake.Intake;
+import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -22,6 +26,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 public class RobotState {
     private static final double kDetectedNoteTimeout = 1.0;
 
+    private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
+
     private Rotation2d mGyroAngle = GeometryUtil.kRotationIdentity;
     private SwerveModulePosition[] mModulePositions = Stream.generate(SwerveModulePosition::new)
             .limit(Constants.Drive.kNumModules)
@@ -29,6 +35,16 @@ public class RobotState {
     private SwerveDrivePoseEstimator mPoseEstimator = new SwerveDrivePoseEstimator(
             Constants.Drive.kKinematics, mGyroAngle, mModulePositions, GeometryUtil.kPoseIdentity);
     private List<NoteState> mDetectedNotes = new ArrayList<>();
+
+    private Shooter mShooter;
+    private Intake mIntake;
+    private Indexer mIndexer;
+
+    public RobotState(Shooter mShooter, Intake intake, Indexer indexer) {
+        mShooter = mShooter;
+        mIntake = intake;
+        mIndexer = indexer;
+    }
 
     public void periodic() {
         var timeout = Timer.getFPGATimestamp() - kDetectedNoteTimeout;
@@ -132,7 +148,7 @@ public class RobotState {
 
     @AutoLogOutput
     public boolean hasNote() {
-        // TODO: implement
-        return false;
+        var hasNote = mIntake.hasNote() || mIndexer.hasNote();
+        return mHasNote.update(hasNote, Timer.getFPGATimestamp());
     }
 }
