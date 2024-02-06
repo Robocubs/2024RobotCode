@@ -45,8 +45,12 @@ public class Indexer extends SubsystemBase {
         Logger.processInputs("Indexer/Motor", mIndexerMotorInputsAutoLogged);
     }
 
-    public boolean noteIsLoaded() {
+    public boolean hasNoteAtExit() {
         return mIndexerExitSensorInputs.blocked;
+    }
+
+    public boolean hasNoteAtEntrance() {
+        return mIndexerEntranceSensorInputs.blocked;
     }
 
     public boolean hasNote() {

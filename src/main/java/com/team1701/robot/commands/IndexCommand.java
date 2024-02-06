@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 public class IndexCommand extends Command {
     private final Indexer mIndexer;
     private final BooleanSupplier mShouldLoad;
+    private boolean mIndexing;
 
     public IndexCommand(Indexer indexer, BooleanSupplier shouldLoad) {
         mIndexer = indexer;
@@ -17,12 +18,12 @@ public class IndexCommand extends Command {
 
     @Override
     public void initialize() {
-        mIndexer.stop();
+        mIndexing = mIndexer.hasNoteAtEntrance() ? true : false;
     }
 
     @Override
     public void execute() {
-        if (mIndexer.noteIsLoaded() || !mShouldLoad.getAsBoolean()) {
+        if (mIndexer.hasNoteAtExit() || !mShouldLoad.getAsBoolean()) {
             mIndexer.stop();
         } else {
             mIndexer.setForwardLoad();
@@ -32,5 +33,11 @@ public class IndexCommand extends Command {
     @Override
     public void end(boolean interrupted) {
         mIndexer.stop();
+    }
+
+    @Override
+    public boolean isFinished() {
+        mIndexing = mIndexer.hasNoteAtExit() ? true : false;
+        return mIndexing;
     }
 }
