@@ -44,4 +44,8 @@ public final class GeometryUtil {
         return isNear(expected.getTranslation(), actual.getTranslation(), translationTolerance)
                 && isNear(expected.getRotation(), actual.getRotation(), rotationTolerance);
     }
+
+    public static Twist2d multiply(Twist2d twist, double scalar) {
+        return new Twist2d(twist.dx * scalar, twist.dy * scalar, twist.dtheta * scalar);
+    }
 }
