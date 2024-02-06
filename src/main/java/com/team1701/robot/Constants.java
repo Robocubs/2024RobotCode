@@ -241,9 +241,9 @@ public final class Constants {
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
         public static final LoggedTunableNumber kIndexerKd = new LoggedTunableNumber("Indexer/Motor/Kd");
     }
-    
+
     public class Intake {
         public static final double kIntakeSpeed = 0.5;
-        public static final double kOuttakeSpeed = -0.5;    
+        public static final double kOuttakeSpeed = -0.5;
     }
 }

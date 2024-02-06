@@ -16,6 +16,11 @@ public class IndexCommand extends Command {
     }
 
     @Override
+    public void initialize() {
+        mIndexer.stop();
+    }
+
+    @Override
     public void execute() {
         if (mIndexer.noteIsLoaded() || !mShouldLoad.getAsBoolean()) {
             mIndexer.stop();
