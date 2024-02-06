@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.util.GeometryUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -19,6 +20,7 @@ import edu.wpi.first.wpilibj.Timer;
 public class PoseEstimator3 {
     private static final double kHistorySeconds = 0.5;
 
+    private final Alert mVisionAlert = Alert.error("Vision measurements added before drive measurements.");
     private final Matrix<N3, N1> mQ = new Matrix<>(Nat.N3(), Nat.N1());
     private final NavigableMap<Double, PoseUpdate> mUpdates = new TreeMap<>();
 
@@ -108,6 +110,7 @@ public class PoseEstimator3 {
 
                 if (previousUpdate == null || nextUpdate == null) {
                     // Outside the range of existing data
+                    mVisionAlert.enable();
                     continue;
                 }
 

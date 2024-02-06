@@ -1,3 +1,10 @@
+// Copyright (c) 2023 FRC 6328
+// http://github.com/Mechanical-Advantage
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package com.team1701.lib.estimation;
 
 import java.util.ArrayList;
@@ -15,8 +22,9 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
 
+// (https://github.com/Mechanical-Advantage/RobotCode2023/blob/main/src/main/java/org/littletonrobotics/frc2023/util/PoseEstimator.java)
 public class PoseEstimator2 {
-    private static final double kHistorySeconds = 0.1;
+    private static final double kHistorySeconds = 0.3;
 
     private final Matrix<N3, N1> mQ = new Matrix<>(Nat.N3(), Nat.N1());
     private final NavigableMap<Double, PoseUpdate> mUpdates = new TreeMap<>();

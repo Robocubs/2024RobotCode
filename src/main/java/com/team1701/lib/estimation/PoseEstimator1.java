@@ -23,7 +23,7 @@ import edu.wpi.first.math.numbers.N3;
 public class PoseEstimator1 {
     private final ExtendedSwerveDriveKinematics mKinematics;
     private final Odometry<SwerveDriveWheelPositions> mOdometry;
-    private final Matrix<N3, N1> mKalmanQ = new Matrix<>(Nat.N3(), Nat.N1());
+    private final Matrix<N3, N1> mQ = new Matrix<>(Nat.N3(), Nat.N1());
 
     private static final double kBufferDuration = 0.5;
     private final TimeInterpolatableBuffer<InterpolationRecord> mPoseBuffer =
@@ -52,7 +52,7 @@ public class PoseEstimator1 {
                 GeometryUtil.kPoseIdentity);
 
         for (int i = 0; i < 3; ++i) {
-            mKalmanQ.set(i, 0, stateStdDevs.get(i, 0) * stateStdDevs.get(i, 0));
+            mQ.set(i, 0, stateStdDevs.get(i, 0) * stateStdDevs.get(i, 0));
         }
     }
 
@@ -115,19 +115,20 @@ public class PoseEstimator1 {
                     measurement.timestampSeconds,
                     new InterpolationRecord(getEstimatedPose(), sample.get().gyroAngle, sample.get().wheelPositions));
 
-            // Step 7: Replay odometry inputs to update the pose buffer and correct odometry.
+            // Step 7: Replay odometry inputs to update the pose buffer and correct odometry. If there is a next
+            // measurement, only calculate what is needed for it.
             var entries = mPoseBuffer
                     .getInternalBuffer()
                     .tailMap(measurement.timestampSeconds)
                     .entrySet();
-            var maxTimestamp =
+            var nextVisionTimestamp =
                     i + 1 < visionMeasurements.length ? visionMeasurements[i + 1].timestampSeconds() : Double.MAX_VALUE;
             for (var entry : entries) {
                 addDriveMeasurement(new DriveMeasurement(
                         entry.getKey(), entry.getValue().gyroAngle, entry.getValue().wheelPositions));
 
                 // Need to update one entry past next vision measurement to allow for interpolation
-                if (entry.getKey() > maxTimestamp) {
+                if (entry.getKey() > nextVisionTimestamp) {
                     break;
                 }
             }
@@ -144,13 +145,10 @@ public class PoseEstimator1 {
         var visionK = new Matrix<>(Nat.N3(), Nat.N3());
 
         for (int row = 0; row < 3; ++row) {
-            if (mKalmanQ.get(row, 0) == 0.0) {
+            if (mQ.get(row, 0) == 0.0) {
                 visionK.set(row, row, 0.0);
             } else {
-                visionK.set(
-                        row,
-                        row,
-                        mKalmanQ.get(row, 0) / (mKalmanQ.get(row, 0) + Math.sqrt(mKalmanQ.get(row, 0) * r[row])));
+                visionK.set(row, row, mQ.get(row, 0) / (mQ.get(row, 0) + Math.sqrt(mQ.get(row, 0) * r[row])));
             }
         }
 
