@@ -79,6 +79,10 @@ public class RobotContainer {
                             SparkMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
                             SparkMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
+                            SparkMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterUpperRollerMotorId, ShooterMotorUsage.ROLLER),
+                            SparkMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
                             new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
                     indexer = Optional.of(new Indexer(
@@ -115,6 +119,8 @@ public class RobotContainer {
                 case SIMULATION_BOT:
                     var rotationMotor = Shooter.createRotationMotorSim(DCMotor.getNeoVortex(1));
                     shooter = Optional.of(new Shooter(
+                            Shooter.createRollerMotorSim(DCMotor.getNeoVortex(1)),
+                            Shooter.createRollerMotorSim(DCMotor.getNeoVortex(1)),
                             Shooter.createRollerMotorSim(DCMotor.getNeoVortex(1)),
                             Shooter.createRollerMotorSim(DCMotor.getNeoVortex(1)),
                             rotationMotor,
@@ -162,8 +168,13 @@ public class RobotContainer {
         new AprilTagCameraIO() {},
         new AprilTagCameraIO() {})); */
 
-        this.mShooter = shooter.orElseGet(
-                () -> new Shooter(new MotorIO() {}, new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}));
+        this.mShooter = shooter.orElseGet(() -> new Shooter(
+                new MotorIO() {},
+                new MotorIO() {},
+                new MotorIO() {},
+                new MotorIO() {},
+                new MotorIO() {},
+                new EncoderIO() {}));
 
         this.mIndexer = indexer.orElseGet(() -> new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
