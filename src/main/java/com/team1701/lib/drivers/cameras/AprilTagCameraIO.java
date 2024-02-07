@@ -16,7 +16,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 public interface AprilTagCameraIO {
-    public class PhotonCameraInputs implements LoggableInputs {
+    public class AprilTagInputs implements LoggableInputs {
         public PhotonPipelineResult pipelineResult = new PhotonPipelineResult();
         public boolean isConnected;
 
@@ -42,6 +42,9 @@ public interface AprilTagCameraIO {
                 table.put(targetNamespace + "FiducialID", target.getFiducialId());
                 table.put(targetNamespace + "PoseAmbiguity", target.getPoseAmbiguity());
                 table.put(targetNamespace + "Pose", target.getBestCameraToTarget());
+                table.put(
+                        targetNamespace + "YawRadians",
+                        target.getBestCameraToTarget().getRotation().getZ());
                 table.put(targetNamespace + "AltPose", target.getBestCameraToTarget());
 
                 var minAreaRectCorners = target.getMinAreaRectCorners().stream()
@@ -132,7 +135,7 @@ public interface AprilTagCameraIO {
         }
     }
 
-    public default void updateInputs(PhotonCameraInputs inputs) {}
+    public default void updateInputs(AprilTagInputs inputs) {}
 
     public default void addToVisionSim(
             VisionSystemSim visionSim, SimCameraProperties cameraProperties, Transform3d robotToCamPose) {}

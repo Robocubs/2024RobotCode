@@ -13,6 +13,8 @@ import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -51,6 +53,9 @@ public class Shooter extends SubsystemBase {
         mLeftLowerShooterMotorIO = leftLowerMotor;
 
         mRotationShooterMotorIO = rotationMotor;
+
+        mLeftLowerShooterMotorIO.isInverted(true);
+        mLeftUpperShooterMotorIO.isInverted(true);
 
         mRightUpperShooterMotorIO.setBrakeMode(false);
         mRightLowerShooterMotorIO.setBrakeMode(false);
@@ -97,6 +102,11 @@ public class Shooter extends SubsystemBase {
         mLeftUpperShooterMotorIO.updateInputs(mLeftUpperShooterMotorInputs);
         mLeftLowerShooterMotorIO.updateInputs(mLeftLowerShooterMotorInputs);
 
+        var shooterMechanism = new Mechanism2d(15, 9.10);
+        var shooterRoot = shooterMechanism.getRoot("root", 1, 0);
+        var shooterLigament = shooterRoot.append(
+                new MechanismLigament2d("shooter", 12.5, getAngle().getDegrees()));
+
         mRotationShooterMotorIO.updateInputs(mRotationShooterMotorInputs);
 
         mAngleEncoderIO.updateInputs(mAngleEncoderInputs);
@@ -137,6 +147,8 @@ public class Shooter extends SubsystemBase {
                     .minus(Constants.Shooter.kShooterAngleEncoderOffset)
                     .minus(Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians)));
         }
+
+        Logger.recordOutput("Shooter/mech", shooterMechanism);
     }
 
     private void setRollerPID(double ff, double p, double i, double d) {
@@ -161,18 +173,18 @@ public class Shooter extends SubsystemBase {
         return new double[] {
             mRightUpperShooterMotorInputs.velocityRadiansPerSecond,
             mRightLowerShooterMotorInputs.velocityRadiansPerSecond,
-            -mLeftUpperShooterMotorInputs.velocityRadiansPerSecond,
-            -mLeftLowerShooterMotorInputs.velocityRadiansPerSecond
+            mLeftUpperShooterMotorInputs.velocityRadiansPerSecond,
+            mLeftLowerShooterMotorInputs.velocityRadiansPerSecond
         };
     }
 
     public void setRollerSpeed(double radiansPerSecond) {
         Logger.recordOutput("Shooter/Motors/Rollers/RightDemandRadiansPerSecond", radiansPerSecond);
-        Logger.recordOutput("Shooter/Motors/Rollers/LeftDemandRadiansPerSecond", -radiansPerSecond);
+        Logger.recordOutput("Shooter/Motors/Rollers/LeftDemandRadiansPerSecond", radiansPerSecond);
         mRightUpperShooterMotorIO.setVelocityControl(radiansPerSecond);
         mRightLowerShooterMotorIO.setVelocityControl(radiansPerSecond);
-        mLeftUpperShooterMotorIO.setVelocityControl(-radiansPerSecond);
-        mLeftLowerShooterMotorIO.setVelocityControl(-radiansPerSecond);
+        mLeftUpperShooterMotorIO.setVelocityControl(radiansPerSecond);
+        mLeftLowerShooterMotorIO.setVelocityControl(radiansPerSecond);
     }
 
     public void setRotationAngle(Rotation2d rotation) {
@@ -183,7 +195,10 @@ public class Shooter extends SubsystemBase {
         }
 
         var motorRotationDemand = rotation.minus(mRotationMotorOffset.get());
-        mRotationShooterMotorIO.setPositionControl(motorRotationDemand);
+        mRotationShooterMotorIO.setSmoothPositionControl(
+                motorRotationDemand,
+                Constants.Shooter.kMaxRotationVelocityRadiansPerSecond.get(),
+                Constants.Shooter.kMaxRotationAccelerationRadiansPerSecondSquared.get());
 
         Logger.recordOutput("Shooter/Motors/Rotation/Demand", motorRotationDemand);
     }

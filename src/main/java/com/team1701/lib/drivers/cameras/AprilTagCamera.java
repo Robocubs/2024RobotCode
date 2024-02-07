@@ -6,7 +6,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.team1701.lib.alerts.Alert;
-import com.team1701.lib.drivers.cameras.AprilTagCameraIO.PhotonCameraInputs;
+import com.team1701.lib.drivers.cameras.AprilTagCameraIO.AprilTagInputs;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -22,7 +22,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class AprilTagCamera {
     private final AprilTagCameraIO mCameraIO;
-    private final PhotonCameraInputs mCameraInputs;
+    private final AprilTagInputs mCameraInputs;
     private final String mLoggingPrefix;
     private final PhotonPoseEstimator mPoseEstimator;
     private final Transform3d mRobotToCamPose;
@@ -42,7 +42,7 @@ public class AprilTagCamera {
             Supplier<AprilTagFieldLayout> fieldLayoutSupplier,
             Supplier<Pose3d> robotPoseSupplier) {
         mCameraIO = cameraIO;
-        mCameraInputs = new PhotonCameraInputs();
+        mCameraInputs = new AprilTagInputs();
         mLoggingPrefix = "Camera/" + cameraName + "/";
         mPoseEstimator = new PhotonPoseEstimator(fieldLayoutSupplier.get(), poseStrategy, null, robotToCamPose);
         mPoseEstimator.setMultiTagFallbackStrategy(fallbackPoseStrategy);
@@ -69,6 +69,7 @@ public class AprilTagCamera {
             return;
         }
 
+        // TODO: Make field pub/sub
         mPoseEstimator.setFieldTags(mFieldLayoutSupplier.get());
         var estimatedRobotPose = mPoseEstimator.update(filteredPipelineResult);
         if (estimatedRobotPose.isEmpty()) {

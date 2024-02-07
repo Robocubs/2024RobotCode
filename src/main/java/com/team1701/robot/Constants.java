@@ -7,13 +7,90 @@ import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.LoggedTunableNumber;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public final class Constants {
     public static final double kLoopPeriodSeconds = 0.02;
 
     public static final class Robot {}
+
+    public static final class Vision {
+        /*
+         * The below system improves upon last season's reliance on the provided standard
+         * deviation values for vision in the WPI pose estimation library:
+         *
+         * In the lab, standard deviations for the XY direction and theta were collected at various distances and angles.
+         * We plug these *measured* distances and angles and their corresponding standard deviations into interpolation maps.
+         * So there is a key and value system similar to HashMaps.
+         * These maps will return these std. dev. values when the exact key (i.e. either distance (m) or angle (radians))
+         * is provided. If there is no such key, then it uses math to derive a value for the key using the nearest existing keys.
+         * Think about it like the "line of best fit" you found in math class.
+         *
+         * Remember:
+         *
+         * For a given distance from the camera to an AprilTag, what is a mostly-accurate std. dev. I can use?
+         * Keys are MEASURED distances or angles collected in the lab at KNOWN standard deviations.
+         * Values are standard deviations, either calculated or stored.
+         */
+        public static final boolean kUseInterpolatedVisionStdDevValues = false;
+
+        // TODO: Collect values
+        public static final double[][] kMeasuredDistanceToXYStdDevValues = {{}};
+        public static final double[][] kMeasuredDistanceToAngleStdDevValues = {{}};
+        public static InterpolatingDoubleTreeMap kVisionXYStdDevInterpolater = new InterpolatingDoubleTreeMap();
+        public static InterpolatingDoubleTreeMap kVisionThetaStdDevInterpolater = new InterpolatingDoubleTreeMap();
+
+        static {
+            if (kUseInterpolatedVisionStdDevValues) {
+                for (double[] pair : kMeasuredDistanceToXYStdDevValues) {
+                    kVisionXYStdDevInterpolater.put(pair[0], pair[1]);
+                }
+
+                for (double[] pair : kMeasuredDistanceToAngleStdDevValues) {
+                    kVisionThetaStdDevInterpolater.put(pair[0], pair[1]);
+                }
+            }
+        }
+
+        public static final double kAmbiguityThreshold = 0.15;
+        public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
+        // TODO: Structure CubVision constants
+        public static final int cameraResolutionWidth = 1280;
+        public static final int cameraResolutionHeight = 720;
+        public static final int cameraAutoExposure = 0;
+        public static final int cameraExposure = 0;
+        public static final int cameraGain = 0;
+
+        public static final String kFrontLeftCameraName = "CubVisionFL";
+        public static final Transform3d kRobotToFrontLeftCamPose =
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
+        public static final int kFrontLeftCameraID = 0;
+
+        public static final String kFrontRightCameraName = "CubVisionFR";
+        public static final Transform3d kRobotToFrontRightCamPose =
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
+        public static final int kFrontRightCameraID = 1;
+
+        public static final String kBackLeftCameraName = "CubVisionBL";
+        public static final Transform3d kRobotToBackLeftCamPose =
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
+        public static final int kBackLeftCameraID = 1;
+
+        public static final String kBackRightCameraName = "CubVisionBR";
+        public static final Transform3d kRobotToBackRightCamPose =
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
+        public static final int kBackRightCameraID = 1;
+
+        public static final double kMaxPoseAmbiguity = 0.03;
+        public static final PoseStrategy kPoseStrategy = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
+        public static final PoseStrategy kFallbackPoseStrategy = PoseStrategy.LOWEST_AMBIGUITY;
+    }
 
     public static final class Controls {
         public static final double kDriverDeadband = 0.09;
@@ -160,9 +237,11 @@ public final class Constants {
         // TODO: Update values
         public static final double kRollerReduction = 1.0;
         public static final double kAngleReduction = 1.0 / 105.0;
-        public static final int kShooterUpperRollerMotorId = 0;
-        public static final int kShooterLowerRollerMotorId = 1;
-        public static final int kShooterRotationMotorId = 2;
+        public static final int kShooterRightUpperRollerMotorId = 23;
+        public static final int kShooterRightLowerRollerMotorId = 25;
+        public static final int kShooterLeftLowerRollerMotorId = 24;
+        public static final int kShooterLeftUpperRollerMotorId = 22;
+        public static final int kShooterRotationMotorId = 26;
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(10);
         public static final double kShooterAxisOffset = Units.inchesToMeters(10); // + is toward front of bot
@@ -173,6 +252,11 @@ public final class Constants {
 
         public static final LoggedTunableNumber kRotationKff = new LoggedTunableNumber("Shooter/Motor/Rotation/Kff");
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
+        public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity");
+        public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration");
+
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
         public static final Rotation2d kShooterAngleEncoderOffset;
@@ -228,7 +312,7 @@ public final class Constants {
 
     public static final class Indexer {
         // TODO: Update values and set names
-        public static final int kIndexerMotorId = 0;
+        public static final int kIndexerMotorId = 21;
         public static final double kIndexerReduction = 1;
 
         public static final int kIndexerEntranceSensorId = 1;
@@ -245,7 +329,7 @@ public final class Constants {
 
     public class Intake {
         public static final double kIntakeReduction = 32;
-        public static final int kIntakeMotorId = 32;
+        public static final int kIntakeMotorId = 20;
 
         public static final double kIntakeSpeed = 0.5;
         public static final double kOuttakeSpeed = -0.5;

@@ -2,9 +2,10 @@ package com.team1701.robot.states;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
-import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.estimation.PoseEstimator;
+import com.team1701.lib.estimation.PoseEstimator.DriveMeasurement;
+import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
@@ -12,13 +13,12 @@ import com.team1701.robot.FieldConstants;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -28,20 +28,16 @@ public class RobotState {
 
     private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
 
-    private Rotation2d mGyroAngle = GeometryUtil.kRotationIdentity;
-    private SwerveModulePosition[] mModulePositions = Stream.generate(SwerveModulePosition::new)
-            .limit(Constants.Drive.kNumModules)
-            .toArray(SwerveModulePosition[]::new);
-    private SwerveDrivePoseEstimator mPoseEstimator = new SwerveDrivePoseEstimator(
-            Constants.Drive.kKinematics, mGyroAngle, mModulePositions, GeometryUtil.kPoseIdentity);
-    private List<NoteState> mDetectedNotes = new ArrayList<>();
+    private final PoseEstimator mPoseEstimator =
+            new PoseEstimator(Constants.Drive.kKinematics, VecBuilder.fill(0.005, 0.005, 0.0005));
+    private final List<NoteState> mDetectedNotes = new ArrayList<>();
 
     private Shooter mShooter;
     private Intake mIntake;
     private Indexer mIndexer;
 
-    public RobotState(Shooter mShooter, Intake intake, Indexer indexer) {
-        mShooter = mShooter;
+    public RobotState(Shooter shooter, Intake intake, Indexer indexer) {
+        mShooter = shooter;
         mIntake = intake;
         mIndexer = indexer;
     }
@@ -58,42 +54,28 @@ public class RobotState {
 
     @AutoLogOutput
     public Pose2d getPose2d() {
-        return mPoseEstimator.getEstimatedPosition();
+        return mPoseEstimator.getEstimatedPose();
     }
 
     @AutoLogOutput
     public Pose3d getPose3d() {
-        return new Pose3d(mPoseEstimator.getEstimatedPosition());
+        return new Pose3d(mPoseEstimator.getEstimatedPose());
     }
 
     public Rotation2d getHeading() {
         return getPose2d().getRotation();
     }
 
-    public void update(Rotation2d gyroAngle, SwerveModulePosition[] modulePositions) {
-        mGyroAngle = gyroAngle;
-        mModulePositions = modulePositions;
-        mPoseEstimator.update(gyroAngle, modulePositions);
+    public void addDriveMeasurements(DriveMeasurement... driveMeasurements) {
+        mPoseEstimator.addDriveMeasurements(driveMeasurements);
     }
 
-    public void updateWithTime(double timeSeconds, Rotation2d gyroAngle, SwerveModulePosition[] modulePositions) {
-        mGyroAngle = gyroAngle;
-        mModulePositions = modulePositions;
-        mPoseEstimator.updateWithTime(timeSeconds, gyroAngle, modulePositions);
-    }
-
-    public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
-        mPoseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
+    public void addVisionMeasurements(VisionMeasurement... visionMeasurements) {
+        mPoseEstimator.addVisionMeasurements(visionMeasurements);
     }
 
     public void resetPose(Pose2d pose) {
-        resetPose(mGyroAngle, mModulePositions, pose);
-    }
-
-    public void resetPose(Rotation2d gyroAngle, SwerveModulePosition[] modulePositions, Pose2d pose) {
-        mGyroAngle = gyroAngle;
-        mModulePositions = modulePositions;
-        mPoseEstimator.resetPosition(gyroAngle, modulePositions, pose);
+        mPoseEstimator.resetPose(pose);
     }
 
     @AutoLogOutput

@@ -52,10 +52,27 @@ public class MotorIOSparkFlex implements MotorIO {
     }
 
     @Override
+    public void setSmoothPositionControl(
+            Rotation2d position, double maxVelocityRadiansPerSecond, double maxAccelerationRadiansPerSecond) {
+        mController.setReference(position.getRotations(), CANSparkFlex.ControlType.kSmartMotion);
+        mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kSCurve, 0);
+        mController.setSmartMotionMaxVelocity(maxVelocityRadiansPerSecond, 0);
+        mController.setSmartMotionMaxAccel(maxAccelerationRadiansPerSecond, 0);
+    }
+
+    @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
         mController.setReference(
                 Units.radiansPerSecondToRotationsPerMinute(velocityRadiansPerSecond),
                 CANSparkFlex.ControlType.kVelocity);
+    }
+
+    @Override
+    public void setSmoothVelocityControl(
+            double velocityRadiansPerSecond, double maxAccelerationRadiansPerSecondSquared) {
+        mController.setReference(velocityRadiansPerSecond, CANSparkFlex.ControlType.kSmartVelocity);
+        mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kSCurve, 0);
+        mController.setSmartMotionMaxAccel(maxAccelerationRadiansPerSecondSquared, 0);
     }
 
     @Override
@@ -99,5 +116,10 @@ public class MotorIOSparkFlex implements MotorIO {
 
         var queue = samplingThread.addSignal(mEncoder::getVelocity);
         mVelocitySamples = Optional.of(queue);
+    }
+
+    @Override
+    public void isInverted(boolean inverted) {
+        mMotor.setInverted(inverted);
     }
 }

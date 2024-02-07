@@ -17,7 +17,13 @@ public interface MotorIO {
 
     public default void setPositionControl(Rotation2d position) {}
 
+    public default void setSmoothPositionControl(
+            Rotation2d position, double maxVelocityRadiansPerSecond, double maxAccelerationRadiansPerSecond) {}
+
     public default void setVelocityControl(double velocityRadiansPerSecond) {}
+
+    public default void setSmoothVelocityControl(
+            double velocityRadiansPerSecond, double maxAccelerationRadiansPerSecondSquared) {}
 
     public default void setPercentOutput(double percentage) {}
 
@@ -30,4 +36,8 @@ public interface MotorIO {
     public default void enablePositionSampling(SignalSamplingThread samplingThread) {}
 
     public default void enableVelocitySampling(SignalSamplingThread samplingThread) {}
+
+    public default void isInverted(boolean inverted) {}
+
+    public default void follow(MotorIO motor) {}
 }

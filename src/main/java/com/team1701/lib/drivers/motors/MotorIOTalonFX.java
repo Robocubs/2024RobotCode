@@ -42,20 +42,31 @@ public class MotorIOTalonFX implements MotorIO {
 
     @Override
     public void updateInputs(MotorInputs inputs) {
-        inputs.positionRadians = Units.rotationsToRadians(mPositionSignal.getValue()) * mReduction;
-        inputs.velocityRadiansPerSecond = Units.rotationsToRadians(mVelocitySignal.getValue()) * mReduction;
-        mPositionSamples.ifPresent(samples -> {
-            inputs.positionRadiansSamples = samples.stream()
-                    .mapToDouble((position) -> Units.rotationsToRadians(position) * mReduction)
-                    .toArray();
-            samples.clear();
-        });
-        mVelocitySamples.ifPresent(samples -> {
-            inputs.positionRadiansSamples = samples.stream()
-                    .mapToDouble((velocity) -> Units.rotationsToRadians(velocity) * mReduction)
-                    .toArray();
-            samples.clear();
-        });
+        mPositionSamples.ifPresentOrElse(
+                samples -> {
+                    inputs.positionRadiansSamples = samples.stream()
+                            .mapToDouble(this::encoderUnitsToReducedUnits)
+                            .toArray();
+                    samples.clear();
+                },
+                () -> mPositionSignal.refresh());
+
+        inputs.positionRadians = encoderUnitsToReducedUnits(mPositionSignal.getValue());
+
+        mVelocitySamples.ifPresentOrElse(
+                samples -> {
+                    inputs.velocityRadiansPerSecondSamples = samples.stream()
+                            .mapToDouble(this::encoderUnitsToReducedUnits)
+                            .toArray();
+                    samples.clear();
+                },
+                () -> mVelocitySignal.refresh());
+
+        inputs.velocityRadiansPerSecond = encoderUnitsToReducedUnits(mVelocitySignal.getValue());
+    }
+
+    private double encoderUnitsToReducedUnits(double encoderUnits) {
+        return Units.rotationsToRadians(encoderUnits) * mReduction;
     }
 
     @Override
