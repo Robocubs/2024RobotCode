@@ -160,10 +160,10 @@ public final class Constants {
                     /* TODO: Update values for 2024 bot */
                     kTrackWidthMeters = 0.465;
                     kWheelbaseMeters = 0.465;
-                    kDriveKff.initDefault(0.0002);
-                    kDriveKp.initDefault(0.00003);
+                    kDriveKff.initDefault(0.008);
+                    kDriveKp.initDefault(0.012);
                     kDriveKd.initDefault(0);
-                    kSteerKp.initDefault(1.0);
+                    kSteerKp.initDefault(2.0);
                     kSteerKd.initDefault(0);
                     break;
                 case SIMULATION_BOT:
