@@ -192,6 +192,8 @@ public class RobotContainer {
                         .limit(Constants.Drive.kNumModules)
                         .toArray(SwerveModuleIO[]::new),
                 mRobotState));
+
+        mRobotState.addSubsystems(this.mIndexer, this.mIntake);
         setupControllerBindings();
         setupAutonomous();
         setupStateTriggers();

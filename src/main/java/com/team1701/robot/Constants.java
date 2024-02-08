@@ -263,7 +263,7 @@ public final class Constants {
 
         public static int kShooterEntranceSensorId;
         public static int kShooterExitSensorId;
-        public static int kShooterThroughBoreEncoderId;
+        public static int kShooterThroughBoreEncoderId = 4;
 
         public static double kThroughBoreEncoderDistancePerRotation;
 
@@ -334,7 +334,7 @@ public final class Constants {
         public static final double kIntakeSpeed = 0.5;
         public static final double kOuttakeSpeed = -0.5;
 
-        public static final int kIntakeEntranceSensorId = 33;
-        public static final int kIntakeExitSensorId = 34;
+        public static final int kIntakeEntranceSensorId = 4;
+        public static final int kIntakeExitSensorId = 5;
     }
 }

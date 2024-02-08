@@ -4,29 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.team1701.lib.drivers.digitalinputs.DigitalIO;
-import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
-import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
-import com.team1701.lib.drivers.motors.MotorIO;
-import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.estimation.PoseEstimator;
 import com.team1701.lib.estimation.PoseEstimator.DriveMeasurement;
 import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Configuration;
-import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
-import com.team1701.robot.util.SparkMotorFactory;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -34,53 +26,18 @@ import org.littletonrobotics.junction.AutoLogOutput;
 public class RobotState {
     private static final double kDetectedNoteTimeout = 1.0;
 
-    private final Indexer mIndexer;
-    private final Intake mIntake;
-
     private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
+
+    private Optional<Indexer> mIndexer = Optional.empty();
+    private Optional<Intake> mIntake = Optional.empty();
 
     private final PoseEstimator mPoseEstimator =
             new PoseEstimator(Constants.Drive.kKinematics, VecBuilder.fill(0.005, 0.005, 0.0005));
     private final List<NoteState> mDetectedNotes = new ArrayList<>();
 
-    public RobotState() {
-
-        Optional<Indexer> indexer = Optional.empty();
-        Optional<Intake> intake = Optional.empty();
-
-        if (Configuration.getMode() != Mode.REPLAY) {
-            switch (Configuration.getRobot()) {
-                case COMPETITION_BOT:
-                    indexer = Optional.of(new Indexer(
-                            SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
-                            new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
-                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
-                    intake = Optional.of(new Intake(
-                            SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
-                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId),
-                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId)));
-
-                    break;
-                case SIMULATION_BOT:
-                    indexer = Optional.of(new Indexer(
-                            new MotorIOSim(DCMotor.getNeoVortex(1), 1, 0.001, Constants.kLoopPeriodSeconds),
-                            new DigitalIOSim(() -> false),
-                            new DigitalIOSim(() -> false)));
-
-                    intake = Optional.of(new Intake(
-                            new MotorIOSim(DCMotor.getNeoVortex(1), 1, 0.001, Constants.kLoopPeriodSeconds),
-                            new DigitalIOSim(() -> false),
-                            new DigitalIOSim(() -> false)));
-
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        this.mIndexer = indexer.orElseGet(() -> new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
-
-        this.mIntake = intake.orElseGet(() -> new Intake(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
+    public void addSubsystems(Indexer indexer, Intake intake) {
+        mIndexer = Optional.of(indexer);
+        mIntake = Optional.of(intake);
     }
 
     public void periodic() {
@@ -171,7 +128,10 @@ public class RobotState {
 
     @AutoLogOutput
     public boolean hasNote() {
-        var hasNote = mIntake.hasNote() || mIndexer.hasNote();
+        if (mIntake.isEmpty() || mIndexer.isEmpty()) {
+            return false;
+        }
+        var hasNote = mIntake.get().hasNote() || mIndexer.get().hasNote();
         return mHasNote.update(hasNote, Timer.getFPGATimestamp());
     }
 }
