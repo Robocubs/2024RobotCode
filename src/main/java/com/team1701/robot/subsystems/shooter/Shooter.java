@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -37,6 +38,10 @@ public class Shooter extends SubsystemBase {
     private final MotorInputsAutoLogged mRotationShooterMotorInputs = new MotorInputsAutoLogged();
 
     private final EncoderInputsAutoLogged mAngleEncoderInputs = new EncoderInputsAutoLogged();
+
+    private Mechanism2d mShooterMechanism;
+    private MechanismLigament2d mShooterLigament;
+    private MechanismRoot2d mShooterRoot;
 
     private Optional<Rotation2d> mRotationMotorOffset = Optional.empty();
 
@@ -77,6 +82,8 @@ public class Shooter extends SubsystemBase {
                 Constants.Shooter.kRotationKd.get());
 
         mAngleEncoderIO = angleEncoder;
+
+        createMechanism2d();
     }
 
     public static MotorIOSim createRollerMotorSim(DCMotor shooterMotor) {
@@ -94,6 +101,14 @@ public class Shooter extends SubsystemBase {
         return new EncoderIOSim(() -> rotationMotor.getPosition().plus(offset));
     }
 
+    @AutoLogOutput
+    private void createMechanism2d() {
+        mShooterMechanism = new Mechanism2d(15, 9.10);
+        mShooterRoot = mShooterMechanism.getRoot("root", 1, 0);
+        mShooterLigament = mShooterRoot.append(
+                new MechanismLigament2d("shooter", 12.5, getAngle().getDegrees()));
+    }
+
     @Override
     public void periodic() {
         var hash = hashCode();
@@ -101,11 +116,6 @@ public class Shooter extends SubsystemBase {
         mRightLowerShooterMotorIO.updateInputs(mRightLowerShooterMotorInputs);
         mLeftUpperShooterMotorIO.updateInputs(mLeftUpperShooterMotorInputs);
         mLeftLowerShooterMotorIO.updateInputs(mLeftLowerShooterMotorInputs);
-
-        var shooterMechanism = new Mechanism2d(15, 9.10);
-        var shooterRoot = shooterMechanism.getRoot("root", 1, 0);
-        var shooterLigament = shooterRoot.append(
-                new MechanismLigament2d("shooter", 12.5, getAngle().getDegrees()));
 
         mRotationShooterMotorIO.updateInputs(mRotationShooterMotorInputs);
 
@@ -148,7 +158,8 @@ public class Shooter extends SubsystemBase {
                     .minus(Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians)));
         }
 
-        Logger.recordOutput("Shooter/mech", shooterMechanism);
+        mShooterLigament.setAngle(getAngle().getDegrees());
+        Logger.recordOutput("Shooter/mech", mShooterMechanism);
     }
 
     private void setRollerPID(double ff, double p, double i, double d) {

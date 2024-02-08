@@ -5,7 +5,6 @@
 package com.team1701.robot;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -57,18 +56,7 @@ public class RobotContainer {
     private final Intake mIntake;
     public final Vision mVision;
 
-    private Optional<RobotState> mOptionalRobotState = Optional.empty();
-
-    private final Supplier<RobotState> mRobotState = () -> mOptionalRobotState.orElseGet(() -> new RobotState(
-            new Shooter(
-                    new MotorIO() {},
-                    new MotorIO() {},
-                    new MotorIO() {},
-                    new MotorIO() {},
-                    new MotorIO() {},
-                    new EncoderIO() {}),
-            new Intake(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}),
-            new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {})));
+    private final RobotState mRobotState = new RobotState();
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
@@ -103,7 +91,6 @@ public class RobotContainer {
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                             new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId),
                             new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId)));
-                    mOptionalRobotState = Optional.of(new RobotState(shooter.get(), intake.get(), indexer.get()));
                     drive = Optional.of(new Drive(
                             new GyroIOPigeon2(30),
                             new SwerveModuleIO[] {
@@ -124,7 +111,7 @@ public class RobotContainer {
                                         SparkMotorFactory.createSteerMotorIOSparkMax(15),
                                         new EncoderIOAnalog(2)),
                             },
-                            mRobotState.get()));
+                            mRobotState));
 
                     break;
                 case SIMULATION_BOT:
@@ -147,16 +134,14 @@ public class RobotContainer {
                             new DigitalIOSim(() -> false),
                             new DigitalIOSim(() -> false)));
 
-                    var gyroIO = new GyroIOSim(mRobotState.get()::getHeading);
-
-                    mOptionalRobotState = Optional.of(new RobotState(shooter.get(), intake.get(), indexer.get()));
+                    var gyroIO = new GyroIOSim(mRobotState::getHeading);
 
                     var simDrive = new Drive(
                             gyroIO,
                             Stream.generate(() -> SwerveModuleIO.createSim(DCMotor.getKrakenX60(1), DCMotor.getNEO(1)))
                                     .limit(Constants.Drive.kNumModules)
                                     .toArray(SwerveModuleIO[]::new),
-                            mRobotState.get());
+                            mRobotState);
                     gyroIO.setYawSupplier(
                             () -> simDrive.getVelocity().omegaRadiansPerSecond, Constants.kLoopPeriodSeconds);
 
@@ -167,10 +152,8 @@ public class RobotContainer {
                     break;
             }
 
-            mOptionalRobotState = Optional.of(new RobotState(shooter.get(), intake.get(), indexer.get()));
-
             vision = Optional.of(new Vision(
-                    mRobotState.get(),
+                    mRobotState,
                     new AprilTagCameraIOCubVision(
                             Constants.Vision.kFrontLeftCameraName, Constants.Vision.kFrontLeftCameraID),
                     new AprilTagCameraIOCubVision(
@@ -182,7 +165,7 @@ public class RobotContainer {
         }
 
         this.mVision = vision.orElseGet(() -> new Vision(
-                mRobotState.get(),
+                mRobotState,
                 new AprilTagCameraIOCubVision(
                         Constants.Vision.kFrontLeftCameraName, Constants.Vision.kFrontLeftCameraID),
                 new AprilTagCameraIOCubVision(
@@ -203,21 +186,19 @@ public class RobotContainer {
 
         this.mIntake = intake.orElseGet(() -> new Intake(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
-        mOptionalRobotState = Optional.of(new RobotState(mShooter, mIntake, mIndexer));
-
         this.mDrive = drive.orElseGet(() -> new Drive(
                 new GyroIO() {},
                 Stream.generate(() -> new SwerveModuleIO(new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}))
                         .limit(Constants.Drive.kNumModules)
                         .toArray(SwerveModuleIO[]::new),
-                mRobotState.get()));
+                mRobotState));
         setupControllerBindings();
         setupAutonomous();
         setupStateTriggers();
     }
 
     private void setupControllerBindings() {
-        var robotState = mRobotState.get();
+        var robotState = mRobotState;
         TriggeredAlert.error(
                 "Driver controller disconnected",
                 () -> !DriverStation.isJoystickConnected(
@@ -256,11 +237,10 @@ public class RobotContainer {
     }
 
     private void setupAutonomous() {
-        var robotState = mRobotState.get();
 
         AutoBuilder.configureHolonomic(
-                robotState::getPose2d,
-                robotState::resetPose,
+                mRobotState::getPose2d,
+                mRobotState::resetPose,
                 mDrive::getVelocity,
                 mDrive::setVelocity,
                 Constants.Drive.kPathFollowerConfig,
@@ -271,7 +251,7 @@ public class RobotContainer {
         PathPlannerLogging.setLogActivePathCallback(
                 poses -> Logger.recordOutput("PathPlanner/Path", poses.toArray(Pose2d[]::new)));
 
-        var commands = new AutonomousCommands(robotState, mDrive, mShooter, mIndexer);
+        var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         autonomousModeChooser.addDefaultOption("Demo", commands.demo());
         autonomousModeChooser.addOption("Four Piece", commands.fourPiece());
         autonomousModeChooser.addOption("Four Piece Planner", new PathPlannerAuto("FourPiece"));
@@ -280,8 +260,7 @@ public class RobotContainer {
     private void setupStateTriggers() {
         var teleopTrigger = new Trigger(DriverStation::isTeleopEnabled);
         teleopTrigger.onTrue(
-                runOnce(() -> mDrive.zeroGyroscope(mRobotState.get().getHeading()))
-                        .withName("ZeroGyroscopeToPose"));
+                runOnce(() -> mDrive.zeroGyroscope(mRobotState.getHeading())).withName("ZeroGyroscopeToPose"));
     }
 
     public Optional<Command> getAutonomousCommand() {
@@ -289,6 +268,6 @@ public class RobotContainer {
     }
 
     public RobotState getRobotState() {
-        return mRobotState.get();
+        return mRobotState;
     }
 }
