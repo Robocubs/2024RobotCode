@@ -59,33 +59,25 @@ public class Vision extends SubsystemBase {
         }
 
         mCameras.add(new AprilTagCamera(
-                Constants.Vision.kFrontLeftCameraName,
                 cameraIOFrontLeft,
-                Constants.Vision.kRobotToFrontLeftCamPose,
                 Constants.Vision.kPoseStrategy,
                 Constants.Vision.kFallbackPoseStrategy,
                 fieldLayoutSupplier,
                 mRobotState::getPose3d));
         mCameras.add(new AprilTagCamera(
-                Constants.Vision.kFrontRightCameraName,
                 cameraIOFrontRight,
-                Constants.Vision.kRobotToFrontRightCamPose,
                 Constants.Vision.kPoseStrategy,
                 Constants.Vision.kFallbackPoseStrategy,
                 fieldLayoutSupplier,
                 mRobotState::getPose3d));
         mCameras.add(new AprilTagCamera(
-                Constants.Vision.kBackLeftCameraName,
                 cameraIOBackLeft,
-                Constants.Vision.kRobotToBackLeftCamPose,
                 Constants.Vision.kPoseStrategy,
                 Constants.Vision.kFallbackPoseStrategy,
                 fieldLayoutSupplier,
                 mRobotState::getPose3d));
         mCameras.add(new AprilTagCamera(
-                Constants.Vision.kBackRightCameraName,
                 cameraIOBackRight,
-                Constants.Vision.kRobotToBackRightCamPose,
                 Constants.Vision.kPoseStrategy,
                 Constants.Vision.kFallbackPoseStrategy,
                 fieldLayoutSupplier,

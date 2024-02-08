@@ -134,14 +134,10 @@ public class RobotContainer {
 
             vision = Optional.of(new Vision(
                     mRobotState,
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kFrontLeftCameraName, Constants.Vision.kFrontLeftCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kFrontRightCameraName, Constants.Vision.kFrontRightCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kBackLeftCameraName, Constants.Vision.kBackLeftCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kBackRightCameraName, Constants.Vision.kBackLeftCameraID)));
+                    new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
+                    new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
+                    new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
+                    new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig)));
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(

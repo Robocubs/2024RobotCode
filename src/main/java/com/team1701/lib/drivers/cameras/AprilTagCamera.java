@@ -1,6 +1,7 @@
 package com.team1701.lib.drivers.cameras;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -34,26 +35,25 @@ public class AprilTagCamera {
     private final Alert mDisconnectedAlert;
 
     public AprilTagCamera(
-            String cameraName,
             AprilTagCameraIO cameraIO,
-            Transform3d robotToCamPose,
             PoseStrategy poseStrategy,
             PoseStrategy fallbackPoseStrategy,
             Supplier<AprilTagFieldLayout> fieldLayoutSupplier,
             Supplier<Pose3d> robotPoseSupplier) {
+        var config = cameraIO.getVisionConfig();
         mCameraIO = cameraIO;
         mCameraInputs = new AprilTagInputs();
-        mLoggingPrefix = "Camera/" + cameraName + "/";
-        mPoseEstimator = new PhotonPoseEstimator(fieldLayoutSupplier.get(), poseStrategy, null, robotToCamPose);
+        mLoggingPrefix = "Camera/" + config.cameraName + "/";
+        mPoseEstimator = new PhotonPoseEstimator(fieldLayoutSupplier.get(), poseStrategy, null, config.robotToCamPose);
         mPoseEstimator.setMultiTagFallbackStrategy(fallbackPoseStrategy);
-        mRobotToCamPose = robotToCamPose;
+        mRobotToCamPose = config.robotToCamPose;
         mFieldLayoutSupplier = fieldLayoutSupplier;
         mRobotPoseSupplier = robotPoseSupplier;
-        mDisconnectedAlert = Alert.error("Camera " + cameraName + " disconnected");
+        mDisconnectedAlert = Alert.error("Camera " + config.cameraName + " disconnected");
     }
 
     public void periodic() {
-        mCameraIO.updateInputs(mCameraInputs);
+        mCameraIO.updateInputs(mCameraInputs, Optional.of(mFieldLayoutSupplier));
         Logger.processInputs(mLoggingPrefix, mCameraInputs);
 
         var pipelineResult = mCameraInputs.pipelineResult;
