@@ -83,6 +83,34 @@ public class SparkFlexMotorFactory {
         return new MotorIOSparkFlex(motor, Constants.Indexer.kIndexerReduction);
     }
 
+    public static MotorIOSparkFlex createIntakeMotorIOSparkFlex(int deviceId) {
+        var motor = new CANSparkFlex(deviceId, MotorType.kBrushless);
+        var encoder = motor.getEncoder();
+        var controller = motor.getPIDController();
+        var errorAlert = new REVAlert(motor, deviceId);
+
+        motor.setCANTimeout(200);
+
+        configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
+
+        configureWithRetry(() -> motor.setSmartCurrentLimit(20), errorAlert);
+        configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);
+
+        configureWithRetry(() -> encoder.setPosition(0), errorAlert);
+        configureWithRetry(() -> encoder.setMeasurementPeriod(10), errorAlert);
+        configureWithRetry(() -> encoder.setAverageDepth(2), errorAlert);
+
+        configureWithRetry(() -> controller.setP(Constants.Indexer.kIndexerKp.get()), errorAlert);
+        configureWithRetry(() -> controller.setD(Constants.Indexer.kIndexerKd.get()), errorAlert);
+        configureWithRetry(() -> controller.setFF(Constants.Indexer.kIndexerKff.get()), errorAlert);
+
+        configureWithRetry(() -> motor.burnFlash(), errorAlert);
+
+        motor.setCANTimeout(0);
+
+        return new MotorIOSparkFlex(motor, Constants.Indexer.kIndexerReduction);
+    }
+
     public static MotorIOSparkMax createDriveMotorIOSparkMax(int deviceId) {
         var motor = new CANSparkMax(deviceId, MotorType.kBrushless);
         var encoder = motor.getEncoder();

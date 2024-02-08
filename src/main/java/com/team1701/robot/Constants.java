@@ -236,6 +236,7 @@ public final class Constants {
 
         public static final double kIndexerLoadPercent = .25;
         public static final double kIndexerFeedPercent = 1;
+        public static final double kReduction = 1.0 / 1.0;
 
         public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
@@ -243,7 +244,12 @@ public final class Constants {
     }
 
     public class Intake {
+        // TODO: Add sensor Ids
         public static final double kIntakeSpeed = 0.5;
         public static final double kOuttakeSpeed = -0.5;
+        public static final int kIntakeMotorId = 20;
+        public static final int kIntakeEntranceSensorId = 4;
+        public static final int kIntakeExitSensorId = 5;
+        public static final double kReduction = 1.0/9.0;
     }
 }
