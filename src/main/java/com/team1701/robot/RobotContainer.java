@@ -13,7 +13,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.cameras.AprilTagCameraIOCubVision;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
-import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
@@ -35,7 +34,6 @@ import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.SparkMotorFactory;
-import com.team1701.robot.util.SparkMotorFactory.ShooterMotorUsage;
 import com.team1701.robot.util.TalonFxMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -72,45 +70,49 @@ public class RobotContainer {
         if (Configuration.getMode() != Mode.REPLAY) {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    shooter = Optional.of(new Shooter(
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterRightUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterRightLowerRollerMotorId, ShooterMotorUsage.ROLLER),
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterLeftUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterLeftLowerRollerMotorId, ShooterMotorUsage.ROLLER),
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
-                            new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
-                    indexer = Optional.of(new Indexer(
-                            SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
-                            new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
-                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
-                    intake = Optional.of(new Intake(
-                            SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
-                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId),
-                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId)));
+                    // shooter = Optional.of(new Shooter(
+                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                    //                 Constants.Shooter.kShooterRightUpperRollerMotorId, ShooterMotorUsage.ROLLER),
+                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                    //                 Constants.Shooter.kShooterRightLowerRollerMotorId, ShooterMotorUsage.ROLLER),
+                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                    //                 Constants.Shooter.kShooterLeftUpperRollerMotorId, ShooterMotorUsage.ROLLER),
+                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                    //                 Constants.Shooter.kShooterLeftLowerRollerMotorId, ShooterMotorUsage.ROLLER),
+                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                    //                 Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
+                    //         new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
+                    // indexer = Optional.of(new Indexer(
+                    //         SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
+                    //         new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
+                    //         new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
+                    // intake = Optional.of(new Intake(
+                    //         SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
+                    //         new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId),
+                    //         new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId)));
                     drive = Optional.of(new Drive(
                             new GyroIOPigeon2(30),
                             new SwerveModuleIO[] {
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(10),
                                         SparkMotorFactory.createSteerMotorIOSparkMax(14),
-                                        new EncoderIOAnalog(0, Rotation2d.fromRadians(0.327))),
+                                        new EncoderIOAnalog(0),
+                                        Rotation2d.fromRadians(-1.137)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(11),
                                         SparkMotorFactory.createSteerMotorIOSparkMax(10),
-                                        new EncoderIOAnalog(1, Rotation2d.fromRadians(0.325))),
+                                        new EncoderIOAnalog(1),
+                                        Rotation2d.fromRadians(-2.036)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(12),
                                         SparkMotorFactory.createSteerMotorIOSparkMax(12),
-                                        new EncoderIOAnalog(3, Rotation2d.fromRadians(0.321))),
+                                        new EncoderIOAnalog(3),
+                                        Rotation2d.fromRadians(-4.522)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(13),
                                         SparkMotorFactory.createSteerMotorIOSparkMax(16),
-                                        new EncoderIOAnalog(2, Rotation2d.fromRadians(0.319))),
+                                        new EncoderIOAnalog(2),
+                                        Rotation2d.fromRadians(-0.184)),
                             },
                             mRobotState));
 
@@ -189,7 +191,8 @@ public class RobotContainer {
 
         this.mDrive = drive.orElseGet(() -> new Drive(
                 new GyroIO() {},
-                Stream.generate(() -> new SwerveModuleIO(new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}))
+                Stream.generate(() -> new SwerveModuleIO(
+                                new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}, GeometryUtil.kRotationIdentity))
                         .limit(Constants.Drive.kNumModules)
                         .toArray(SwerveModuleIO[]::new),
                 mRobotState));

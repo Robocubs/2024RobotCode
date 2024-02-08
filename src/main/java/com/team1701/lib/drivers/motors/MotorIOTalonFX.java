@@ -115,6 +115,7 @@ public class MotorIOTalonFX implements MotorIO {
         }
 
         var queue = samplingThread.addSignal(mPositionSignal);
+        mPositionSignal.setUpdateFrequency(samplingThread.getFrequency());
         mPositionSamples = Optional.of(queue);
     }
 
@@ -125,19 +126,7 @@ public class MotorIOTalonFX implements MotorIO {
         }
 
         var queue = samplingThread.addSignal(mVelocitySignal);
+        mVelocitySignal.setUpdateFrequency(samplingThread.getFrequency());
         mVelocitySamples = Optional.of(queue);
-    }
-
-    public void setSignalUpdateFrequency(double frequencyHz) {
-        updatePositionFrequency(frequencyHz);
-        updateVelocityFrequency(frequencyHz);
-    }
-
-    public void updatePositionFrequency(double frequencyHz) {
-        mPositionSignal.setUpdateFrequency(frequencyHz);
-    }
-
-    public void updateVelocityFrequency(double frequencyHz) {
-        mVelocitySignal.setUpdateFrequency(frequencyHz);
     }
 }
