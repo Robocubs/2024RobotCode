@@ -6,7 +6,6 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.robot.Constants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
@@ -18,9 +17,6 @@ public class Intake extends SubsystemBase {
 
     private final DigitalIO mIntakeEntranceSensor;
     private final DigitalIO mIntakeExitSensor;
-
-    @AutoLogOutput(key = "Intake/HasPiece")
-    private final boolean mIntakeHasPiece = false;
 
     public Intake(MotorIO intakeMotor, DigitalIO intakeEntranceSensor, DigitalIO intakeExitSensor) {
         mIntakeMotor = intakeMotor;
@@ -39,17 +35,14 @@ public class Intake extends SubsystemBase {
         Logger.processInputs("Intake/ExitSensor", mIntakeExitSensorInputs);
     }
 
-    @AutoLogOutput
     public boolean hasNote() {
         return hasNoteAtInput() || hasNoteAtExit();
     }
 
-    @AutoLogOutput
     public boolean hasNoteAtInput() {
         return mIntakeEntranceSensorInputs.blocked;
     }
 
-    @AutoLogOutput
     public boolean hasNoteAtExit() {
         return mIntakeExitSensorInputs.blocked;
     }

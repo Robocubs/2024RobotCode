@@ -2,23 +2,24 @@ package com.team1701.robot.commands;
 
 import com.team1701.robot.subsystems.intake.Intake;
 import edu.wpi.first.wpilibj2.command.Command;
+import com.team1701.robot.states.RobotState;
 
 public class IntakeCommand extends Command {
     private Intake mIntake;
-    private boolean mIntaking;
+    private RobotState mRobotState;
 
-    IntakeCommand(Intake intake) {
+    IntakeCommand(Intake intake, RobotState robotState) {
         mIntake = intake;
-    }
-
-    @Override
-    public void initialize() {
-        mIntaking = mIntake.hasNoteAtInput() ? true : false;
+        mRobotState = robotState;
     }
 
     @Override
     public void execute() {
-        mIntake.setForward();
+        if (mRobotState.hasNote() && !mIntake.hasNote()) {
+            mIntake.stop();
+        } else {
+            mIntake.setForward();
+        }
     }
 
     @Override
@@ -26,9 +27,4 @@ public class IntakeCommand extends Command {
         mIntake.stop();
     }
 
-    @Override
-    public boolean isFinished() {
-        mIntaking = mIntake.hasNoteAtExit() ? false : true;
-        return mIntaking;
-    }
 }
