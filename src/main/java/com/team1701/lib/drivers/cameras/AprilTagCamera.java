@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -36,16 +35,15 @@ public class AprilTagCamera {
 
     public AprilTagCamera(
             AprilTagCameraIO cameraIO,
-            PoseStrategy poseStrategy,
-            PoseStrategy fallbackPoseStrategy,
             Supplier<AprilTagFieldLayout> fieldLayoutSupplier,
             Supplier<Pose3d> robotPoseSupplier) {
         var config = cameraIO.getVisionConfig();
         mCameraIO = cameraIO;
         mCameraInputs = new AprilTagInputs();
         mLoggingPrefix = "Camera/" + config.cameraName + "/";
-        mPoseEstimator = new PhotonPoseEstimator(fieldLayoutSupplier.get(), poseStrategy, null, config.robotToCamPose);
-        mPoseEstimator.setMultiTagFallbackStrategy(fallbackPoseStrategy);
+        mPoseEstimator =
+                new PhotonPoseEstimator(fieldLayoutSupplier.get(), config.poseStrategy, null, config.robotToCamPose);
+        mPoseEstimator.setMultiTagFallbackStrategy(config.fallbackPoseStrategy);
         mRobotToCamPose = config.robotToCamPose;
         mFieldLayoutSupplier = fieldLayoutSupplier;
         mRobotPoseSupplier = robotPoseSupplier;

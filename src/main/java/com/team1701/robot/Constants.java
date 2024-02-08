@@ -3,8 +3,8 @@ package com.team1701.robot;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
+import com.team1701.lib.drivers.cameras.config.VisionCameraConfig;
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
-import com.team1701.lib.drivers.cameras.config.VisionRemoteConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.LoggedTunableNumber;
@@ -62,34 +62,41 @@ public final class Constants {
 
         public static final double kAmbiguityThreshold = 0.15;
         public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
+        public static final double kMaxPoseAmbiguity = 0.03;
+        public static final PoseStrategy kPoseStrategy = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
+        public static final PoseStrategy kFallbackPoseStrategy = PoseStrategy.LOWEST_AMBIGUITY;
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
                 new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
                 0,
-                VisionRemoteConfig.kStandardArduCamConfig);
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
 
         public static final VisionConfig kFrontRightCameraConfig = new VisionConfig(
                 "CubVisionFR",
                 new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
                 2,
-                VisionRemoteConfig.kStandardArduCamConfig);
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
 
         public static final VisionConfig kBackLeftCameraConfig = new VisionConfig(
                 "CubVisionBL",
                 new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
                 1,
-                VisionRemoteConfig.kStandardArduCamConfig);
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
 
         public static final VisionConfig kBackRightCameraConfig = new VisionConfig(
                 "CubVisionBR",
                 new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
                 0,
-                VisionRemoteConfig.kStandardArduCamConfig);
-
-        public static final double kMaxPoseAmbiguity = 0.03;
-        public static final PoseStrategy kPoseStrategy = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
-        public static final PoseStrategy kFallbackPoseStrategy = PoseStrategy.LOWEST_AMBIGUITY;
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
     }
 
     public static final class Controls {

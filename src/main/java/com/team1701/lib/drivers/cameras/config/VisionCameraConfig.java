@@ -1,6 +1,6 @@
 package com.team1701.lib.drivers.cameras.config;
 
-public class VisionRemoteConfig {
+public class VisionCameraConfig {
     public final int cameraResolutionWidth;
     public final int cameraResolutionHeight;
     public final int cameraAutoExposure;
@@ -10,9 +10,9 @@ public class VisionRemoteConfig {
 
     // autoExposure=1 and a specified cameraExposure apparently tells OpenCV that the manual exposure is to be
     // used
-    public static VisionRemoteConfig kStandardArduCamConfig = new VisionRemoteConfig(1280, 720, 1, 75, 0, false);
+    public static VisionCameraConfig kStandardArduCamConfig = new VisionCameraConfig(1280, 720, 1, 75, 0, false);
 
-    VisionRemoteConfig(
+    VisionCameraConfig(
             int cameraResolutionWidth,
             int cameraResolutionHeight,
             int cameraAutoExposure,

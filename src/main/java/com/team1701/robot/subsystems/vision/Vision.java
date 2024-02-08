@@ -37,12 +37,7 @@ public class Vision extends SubsystemBase {
     private final List<EstimatedRobotPose> mEstimatedRobotPoses = new ArrayList<>();
     private Optional<VisionSystemSim> mVisionSim = Optional.empty();
 
-    public Vision(
-            RobotState robotState,
-            AprilTagCameraIO cameraIOFrontLeft,
-            AprilTagCameraIO cameraIOFrontRight,
-            AprilTagCameraIO cameraIOBackLeft,
-            AprilTagCameraIO cameraIOBackRight) {
+    public Vision(RobotState robotState, AprilTagCameraIO... cameraIOs) {
 
         mRobotState = robotState;
 
@@ -58,30 +53,9 @@ public class Vision extends SubsystemBase {
             Alert.error("Failed to load AprilTag layout for Vision").enable();
         }
 
-        mCameras.add(new AprilTagCamera(
-                cameraIOFrontLeft,
-                Constants.Vision.kPoseStrategy,
-                Constants.Vision.kFallbackPoseStrategy,
-                fieldLayoutSupplier,
-                mRobotState::getPose3d));
-        mCameras.add(new AprilTagCamera(
-                cameraIOFrontRight,
-                Constants.Vision.kPoseStrategy,
-                Constants.Vision.kFallbackPoseStrategy,
-                fieldLayoutSupplier,
-                mRobotState::getPose3d));
-        mCameras.add(new AprilTagCamera(
-                cameraIOBackLeft,
-                Constants.Vision.kPoseStrategy,
-                Constants.Vision.kFallbackPoseStrategy,
-                fieldLayoutSupplier,
-                mRobotState::getPose3d));
-        mCameras.add(new AprilTagCamera(
-                cameraIOBackRight,
-                Constants.Vision.kPoseStrategy,
-                Constants.Vision.kFallbackPoseStrategy,
-                fieldLayoutSupplier,
-                mRobotState::getPose3d));
+        for (AprilTagCameraIO cameraIO : cameraIOs) {
+            mCameras.add(new AprilTagCamera(cameraIO, fieldLayoutSupplier, mRobotState::getPose3d));
+        }
 
         if (Robot.isSimulation()) {
             var visionSim = new VisionSystemSim("main");
