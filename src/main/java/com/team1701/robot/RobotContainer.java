@@ -131,11 +131,19 @@ public class RobotContainer {
                             Shooter.createEncoderSim(rotationMotor)));
 
                     indexer = Optional.of(new Indexer(
-                            new MotorIOSim(DCMotor.getNeoVortex(1), Constants.Indexer.kReduction, 0.001, Constants.kLoopPeriodSeconds),
+                            new MotorIOSim(
+                                    DCMotor.getNeoVortex(1),
+                                    Constants.Indexer.kReduction,
+                                    0.001,
+                                    Constants.kLoopPeriodSeconds),
                             new DigitalIOSim(() -> false),
                             new DigitalIOSim(() -> false)));
                     intake = Optional.of(new Intake(
-                            new MotorIOSim(DCMotor.getNeoVortex(1), Constants.Intake.kReduction, 0.001, Constants.kLoopPeriodSeconds),
+                            new MotorIOSim(
+                                    DCMotor.getNeoVortex(1),
+                                    Constants.Intake.kReduction,
+                                    0.001,
+                                    Constants.kLoopPeriodSeconds),
                             new DigitalIOSim(() -> false),
                             new DigitalIOSim(() -> false)));
                     break;

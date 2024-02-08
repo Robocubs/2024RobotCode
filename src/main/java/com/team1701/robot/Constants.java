@@ -250,6 +250,6 @@ public final class Constants {
         public static final int kIntakeMotorId = 20;
         public static final int kIntakeEntranceSensorId = 4;
         public static final int kIntakeExitSensorId = 5;
-        public static final double kReduction = 1.0/9.0;
+        public static final double kReduction = 1.0 / 9.0;
     }
 }
