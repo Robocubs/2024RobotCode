@@ -46,6 +46,13 @@ public class RobotState {
         return new Pose3d(mPoseEstimator.getEstimatedPose());
     }
 
+    @AutoLogOutput
+    public double getDistanceToSpeaker() {
+        return getPose3d()
+                .getTranslation()
+                .getDistance(new Translation3d(0.47560569643974304, 5.553, FieldConstants.kSpeakerHeight));
+    }
+
     public Rotation2d getHeading() {
         return getPose2d().getRotation();
     }

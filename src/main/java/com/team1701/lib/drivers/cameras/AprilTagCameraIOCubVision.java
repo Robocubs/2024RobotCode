@@ -28,7 +28,7 @@ import org.photonvision.utils.PacketUtils;
 public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
     private static final PhotonPipelineResult kEmptyResult = new PhotonPipelineResult();
     private static final MultiTargetPNPResult kEmptyPnpResult = new MultiTargetPNPResult();
-    private static VisionConfig mConfig;
+    private VisionConfig mConfig;
 
     private final RawSubscriber mObservationSubscriber;
     private final IntegerSubscriber mFpsSubscriber;
