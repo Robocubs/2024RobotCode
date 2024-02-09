@@ -80,7 +80,7 @@ public class Shoot extends Command {
         }
 
         if (!mShooting) {
-            if (mIndexer.noteIsLoaded()) {
+            if (mIndexer.hasNoteAtExit()) {
                 mIndexer.stop();
             } else {
                 mIndexer.setForwardLoad();

@@ -28,10 +28,12 @@ import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
+import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
 import com.team1701.robot.subsystems.indexer.Indexer;
+import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.SparkFlexMotorFactory;
@@ -54,6 +56,7 @@ public class RobotContainer {
     public final Shooter mShooter;
     public final Vision mVision;
     private final Indexer mIndexer;
+    private final Intake mIntake;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
@@ -63,6 +66,7 @@ public class RobotContainer {
         Optional<Vision> vision = Optional.empty();
         Optional<Shooter> shooter = Optional.empty();
         Optional<Indexer> indexer = Optional.empty();
+        Optional<Intake> intake = Optional.empty();
 
         if (Configuration.getMode() != Mode.REPLAY) {
             switch (Configuration.getRobot()) {
@@ -102,6 +106,11 @@ public class RobotContainer {
                             SparkFlexMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
                             new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
                             new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
+                    intake = Optional.of(new Intake(
+                            SparkFlexMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
+                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId),
+                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId)));
+
                     break;
                 case SIMULATION_BOT:
                     var gyroIO = new GyroIOSim(mRobotState::getHeading);
@@ -124,7 +133,19 @@ public class RobotContainer {
                             Shooter.createEncoderSim(rotationMotor)));
 
                     indexer = Optional.of(new Indexer(
-                            new MotorIOSim(DCMotor.getNeoVortex(1), 1, 0.001, Constants.kLoopPeriodSeconds),
+                            new MotorIOSim(
+                                    DCMotor.getNeoVortex(1),
+                                    Constants.Indexer.kReduction,
+                                    0.001,
+                                    Constants.kLoopPeriodSeconds),
+                            new DigitalIOSim(() -> false),
+                            new DigitalIOSim(() -> false)));
+                    intake = Optional.of(new Intake(
+                            new MotorIOSim(
+                                    DCMotor.getNeoVortex(1),
+                                    Constants.Intake.kReduction,
+                                    0.001,
+                                    Constants.kLoopPeriodSeconds),
                             new DigitalIOSim(() -> false),
                             new DigitalIOSim(() -> false)));
                     break;
@@ -163,6 +184,8 @@ public class RobotContainer {
 
         this.mIndexer = indexer.orElseGet(() -> new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
+        this.mIntake = intake.orElseGet(() -> new Intake(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
+
         setupControllerBindings();
         setupAutonomous();
         setupStateTriggers();
@@ -186,7 +209,9 @@ public class RobotContainer {
                         : Constants.Drive.kFastKinematicLimits));
 
         // TODO: update should load when intake is completed
-        mIndexer.setDefaultCommand(new IndexCommand(mIndexer, () -> true));
+        mIndexer.setDefaultCommand(new IndexCommand(mIndexer, mRobotState::hasNote));
+
+        mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
         mDriverController
                 .x()
