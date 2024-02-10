@@ -88,7 +88,6 @@ public class AutonomousCommands {
 
         mPathBuilder.addPath(path);
 
-
         var command = sequence(
                         runOnce(() -> mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits)),
                         resetPose ? resetPose(path.getPreviewStartingHolonomicPose()) : none(),

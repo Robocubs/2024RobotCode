@@ -31,7 +31,7 @@ public final class GeometryUtil {
 
     public static Pose2d[] flipX(Pose2d[] poses, double fieldLength) {
         var flippedPoses = new Pose2d[poses.length];
-        for (var i=0; i<poses.length; i++) {
+        for (var i = 0; i < poses.length; i++) {
             flippedPoses[i] = flipX(poses[i], fieldLength);
         }
         return flippedPoses;

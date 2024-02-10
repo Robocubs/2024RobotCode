@@ -4,6 +4,8 @@
 
 package com.team1701.robot;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -55,6 +57,7 @@ public class RobotContainer {
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
+    private final Map<String, Pose2d[]> mAutonomousPaths = new HashMap<>();
 
     public RobotContainer() {
         Optional<Drive> drive = Optional.empty();
@@ -215,32 +218,38 @@ public class RobotContainer {
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         var demoCommand = commands.demo();
         var fourPieceCommand = commands.fourPiece();
+        mAutonomousPaths.put("Demo", demoCommand.path());
+        mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
 
         autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
         autonomousModeChooser.addOption("Four Piece Planner", new PathPlannerAuto("FourPiece"));
 
-        autonomousModeChooser.getSendableChooser().onChange(name -> {
-            Pose2d[] path;
-            switch (name) {
-                case "Demo":
-                    path = demoCommand.path();
-                    break;
-                case "Four Piece":
-                    path = fourPieceCommand.path();
-                    break;
-                default:
-                    path = new Pose2d[] {};
-                    break;
-            }
+        autonomousModeChooser.getSendableChooser().onChange(this::logAutonomousPath);
+        new Trigger(Configuration::isBlueAlliance)
+                .onTrue(runOnce(this::logAutonomousPath))
+                .onFalse(runOnce(this::logAutonomousPath));
 
-            if (Configuration.isRedAlliance()) {
-                path = GeometryUtil.flipX(path, FieldConstants.kFieldLongLengthMeters);
-            }
+        logAutonomousPath();
+    }
 
-            // TODO: Also export as Translation2d[]
-            Logger.recordOutput("Autonomous/PathPose2d", path);
-        });
+    private void logAutonomousPath() {
+        System.out.println("Logging autonomous path");
+        logAutonomousPath(autonomousModeChooser.getSendableChooser().getSelected());
+    }
+
+    private void logAutonomousPath(String name) {
+        if (!mAutonomousPaths.containsKey(name)) {
+            return;
+        }
+
+        var path = mAutonomousPaths.get(name);
+
+        if (Configuration.isRedAlliance()) {
+            path = GeometryUtil.flipX(path, FieldConstants.kFieldLongLengthMeters);
+        }
+
+        Logger.recordOutput("Autonomous/PathPose2d", path);
     }
 
     private void setupStateTriggers() {
