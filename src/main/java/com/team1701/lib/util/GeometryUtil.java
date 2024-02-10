@@ -30,8 +30,11 @@ public final class GeometryUtil {
     }
 
     public static Pose2d[] flipX(Pose2d[] poses, double fieldLength) {
-        // TODO: Flip poses
-        return poses;
+        var flippedPoses = new Pose2d[poses.length];
+        for (var i=0; i<poses.length; i++) {
+            flippedPoses[i] = flipX(poses[i], fieldLength);
+        }
+        return flippedPoses;
     }
 
     public static Rotation2d angleModulus(Rotation2d rotation) {

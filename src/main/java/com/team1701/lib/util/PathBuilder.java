@@ -25,7 +25,7 @@ public class PathBuilder {
     }
 
     public PathBuilder addPose(Pose2d pose) {
-        // TODO: Add to mPath
+        mPath.add(pose);
         return this;
     }
 
@@ -35,7 +35,10 @@ public class PathBuilder {
     }
 
     public PathBuilder addPath(PathPlannerPath path) {
-        // TODO: Add to mPath
+        path.getAllPathPoints().forEach(pathPoint -> {
+            mPath.add(new Pose2d(pathPoint.position, pathPoint.rotationTarget.getTarget()));
+        });
+
         return this;
     }
 }
