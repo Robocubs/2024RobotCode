@@ -5,6 +5,7 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
+import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -18,7 +19,22 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 public final class Constants {
     public static final double kLoopPeriodSeconds = 0.02;
 
-    public static final class Robot {}
+    public static final class Robot {
+        public static final double kRobotWidth = Units.inchesToMeters(23);
+        public static final double kRobotLength = Units.inchesToMeters(28.5);
+        public static final double kRobotWidthWithBumpers = kRobotWidth + Units.inchesToMeters(8);
+        public static final double kRobotLengthWithBumpers = kRobotLength + Units.inchesToMeters(8);
+        public static final double kRobotFrontToCenter = Units.inchesToMeters(23.0 / 2.0);
+        public static final double kRobotBackToCenter = kRobotLength - kRobotFrontToCenter;
+        public static final double kRobotSideToCenter = kRobotWidth / 2.0;
+
+        public static final Transform3d kRobotToShooterHinge = new Transform3d(
+                new Translation3d(Units.inchesToMeters(-5.0), Units.inchesToMeters(-1.0), Units.inchesToMeters(15.0)),
+                GeometryUtil.kRotation3dIdentity);
+        public static final Transform3d kShooterHingeToShooterExit = new Transform3d(
+                new Translation3d(Units.inchesToMeters(14.0), 0.0, Units.inchesToMeters(1.25)),
+                GeometryUtil.kRotation3dIdentity);
+    }
 
     public static final class Vision {
         /*

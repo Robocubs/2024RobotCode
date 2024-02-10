@@ -16,4 +16,9 @@ public final class FieldConstants {
             kFieldLongLengthMeters - kBlueSpeakerOpeningCenter.getX(),
             kBlueSpeakerOpeningCenter.getY(),
             kSpeakerHeight);
+
+    public static Translation3d kBlueSource =
+            new Translation3d(Units.inchesToMeters(30), Units.inchesToMeters(30), 0.0);
+    public static Translation3d kRedSource =
+            new Translation3d(kFieldLongLengthMeters - kBlueSource.getX(), kBlueSource.getY(), kBlueSource.getZ());
 }

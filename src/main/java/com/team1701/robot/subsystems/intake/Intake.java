@@ -47,6 +47,10 @@ public class Intake extends SubsystemBase {
         return mIntakeExitSensorInputs.blocked;
     }
 
+    public double getVelocityRadiansPerSecond() {
+        return mIntakeMotorInputs.velocityRadiansPerSecond;
+    }
+
     public void setForward() {
         mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed);
     }
