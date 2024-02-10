@@ -79,5 +79,6 @@
     "Uncomitted",
     "wpilibj",
     "WPILOG"
-  ]
+  ],
+  "java.debug.settings.onBuildFailureProceed": true
 }

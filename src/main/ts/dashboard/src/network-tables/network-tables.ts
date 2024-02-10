@@ -3,14 +3,15 @@ import { Nt4Provider } from '@frc-web-components/fwc/source-providers';
 import { createContext } from '@lit/context';
 import { Store } from '@webbitjs/store';
 import { WebbitConfig, WebbitConnector } from '@webbitjs/webbit';
-import { DirectiveResult } from 'lit/directive.js';
-import { SourcePose2d, SourceValue, ntPose2dDirective, ntValueDirective } from './directives';
+import { Directive, DirectiveResult } from 'lit/directive.js';
+import { SourcePose2d, SourceUint8Array, SourceValue, ntPose2dDirective, ntUnit8ArrayDirective, ntValueDirective } from './directives';
 
 export class NetworkTables {
   private readonly store: Store;
   private readonly provider: Nt4Provider;
   private readonly nt4ValueDirective;
   private readonly nt4Pose2dDirective;
+  private readonly nt4Unit8ArrayDirective;
 
   constructor(address: string) {
     this.provider = new Nt4Provider();
@@ -21,6 +22,7 @@ export class NetworkTables {
 
     this.nt4ValueDirective = ntValueDirective(this.store);
     this.nt4Pose2dDirective = ntPose2dDirective(this.store);
+    this.nt4Unit8ArrayDirective = ntUnit8ArrayDirective(this.store);
   }
 
   bindConnection(rootElement: HTMLElement) {
@@ -69,6 +71,9 @@ export class NetworkTables {
 
   $pose2d(key: string, value: number[]): DirectiveResult<typeof SourcePose2d> {
     return this.nt4Pose2dDirective(key, value);
+  }
+  $unit8Array(key: string, value: number[]): DirectiveResult<typeof SourceUint8Array> {
+    return this.nt4Unit8ArrayDirective(key, value);
   }
 }
 

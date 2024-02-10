@@ -43,6 +43,11 @@ export class Dashboard extends LitElement {
             length="0.6"
             .pose=${this.nt.$pose2d('/AdvantageKit/RealOutputs/RobotState/Pose2d', [])}
           ></frc-field-robot>
+          <frc-field-path
+            color="red"
+            opacity="1"
+            .poses=${this.nt.$unit8Array('/AdvantageKit/RealOutputs/Autonomous/PathPose2ds', [])}
+          ></frc-field-path>
         </frc-field>
         <team1701-match-timer timer=${this.nt.$value('/AdvantageKit/RealOutputs/RobotState/MatchTime', '0')}></team1701-match-timer>
       </div>

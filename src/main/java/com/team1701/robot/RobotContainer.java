@@ -239,8 +239,9 @@ public class RobotContainer {
             }
 
             // TODO: Also export as Translation2d[]
-            Logger.recordOutput("Autonomous/PathPose2d", path);
-        });
+
+            Logger.recordOutput("Autonomous/PathPose2ds", path);
+        }); // hi soren its me soren
     }
 
     private void setupStateTriggers() {
