@@ -71,6 +71,7 @@ public class AutonomousCommands {
     }
 
     private Command driveToPose(Pose2d pose, KinematicLimits kinematicLimits, boolean finishAtPose) {
+        mPathBuilder.addPose(pose);
         return DriveCommands.driveToPose(
                 mDrive, () -> autoFlipPose(pose), mRobotState::getPose2d, kinematicLimits, finishAtPose);
     }
@@ -84,6 +85,9 @@ public class AutonomousCommands {
         if (path == null) {
             return idle(); // Prevent auto mode from continuing if path failed to load
         }
+
+        mPathBuilder.addPath(path);
+
 
         var command = sequence(
                         runOnce(() -> mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits)),
@@ -127,7 +131,7 @@ public class AutonomousCommands {
                         driveToPose(new Pose2d(10.0, 5.0, GeometryUtil.kRotationMinusHalfPi), false))
                 .withName("AutonomousDemo");
 
-        return new AutonomousCommand(command, new Pose2d[] {}); // TODO: Add path
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
     public AutonomousCommand fourPiece() {
