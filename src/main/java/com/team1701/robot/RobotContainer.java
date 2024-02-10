@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
@@ -214,7 +213,6 @@ public class RobotContainer {
                 poses -> Logger.recordOutput("PathPlanner/Path", poses.toArray(Pose2d[]::new)));
 
         // TODO: Create wrapper class for autonomous chooser
-        // TODO: Also update on change to team color
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         var demoCommand = commands.demo();
         var fourPieceCommand = commands.fourPiece();
@@ -223,23 +221,24 @@ public class RobotContainer {
 
         autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
-        autonomousModeChooser.addOption("Four Piece Planner", new PathPlannerAuto("FourPiece"));
-
         autonomousModeChooser.getSendableChooser().onChange(this::logAutonomousPath);
+
+        var logAutonomousPathCommand =
+                runOnce(this::logAutonomousPath).ignoringDisable(true).withName("LogAutonomousPath");
         new Trigger(Configuration::isBlueAlliance)
-                .onTrue(runOnce(this::logAutonomousPath))
-                .onFalse(runOnce(this::logAutonomousPath));
+                .onTrue(logAutonomousPathCommand)
+                .onFalse(logAutonomousPathCommand);
 
         logAutonomousPath();
     }
 
     private void logAutonomousPath() {
-        System.out.println("Logging autonomous path");
         logAutonomousPath(autonomousModeChooser.getSendableChooser().getSelected());
     }
 
     private void logAutonomousPath(String name) {
         if (!mAutonomousPaths.containsKey(name)) {
+            Logger.recordOutput("Autonomous/PathPose2d", new Pose2d[] {});
             return;
         }
 
