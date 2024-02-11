@@ -7,7 +7,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.team1701.lib.alerts.Alert;
-import com.team1701.lib.drivers.cameras.ObjectDetector.DetectorCameraIO.DetectorCameraInputs;
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.states.NoteState;
@@ -22,7 +21,7 @@ import org.photonvision.PhotonUtils;
 
 public class DetectorCamera {
     private final DetectorCameraIO mDetectorCameraIO;
-    private final DetectorCameraInputs mDetectorCameraInputs;
+    private final DetectorCameraInputsAutoLogged mDetectorCameraInputs;
     private final String mLoggingPrefix;
     private final Supplier<Pose3d> mRobotPoseSupplier;
     private final ArrayList<Predicate<Pose3d>> mPoseFilters = new ArrayList<>();
@@ -44,7 +43,7 @@ public class DetectorCamera {
         mDetectorCameraIO = cameraIO;
         mConfig = mDetectorCameraIO.getVisionConfig();
         mRobotPoseSupplier = robotPoseSupplier;
-        mDetectorCameraInputs = new DetectorCameraInputs();
+        mDetectorCameraInputs = new DetectorCameraInputsAutoLogged();
         mLoggingPrefix = "DetectorCamera/" + mConfig.cameraName + "/";
         mDisconnectedAlert = Alert.error("DetectorCamera " + mConfig.cameraName + " disconnected");
     }
@@ -80,6 +79,8 @@ public class DetectorCamera {
 
     public void periodic() {
         mDetectorCameraIO.updateInputs(mDetectorCameraInputs);
+        Logger.processInputs(mLoggingPrefix, mDetectorCameraInputs);
+
         mDisconnectedAlert.setEnabled(!mDetectorCameraInputs.isConnected);
         var currentRobotPose = mRobotPoseSupplier.get();
         List<Pose3d> detectedObjects = new ArrayList<Pose3d>();
