@@ -13,6 +13,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.cameras.AprilTagCameraIO;
 import com.team1701.lib.drivers.cameras.AprilTagCameraIOCubVision;
+import com.team1701.lib.drivers.cameras.ObjectDetector.DetectorCameraIOLimelight;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
@@ -138,6 +139,8 @@ public class RobotContainer {
                     new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
                     new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
                     new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig)));
+            vision.ifPresent(
+                    v -> v.constructDetectorCameras(new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)));
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(

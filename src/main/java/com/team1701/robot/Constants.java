@@ -97,6 +97,14 @@ public final class Constants {
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
                 kFallbackPoseStrategy);
+
+        public static final VisionConfig kLimelightConfig = new VisionConfig(
+                "limelight",
+                new Transform3d(new Translation3d(0, 0.2, 0.3), new Rotation3d()),
+                0,
+                VisionCameraConfig.kLimelightConfig,
+                null,
+                null);
     }
 
     public static final class Controls {

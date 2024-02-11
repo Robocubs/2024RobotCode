@@ -11,6 +11,7 @@ public class VisionCameraConfig {
     // autoExposure=1 and a specified cameraExposure apparently tells OpenCV that the manual exposure is to be
     // used
     public static VisionCameraConfig kStandardArduCamConfig = new VisionCameraConfig(1280, 720, 1, 75, 0, false);
+    public static VisionCameraConfig kLimelightConfig = new VisionCameraConfig(960, 720, 0, 0, 0, false);
 
     VisionCameraConfig(
             int cameraResolutionWidth,

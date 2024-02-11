@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.AprilTagCamera;
 import com.team1701.lib.drivers.cameras.AprilTagCameraIO;
+import com.team1701.lib.drivers.cameras.ObjectDetector.DetectorCamera;
+import com.team1701.lib.drivers.cameras.ObjectDetector.DetectorCameraIO;
 import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
 import com.team1701.robot.Constants;
 import com.team1701.robot.Robot;
@@ -33,7 +35,8 @@ public class Vision extends SubsystemBase {
 
     private final RobotState mRobotState;
     private AprilTagFieldLayout mAprilTagFieldLayout = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
-    private final List<AprilTagCamera> mCameras = new ArrayList<>();
+    private final List<AprilTagCamera> mAprilTagCameras = new ArrayList<>();
+    private List<DetectorCamera> mDetectorCameras = new ArrayList<>();
     private final List<EstimatedRobotPose> mEstimatedRobotPoses = new ArrayList<>();
     private Optional<VisionSystemSim> mVisionSim = Optional.empty();
 
@@ -54,7 +57,7 @@ public class Vision extends SubsystemBase {
         }
 
         for (AprilTagCameraIO cameraIO : cameraIOs) {
-            mCameras.add(new AprilTagCamera(cameraIO, fieldLayoutSupplier, mRobotState::getPose3d));
+            mAprilTagCameras.add(new AprilTagCamera(cameraIO, fieldLayoutSupplier, mRobotState::getPose3d));
         }
 
         if (Robot.isSimulation()) {
@@ -68,20 +71,29 @@ public class Vision extends SubsystemBase {
             cameraProperties.setAvgLatencyMs(10);
             cameraProperties.setLatencyStdDevMs(5);
 
-            mCameras.forEach(camera -> camera.addToVisionSim(visionSim, cameraProperties));
+            mAprilTagCameras.forEach(camera -> camera.addToVisionSim(visionSim, cameraProperties));
 
             mVisionSim = Optional.of(visionSim);
         }
 
-        mCameras.forEach(camera -> {
+        mAprilTagCameras.forEach(camera -> {
             camera.addEstimatedPoseConsumer(mEstimatedRobotPoses::add);
             camera.addTargetFilter(target -> target.getPoseAmbiguity() < Constants.Vision.kAmbiguityThreshold);
         });
     }
 
+    public void constructDetectorCameras(DetectorCameraIO... detectorCameraIOs) {
+        for (DetectorCameraIO cameraIO : detectorCameraIOs) {
+            var cam = new DetectorCamera(cameraIO, mRobotState::getPose3d);
+            cam.addNoteStateConsumer(mRobotState::addDetectedNotes);
+            mDetectorCameras.add(cam);
+        }
+    }
+
     @Override
     public void periodic() {
-        mCameras.forEach(AprilTagCamera::periodic);
+        mAprilTagCameras.forEach(AprilTagCamera::periodic);
+        mDetectorCameras.forEach(DetectorCamera::periodic);
 
         mRobotState.addVisionMeasurements(mEstimatedRobotPoses.stream()
                 .map(estimation -> {

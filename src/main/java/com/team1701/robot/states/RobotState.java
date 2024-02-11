@@ -101,14 +101,14 @@ public class RobotState {
 
     @AutoLogOutput
     public Translation2d[] getDetectedNotePoses2d() {
-        return mDetectedNotes.stream().map(note -> note.pose).toArray(Translation2d[]::new);
+        return mDetectedNotes.stream()
+                .map(note -> note.pose.getTranslation().toTranslation2d())
+                .toArray(Translation2d[]::new);
     }
 
     @AutoLogOutput
     public Translation3d[] getDetectedNotePoses3d() {
-        return mDetectedNotes.stream()
-                .map(note -> new Translation3d(note.pose.getX(), note.pose.getY(), 0.0))
-                .toArray(Translation3d[]::new);
+        return mDetectedNotes.stream().map(note -> note.pose.getTranslation()).toArray(Translation3d[]::new);
     }
 
     public void addDetectedNotes(List<NoteState> notes) {
