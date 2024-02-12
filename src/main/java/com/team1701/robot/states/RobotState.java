@@ -149,7 +149,6 @@ public class RobotState {
                         shooterHingePose.getRotation().getY()
                                 - mShooter.get().getAngle().getRadians(),
                         shooterHingePose.getRotation().getZ()));
-        // .transformBy(Constants.Robot.kShooterHingeToShooterExit);
     }
 
     @AutoLogOutput
@@ -160,12 +159,5 @@ public class RobotState {
                         .getTranslation());
 
         return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
-
-        /*
-        var shooterDistanceToTarget = getPose2d()
-                .getTranslation()
-                .getDistance(getSpeakerPose().toTranslation2d());
-        return new Rotation2d(
-                shooterDistanceToTarget, FieldConstants.kSpeakerHeight - Constants.Shooter.kShooterAxisHeight); */
     }
 }
