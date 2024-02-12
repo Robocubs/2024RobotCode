@@ -10,6 +10,7 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import edu.wpi.first.wpilibj.Notifier;
 
 public class GenericSignalSamplingThread implements SignalSamplingThread {
@@ -36,7 +37,7 @@ public class GenericSignalSamplingThread implements SignalSamplingThread {
         return mFrequency;
     }
 
-    public Queue<Double> addSignal(StatusSignal<Double> signal) {
+    public Queue<Double> addSignal(ParentDevice device, StatusSignal<Double> signal) {
         // 100 samples should be plenty for any use cases
         var queue = new ArrayBlockingQueue<Double>(100);
 

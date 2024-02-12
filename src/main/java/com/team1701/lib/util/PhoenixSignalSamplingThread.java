@@ -1,5 +1,6 @@
 package com.team1701.lib.util;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -9,13 +10,19 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.hardware.ParentDevice;
+import com.team1701.lib.alerts.Alert;
 
 public class PhoenixSignalSamplingThread implements SignalSamplingThread {
     private final Lock mSignalsLock = new ReentrantLock();
     private final Lock mPhoenixSignalsLock = new ReentrantLock();
     private final List<Runnable> mSignalQueues = new ArrayList<>();
     private final double mFrequency;
+    private static final Alert mAlert = Alert.error("Added unsupported signal type to PhoenixSignalSamplingThread");
+
+    private boolean mIsCANFD;
 
     private BaseStatusSignal[] mPhoenixSignals = new BaseStatusSignal[] {};
 
@@ -23,6 +30,7 @@ public class PhoenixSignalSamplingThread implements SignalSamplingThread {
         var thread = new Thread(this::periodic);
         thread.start();
         mFrequency = frequency;
+        mIsCANFD = true;
     }
 
     public Lock getLock() {
@@ -33,7 +41,7 @@ public class PhoenixSignalSamplingThread implements SignalSamplingThread {
         return mFrequency;
     }
 
-    public Queue<Double> addSignal(StatusSignal<Double> signal) {
+    public Queue<Double> addSignal(ParentDevice device, StatusSignal<Double> signal) {
         // 100 samples should be plenty for any use cases
         var queue = new ArrayBlockingQueue<Double>(100);
 
@@ -42,6 +50,7 @@ public class PhoenixSignalSamplingThread implements SignalSamplingThread {
             mSignalsLock.lock();
             try {
                 mSignalQueues.add(new PhoenixSignalQueue(queue, signal));
+                mIsCANFD = CANBus.isNetworkFD(device.getNetwork());
                 var newSignals = new BaseStatusSignal[mPhoenixSignals.length + 1];
                 System.arraycopy(mPhoenixSignals, 0, newSignals, 0, mPhoenixSignals.length);
                 newSignals[mPhoenixSignals.length] = signal;
@@ -59,9 +68,16 @@ public class PhoenixSignalSamplingThread implements SignalSamplingThread {
     private void periodic() {
         mPhoenixSignalsLock.lock();
         try {
-            if (mPhoenixSignals.length > 0) {
+            if (mIsCANFD) {
                 BaseStatusSignal.waitForAll(2 / mFrequency, mPhoenixSignals);
+            } else {
+                Thread.sleep((long) (1000.0 / mFrequency));
+                if (mPhoenixSignals.length > 0) {
+                    BaseStatusSignal.waitForAll(2 / mFrequency, mPhoenixSignals);
+                }
             }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             mPhoenixSignalsLock.unlock();
         }
@@ -90,7 +106,7 @@ public class PhoenixSignalSamplingThread implements SignalSamplingThread {
 
     @Override
     public Queue<Double> addSignal(DoubleSupplier signal) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addSignal'");
+        mAlert.enable();
+        return new ArrayDeque<>();
     }
 }
