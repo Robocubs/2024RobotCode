@@ -29,10 +29,10 @@ public final class Constants {
         public static final double kRobotSideToCenter = kRobotWidth / 2.0;
 
         public static final Transform3d kRobotToShooterHinge = new Transform3d(
-                new Translation3d(Units.inchesToMeters(-5.0), Units.inchesToMeters(-1.0), Units.inchesToMeters(15.0)),
+                new Translation3d(Units.inchesToMeters(-3), Units.inchesToMeters(0), Units.inchesToMeters(7.52)),
                 GeometryUtil.kRotation3dIdentity);
         public static final Transform3d kShooterHingeToShooterExit = new Transform3d(
-                new Translation3d(Units.inchesToMeters(14.0), 0.0, Units.inchesToMeters(1.25)),
+                new Translation3d(Units.inchesToMeters(10.0), 0.0, Units.inchesToMeters(1.9)),
                 GeometryUtil.kRotation3dIdentity);
     }
 
@@ -252,6 +252,7 @@ public final class Constants {
     public static final class Shooter {
         // TODO: Update values
         public static final double kRollerReduction = 1.0;
+        public static final double kEncoderToShooterReduction = 24.0 / 42.0;
         public static final double kAngleReduction = 1.0 / 105.0;
         public static final int kShooterRightUpperRollerMotorId = 23;
         public static final int kShooterRightLowerRollerMotorId = 25;
@@ -259,11 +260,10 @@ public final class Constants {
         public static final int kShooterLeftUpperRollerMotorId = 22;
         public static final int kShooterRotationMotorId = 26;
 
-        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(180);
-        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(85);
+        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(110);
+        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(18);
 
-        public static final double kShooterAxisHeight = Units.inchesToMeters(10);
-        public static final double kShooterAxisOffset = Units.inchesToMeters(10); // + is toward front of bot
+        public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
 
         public static final LoggedTunableNumber kRollerKff = new LoggedTunableNumber("Shooter/Motor/Roller/Kff");
         public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");

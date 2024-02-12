@@ -14,7 +14,6 @@ import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -130,7 +129,7 @@ public class NoteSimulator {
                     note.position += averageRollerSpeed * kShooterRollerRadius * Constants.kLoopPeriodSeconds;
 
                     if (averageRollerSpeed > 0 && note.position > kShooterPathLength) {
-                        var shooterExitPose = getShooterExitPose();
+                        var shooterExitPose = mRobotState.getShooterExitPose();
                         var notePose = shooterExitPose.transformBy(
                                 new Transform3d(kNoteRadius, 0, 0, shooterExitPose.getRotation()));
                         var noteVelocity = new Translation3d(averageRollerSpeed * kShooterRollerRadius, 0, 0);
@@ -164,16 +163,6 @@ public class NoteSimulator {
     public Pose3d[] getNotePoses() {
         // TODO: Add notes in robot
         return mNotesOnField.stream().map(note -> note.pose).toArray(Pose3d[]::new);
-    }
-
-    // TODO: Move to robot state
-    @AutoLogOutput
-    public Pose3d getShooterExitPose() {
-        return mRobotState
-                .getPose3d()
-                .transformBy(Constants.Robot.kRobotToShooterHinge)
-                .rotateBy(new Rotation3d(0, mShooter.getAngle().getRadians(), 0))
-                .transformBy(Constants.Robot.kShooterHingeToShooterExit);
     }
 
     private class NoteOnField {

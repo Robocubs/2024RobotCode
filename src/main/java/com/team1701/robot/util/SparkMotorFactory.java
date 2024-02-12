@@ -49,6 +49,10 @@ public class SparkMotorFactory {
                         () -> motor.setSoftLimit(
                                 SoftLimitDirection.kForward, (float) Constants.Shooter.kShooterUpperLimitRotations),
                         errorAlert);
+                configureWithRetry(
+                        () -> motor.setSoftLimit(
+                                SoftLimitDirection.kReverse, (float) Constants.Shooter.kShooterLowerLimitRotations),
+                        errorAlert);
                 reduction = Constants.Shooter.kAngleReduction;
                 break;
             default:

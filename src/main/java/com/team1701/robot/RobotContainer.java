@@ -28,6 +28,7 @@ import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
+import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
@@ -202,6 +203,8 @@ public class RobotContainer {
 
         this.mIntake = intake.orElseGet(() -> new Intake(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
+        mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
+
         setupControllerBindings();
         setupAutonomous();
         setupStateTriggers();
@@ -229,6 +232,8 @@ public class RobotContainer {
 
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
+        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState));
+
         mDriverController
                 .x()
                 .onTrue(runOnce(() -> mDrive.zeroGyroscope(
@@ -240,7 +245,9 @@ public class RobotContainer {
                 .rightBumper()
                 .whileTrue(
                         DriveCommands.rotateToSpeaker(mDrive, mRobotState, Constants.Drive.kFastKinematicLimits, true));
-        mDriverController.leftTrigger().whileTrue(swerveLock(mDrive));
+        mDriverController.leftBumper().whileTrue(swerveLock(mDrive));
+
+        mDriverController.leftTrigger().onTrue(ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState));
 
         DriverStation.silenceJoystickConnectionWarning(true);
     }
@@ -273,6 +280,15 @@ public class RobotContainer {
 
     public Optional<Command> getAutonomousCommand() {
         return Optional.ofNullable(autonomousModeChooser.get());
+    }
+
+    public Command getZeroCommand() {
+        return runOnce(() -> {
+                    mShooter.zeroShooterRotation();
+                    mDrive.zeroModules();
+                })
+                .ignoringDisable(true)
+                .withName("ZeroEncoders");
     }
 
     public RobotState getRobotState() {

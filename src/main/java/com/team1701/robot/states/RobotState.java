@@ -13,10 +13,12 @@ import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
+import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -30,14 +32,16 @@ public class RobotState {
 
     private Optional<Indexer> mIndexer = Optional.empty();
     private Optional<Intake> mIntake = Optional.empty();
+    private Optional<Shooter> mShooter = Optional.empty();
 
     private final PoseEstimator mPoseEstimator =
             new PoseEstimator(Constants.Drive.kKinematics, VecBuilder.fill(0.005, 0.005, 0.0005));
     private final List<NoteState> mDetectedNotes = new ArrayList<>();
 
-    public void addSubsystems(Indexer indexer, Intake intake) {
+    public void addSubsystems(Shooter shooter, Indexer indexer, Intake intake) {
         mIndexer = Optional.of(indexer);
         mIntake = Optional.of(intake);
+        mShooter = Optional.of(shooter);
     }
 
     public void periodic() {
@@ -133,5 +137,35 @@ public class RobotState {
         }
         var hasNote = mIntake.get().hasNote() || mIndexer.get().hasNote();
         return mHasNote.update(hasNote, Timer.getFPGATimestamp());
+    }
+
+    @AutoLogOutput
+    public Pose3d getShooterExitPose() {
+        var shooterHingePose = getPose3d().transformBy(Constants.Robot.kRobotToShooterHinge);
+        return new Pose3d(
+                shooterHingePose.getTranslation(),
+                new Rotation3d(
+                        shooterHingePose.getRotation().getX(),
+                        shooterHingePose.getRotation().getY()
+                                - mShooter.get().getAngle().getRadians(),
+                        shooterHingePose.getRotation().getZ()));
+        // .transformBy(Constants.Robot.kShooterHingeToShooterExit);
+    }
+
+    @AutoLogOutput
+    public Rotation2d calculateShooterAngleTowardsSpeaker() {
+        var translationToSpeaker = getSpeakerPose()
+                .minus(getPose3d()
+                        .transformBy(Constants.Robot.kRobotToShooterHinge)
+                        .getTranslation());
+
+        return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
+
+        /*
+        var shooterDistanceToTarget = getPose2d()
+                .getTranslation()
+                .getDistance(getSpeakerPose().toTranslation2d());
+        return new Rotation2d(
+                shooterDistanceToTarget, FieldConstants.kSpeakerHeight - Constants.Shooter.kShooterAxisHeight); */
     }
 }
