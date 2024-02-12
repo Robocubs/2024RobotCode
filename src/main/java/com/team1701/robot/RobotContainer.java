@@ -87,12 +87,12 @@ public class RobotContainer {
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(14),
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(15),
-                                        new EncoderIOAnalog(3),
+                                        new EncoderIOAnalog(2),
                                         Rotation2d.fromRadians(-4.522)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(16),
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(17),
-                                        new EncoderIOAnalog(2),
+                                        new EncoderIOAnalog(3),
                                         Rotation2d.fromRadians(-0.184)),
                             },
                             mRobotState));
