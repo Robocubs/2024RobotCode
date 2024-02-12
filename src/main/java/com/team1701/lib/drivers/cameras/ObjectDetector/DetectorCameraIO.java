@@ -22,6 +22,10 @@ public interface DetectorCameraIO {
         public boolean seesTarget;
         public boolean isConnected;
 
+        public DetectorCameraInputs() {
+            constructEmptyInputArrays(0);
+        }
+
         public void constructEmptyInputArrays(int n) {
             detectedClasses = new String[n];
             detectedClassIDs = new long[n];
