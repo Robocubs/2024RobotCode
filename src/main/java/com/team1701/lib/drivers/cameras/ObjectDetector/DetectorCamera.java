@@ -8,7 +8,6 @@ import java.util.function.Supplier;
 
 import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
-import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.states.NoteState;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -58,8 +57,7 @@ public class DetectorCamera {
                 Math.toRadians(ty));
         double y = x * Math.tan(Math.toRadians(tx));
 
-        var t = new Translation2d(x, -y);
-        var translationToObject = t.minus(t.times(ta / Constants.Vision.kMaxAreaFitInFrame));
+        var translationToObject = new Translation2d(x, -y);
         var robotToCamTransform = new Transform2d(
                 new Translation2d(robotToCamPose.getX(), robotToCamPose.getY()),
                 new Rotation2d(robotToCamPose.getRotation().getZ()));
@@ -75,7 +73,7 @@ public class DetectorCamera {
         return new Pose3d(
                 objectPose2d.getX(),
                 objectPose2d.getY(),
-                FieldConstants.kNoteHeight,
+                FieldConstants.kNoteHeight / 2,
                 new Rotation3d(0.0, 0.0, objectPose2d.getRotation().getRadians()));
     }
 
