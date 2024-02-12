@@ -26,13 +26,10 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
     private Optional<Command> mAutonomousCommand = Optional.empty();
     private RobotContainer mRobotContainer;
+    private Command mZeroCommand;
 
     @Override
     public void robotInit() {
-        initializeAdvantageKit();
-    }
-
-    private void initializeAdvantageKit() {
         // Record metadata
         Logger.recordMetadata("RuntimeType", getRuntimeType().toString());
         Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
@@ -100,6 +97,8 @@ public class Robot extends LoggedRobot {
         // Build robot container
         mRobotContainer = new RobotContainer();
 
+        mZeroCommand = mRobotContainer.getZeroCommand();
+
         // Enable command logging
         SmartDashboard.putData(CommandScheduler.getInstance());
 
@@ -126,13 +125,15 @@ public class Robot extends LoggedRobot {
     public void disabledPeriodic() {}
 
     @Override
-    public void disabledExit() {}
+    public void disabledExit() {
+        mZeroCommand.schedule();
+    }
 
     @Override
     public void autonomousInit() {
         CommandScheduler.getInstance().cancelAll();
         mAutonomousCommand = mRobotContainer.getAutonomousCommand();
-        mAutonomousCommand.ifPresent(command -> CommandScheduler.getInstance().schedule(command));
+        mAutonomousCommand.ifPresent((command) -> command.schedule());
     }
 
     @Override
