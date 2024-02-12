@@ -43,7 +43,7 @@ public class MotorIOSparkMax implements MotorIO {
                     samples.clear();
                 },
                 () -> inputs.positionRadians = toReducedRadians(mEncoder.getPosition()));
-         mVelocitySamples.ifPresentOrElse(
+        mVelocitySamples.ifPresentOrElse(
                 samples -> {
                     inputs.velocityRadiansPerSecondSamples =
                             samples.stream().mapToDouble(this::toReducedRadians).toArray();
@@ -58,7 +58,6 @@ public class MotorIOSparkMax implements MotorIO {
     private double toReducedRadians(double value) {
         return Units.rotationsToRadians(value) * mReduction;
     }
-
 
     @Override
     public void setPositionControl(Rotation2d position) {

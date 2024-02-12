@@ -65,8 +65,6 @@ public class MotorIOTalonFX implements MotorIO {
         inputs.velocityRadiansPerSecond = encoderUnitsToReducedUnits(mVelocitySignal.getValue());
     }
 
-    
-
     private double encoderUnitsToReducedUnits(double encoderUnits) {
         return Units.rotationsToRadians(encoderUnits) * mReduction;
     }
