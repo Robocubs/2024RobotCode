@@ -48,14 +48,31 @@ public class MotorIOSparkFlex implements MotorIO {
 
     @Override
     public void setPositionControl(Rotation2d position) {
-        mController.setReference(position.getRotations(), CANSparkFlex.ControlType.kPosition);
+        mController.setReference(position.getRotations() / mReduction, CANSparkFlex.ControlType.kPosition);
+    }
+
+    @Override
+    public void setSmoothPositionControl(
+            Rotation2d position, double maxVelocityRadiansPerSecond, double maxAccelerationRadiansPerSecond) {
+        mController.setReference(position.getRotations() / mReduction, CANSparkFlex.ControlType.kSmartMotion);
+        mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kSCurve, 0);
+        mController.setSmartMotionMaxVelocity(maxVelocityRadiansPerSecond, 0);
+        mController.setSmartMotionMaxAccel(maxAccelerationRadiansPerSecond, 0);
     }
 
     @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
         mController.setReference(
-                Units.radiansPerSecondToRotationsPerMinute(velocityRadiansPerSecond),
+                Units.radiansPerSecondToRotationsPerMinute(velocityRadiansPerSecond / mReduction),
                 CANSparkFlex.ControlType.kVelocity);
+    }
+
+    @Override
+    public void setSmoothVelocityControl(
+            double velocityRadiansPerSecond, double maxAccelerationRadiansPerSecondSquared) {
+        mController.setReference(velocityRadiansPerSecond / mReduction, CANSparkFlex.ControlType.kSmartVelocity);
+        mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kSCurve, 0);
+        mController.setSmartMotionMaxAccel(maxAccelerationRadiansPerSecondSquared, 0);
     }
 
     @Override
@@ -99,5 +116,10 @@ public class MotorIOSparkFlex implements MotorIO {
 
         var queue = samplingThread.addSignal(mEncoder::getVelocity);
         mVelocitySamples = Optional.of(queue);
+    }
+
+    @Override
+    public void setPosition(Rotation2d position) {
+        mEncoder.setPosition(position.getRotations());
     }
 }
