@@ -37,6 +37,7 @@ import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.SparkFlexMotorFactory;
+import com.team1701.robot.util.TalonFxMotorFactory;
 import com.team1701.robot.util.SparkFlexMotorFactory.ShooterMotorUsage;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -75,20 +76,20 @@ public class RobotContainer {
                             new GyroIOPigeon2(10),
                             new SwerveModuleIO[] {
                                 new SwerveModuleIO(
-                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(10),
-                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(11),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(10),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(11),
                                         new EncoderIOAnalog(0)),
                                 new SwerveModuleIO(
-                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(12),
-                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(13),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(12),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(13),
                                         new EncoderIOAnalog(1)),
                                 new SwerveModuleIO(
-                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(16),
-                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(17),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(16),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(17),
                                         new EncoderIOAnalog(3)),
                                 new SwerveModuleIO(
-                                        SparkFlexMotorFactory.createDriveMotorIOSparkMax(14),
-                                        SparkFlexMotorFactory.createSteerMotorIOSparkMax(15),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(14),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(15),
                                         new EncoderIOAnalog(2)),
                             },
                             mRobotState));
