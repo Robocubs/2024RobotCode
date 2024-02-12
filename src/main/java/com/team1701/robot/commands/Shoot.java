@@ -4,8 +4,6 @@ import java.util.stream.DoubleStream;
 
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
-import com.team1701.robot.Constants;
-import com.team1701.robot.FieldConstants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -46,13 +44,7 @@ public class Shoot extends Command {
 
     @Override
     public void execute() {
-        var distanceToTarget = mRobotState
-                .getPose2d()
-                .getTranslation()
-                .getDistance(mRobotState.getSpeakerPose().toTranslation2d());
-        var shooterAngleFromHorizontal = new Rotation2d(
-                distanceToTarget - Constants.Shooter.kShooterAxisOffset,
-                FieldConstants.kSpeakerHeight - Constants.Shooter.kShooterAxisHeight);
+        var shooterAngleFromHorizontal = mRobotState.calculateShooterAngleTowardsSpeaker();
 
         mShooter.setRotationAngle(shooterAngleFromHorizontal);
 
