@@ -84,12 +84,12 @@ public class RobotContainer {
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(13),
                                         new EncoderIOAnalog(1)),
                                 new SwerveModuleIO(
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(16),
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(17),
-                                        new EncoderIOAnalog(3)),
-                                new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(14),
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(15),
+                                        new EncoderIOAnalog(3)),
+                                new SwerveModuleIO(
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(16),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(17),
                                         new EncoderIOAnalog(2)),
                             },
                             mRobotState));
