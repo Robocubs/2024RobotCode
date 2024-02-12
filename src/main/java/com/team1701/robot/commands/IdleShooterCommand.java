@@ -15,7 +15,7 @@ import org.littletonrobotics.junction.Logger;
 
 // Default shooter command which consistently updates shooter angle to always point towards the speaker
 public class IdleShooterCommand extends Command {
-    private static final String kLoggingPrefix = "Command/AlwaysAngleTowardsShooter/";
+    private static final String kLoggingPrefix = "Command/IdleShooterCommand/";
 
     private static final LoggedTunableNumber kAngleToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
@@ -30,11 +30,6 @@ public class IdleShooterCommand extends Command {
         mRobotState = robotState;
 
         addRequirements(shooter);
-    }
-
-    @Override
-    public void initialize() {
-        Logger.recordOutput(kLoggingPrefix + "SuccessfullyInitialized", true);
     }
 
     @Override
@@ -62,6 +57,5 @@ public class IdleShooterCommand extends Command {
     @Override
     public void end(boolean interrupted) {
         mShooter.stopRotation();
-        Logger.recordOutput(kLoggingPrefix + "EndDefaultCommand", interrupted);
     }
 }

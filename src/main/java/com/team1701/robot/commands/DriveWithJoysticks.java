@@ -7,6 +7,7 @@ import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.subsystems.drive.Drive;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -38,11 +39,9 @@ public class DriveWithJoysticks extends Command {
 
         var translationSign = Configuration.isBlueAlliance() ? 1.0 : -1.0;
         var throttle = mThrottle.getAsDouble() * translationSign;
-        var strafe = 0;
-        // var strafe = mStrafe.getAsDouble() * translationSign;
+        var strafe = mStrafe.getAsDouble() * translationSign;
         var magnitude = Math.hypot(throttle, strafe);
-        var rotation = 0;
-        // var rotation = MathUtil.applyDeadband(mRotation.getAsDouble(), Constants.Controls.kDriverDeadband);
+        var rotation = MathUtil.applyDeadband(mRotation.getAsDouble(), Constants.Controls.kDriverDeadband);
 
         var rotationRadiansPerSecond = Math.copySign(rotation * rotation, rotation)
                 * kinematicLimits.maxDriveVelocity()

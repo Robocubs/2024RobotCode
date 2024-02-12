@@ -37,7 +37,5 @@ public interface MotorIO {
 
     public default void enableVelocitySampling(SignalSamplingThread samplingThread) {}
 
-    public default void isInverted(boolean inverted) {}
-
-    public default void follow(MotorIO motor) {}
+    public default void setPosition(Rotation2d position) {}
 }

@@ -43,6 +43,7 @@ public class Shooter extends SubsystemBase {
     private MechanismLigament2d mShooterLigament;
     private MechanismRoot2d mShooterRoot;
 
+    @AutoLogOutput(key = "Shooter/RotationMotorOffset")
     private Optional<Rotation2d> mRotationMotorOffset = Optional.empty();
 
     public Shooter(
@@ -58,9 +59,6 @@ public class Shooter extends SubsystemBase {
         mLeftLowerShooterMotorIO = leftLowerMotor;
 
         mRotationShooterMotorIO = rotationMotor;
-
-        mLeftLowerShooterMotorIO.isInverted(true);
-        mLeftUpperShooterMotorIO.isInverted(true);
 
         mRightUpperShooterMotorIO.setBrakeMode(false);
         mRightLowerShooterMotorIO.setBrakeMode(false);
@@ -104,9 +102,9 @@ public class Shooter extends SubsystemBase {
     @AutoLogOutput
     private void createMechanism2d() {
         mShooterMechanism = new Mechanism2d(15, 9.10);
-        mShooterRoot = mShooterMechanism.getRoot("root", 1, 0);
-        mShooterLigament = mShooterRoot.append(
-                new MechanismLigament2d("shooter", 12.5, getAngle().getDegrees()));
+        mShooterRoot = mShooterMechanism.getRoot("root", 3, 3);
+        mShooterLigament =
+                mShooterRoot.append(new MechanismLigament2d("arm", 9, getAngle().getDegrees()));
     }
 
     @Override
@@ -156,6 +154,8 @@ public class Shooter extends SubsystemBase {
                     .position
                     .minus(Constants.Shooter.kShooterAngleEncoderOffset)
                     .minus(Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians)));
+
+            mRotationShooterMotorIO.setPosition(mRotationMotorOffset.get());
         }
 
         mShooterLigament.setAngle(getAngle().getDegrees());

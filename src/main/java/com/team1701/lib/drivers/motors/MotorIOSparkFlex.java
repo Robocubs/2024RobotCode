@@ -119,7 +119,7 @@ public class MotorIOSparkFlex implements MotorIO {
     }
 
     @Override
-    public void isInverted(boolean inverted) {
-        mMotor.setInverted(inverted);
+    public void setPosition(Rotation2d position) {
+        mEncoder.setPosition(position.getRotations());
     }
 }

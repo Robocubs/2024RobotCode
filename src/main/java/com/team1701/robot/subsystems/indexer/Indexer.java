@@ -13,7 +13,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Indexer extends SubsystemBase {
     private final MotorIO mIndexerMotorIO;
-    private final MotorInputsAutoLogged mIndexerMotorInputsAutoLogged = new MotorInputsAutoLogged();
+    private final MotorInputsAutoLogged mIndexerMotorInputs = new MotorInputsAutoLogged();
 
     private final DigitalIO mIndexerEntranceSensor;
     private final DigitalIO mIndexerExitSensor;
@@ -36,21 +36,29 @@ public class Indexer extends SubsystemBase {
 
     @Override
     public void periodic() {
-        mIndexerMotorIO.updateInputs(mIndexerMotorInputsAutoLogged);
+        mIndexerMotorIO.updateInputs(mIndexerMotorInputs);
         mIndexerEntranceSensor.updateInputs(mIndexerEntranceSensorInputs);
         mIndexerExitSensor.updateInputs(mIndexerExitSensorInputs);
 
         Logger.processInputs("Indexer/EntranceSensor", mIndexerEntranceSensorInputs);
         Logger.processInputs("Indexer/ExitSensor", mIndexerExitSensorInputs);
-        Logger.processInputs("Indexer/Motor", mIndexerMotorInputsAutoLogged);
+        Logger.processInputs("Indexer/Motor", mIndexerMotorInputs);
     }
 
-    public boolean noteIsLoaded() {
+    public boolean hasNoteAtExit() {
         return mIndexerExitSensorInputs.blocked;
+    }
+
+    public boolean hasNoteAtEntrance() {
+        return mIndexerEntranceSensorInputs.blocked;
     }
 
     public boolean hasNote() {
         return mIndexerEntranceSensorInputs.blocked || mIndexerExitSensorInputs.blocked;
+    }
+
+    public double getVelocityRadiansPerSecond() {
+        return mIndexerMotorInputs.velocityRadiansPerSecond;
     }
 
     public void setForwardLoad() {

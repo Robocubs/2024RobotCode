@@ -1,24 +1,30 @@
 package com.team1701.robot.commands;
 
-import com.team1701.robot.subsystems.indexer.Indexer;
+import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.intake.Intake;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class IntakeCommand extends Command {
     private Intake mIntake;
-    private Indexer mIndexer;
+    private RobotState mRobotState;
 
-    IntakeCommand(Intake intake, Indexer indexer) {
+    public IntakeCommand(Intake intake, RobotState robotState) {
         mIntake = intake;
-        mIndexer = indexer;
+        mRobotState = robotState;
+        addRequirements(intake);
     }
 
+    @Override
     public void execute() {
-        if (mIntake.hasNoteAtInput()) {
-            mIntake.setForward();
-        } else if (mIntake.hasNoteAtExit()) {
+        if (mRobotState.hasNote() && !mIntake.hasNote()) {
             mIntake.stop();
-            mIndexer.setForwardLoad();
+        } else {
+            mIntake.setForward();
         }
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        mIntake.stop();
     }
 }
