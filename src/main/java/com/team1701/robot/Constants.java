@@ -63,6 +63,7 @@ public final class Constants {
         public static final double kAmbiguityThreshold = 0.15;
         public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
         public static final double kMaxPoseAmbiguity = 0.03;
+        public static final double kMaxAreaFitInFrame = 0.0;
         public static final PoseStrategy kPoseStrategy = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
         public static final PoseStrategy kFallbackPoseStrategy = PoseStrategy.LOWEST_AMBIGUITY;
 
@@ -100,7 +101,9 @@ public final class Constants {
 
         public static final VisionConfig kLimelightConfig = new VisionConfig(
                 "limelight",
-                new Transform3d(new Translation3d(0, 0.2, 0.3), new Rotation3d()),
+                new Transform3d(
+                        new Translation3d(Units.inchesToMeters(12), 0.0, Units.inchesToMeters(21.75)),
+                        new Rotation3d(0, Units.degreesToRadians(-19), 0)),
                 0,
                 VisionCameraConfig.kLimelightConfig,
                 null,
