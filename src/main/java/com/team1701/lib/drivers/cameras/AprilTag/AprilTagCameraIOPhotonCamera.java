@@ -1,4 +1,4 @@
-package com.team1701.lib.drivers.cameras;
+package com.team1701.lib.drivers.cameras.AprilTag;
 
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import edu.wpi.first.math.geometry.Transform3d;

@@ -1,4 +1,4 @@
-package com.team1701.lib.drivers.cameras;
+package com.team1701.lib.drivers.cameras.AprilTag;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1701.lib.alerts.Alert;
-import com.team1701.lib.drivers.cameras.CubVisionRawCameraIO.CubVisionCameraInputs;
+import com.team1701.lib.drivers.cameras.AprilTag.CubVisionRawCameraIO.CubVisionCameraInputs;
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.robot.Constants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
