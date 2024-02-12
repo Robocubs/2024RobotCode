@@ -50,7 +50,9 @@ public class PhoenixSignalSamplingThread implements SignalSamplingThread {
             mSignalsLock.lock();
             try {
                 mSignalQueues.add(new PhoenixSignalQueue(queue, signal));
-                mIsCANFD = CANBus.isNetworkFD(device.getNetwork());
+                if (!CANBus.isNetworkFD(device.getNetwork())) {
+                    mIsCANFD = false;
+                }
                 var newSignals = new BaseStatusSignal[mPhoenixSignals.length + 1];
                 System.arraycopy(mPhoenixSignals, 0, newSignals, 0, mPhoenixSignals.length);
                 newSignals[mPhoenixSignals.length] = signal;
@@ -73,7 +75,7 @@ public class PhoenixSignalSamplingThread implements SignalSamplingThread {
             } else {
                 Thread.sleep((long) (1000.0 / mFrequency));
                 if (mPhoenixSignals.length > 0) {
-                    BaseStatusSignal.waitForAll(2 / mFrequency, mPhoenixSignals);
+                    BaseStatusSignal.refreshAll(mPhoenixSignals);
                 }
             }
         } catch (InterruptedException e) {
