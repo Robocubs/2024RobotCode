@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
+import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.states.NoteState;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -48,7 +49,7 @@ public class DetectorCamera {
         mDisconnectedAlert = Alert.error("DetectorCamera " + mConfig.cameraName + " disconnected");
     }
 
-    public Pose3d getDetectedObjectPosition(Pose2d robotPose, double tx, double ty) {
+    public Pose3d getDetectedObjectPosition(Pose2d robotPose, double tx, double ty, double ta) {
         var robotToCamPose = mConfig.robotToCamPose;
         double x = PhotonUtils.calculateDistanceToTargetMeters(
                 robotToCamPose.getZ(),
@@ -57,7 +58,8 @@ public class DetectorCamera {
                 Math.toRadians(ty));
         double y = x * Math.tan(Math.toRadians(tx));
 
-        var translationToObject = new Translation2d(x, -y);
+        var t = new Translation2d(x, -y);
+        var translationToObject = t.minus(t.times(ta / Constants.Vision.kMaxAreaFitInFrame));
         var robotToCamTransform = new Transform2d(
                 new Translation2d(robotToCamPose.getX(), robotToCamPose.getY()),
                 new Rotation2d(robotToCamPose.getRotation().getZ()));
@@ -88,10 +90,18 @@ public class DetectorCamera {
 
         for (int i = 0; i < mDetectorCameraInputs.numberOfDetectedObjects; i++) {
             detectedObjects.add(getDetectedObjectPosition(
-                    currentRobotPose.toPose2d(), mDetectorCameraInputs.txs[i], mDetectorCameraInputs.tys[i]));
+                    currentRobotPose.toPose2d(),
+                    mDetectorCameraInputs.txs[i],
+                    mDetectorCameraInputs.tys[i],
+                    mDetectorCameraInputs.areas[i]));
         }
 
         Logger.recordOutput(mLoggingPrefix + "ObjectPosesNoFilter", detectedObjects.toArray(Pose3d[]::new));
+        for (int i = 0; i < mDetectorCameraInputs.numberOfDetectedObjects; i++) {
+            Logger.recordOutput(
+                    mLoggingPrefix + "ObjectDistancesNoFilter/" + i,
+                    detectedObjects.get(i).getTranslation().getDistance(currentRobotPose.getTranslation()));
+        }
 
         // Filter the objects. Just remove it if it doesn't pass a filter
         detectedObjects.forEach(pose -> {
