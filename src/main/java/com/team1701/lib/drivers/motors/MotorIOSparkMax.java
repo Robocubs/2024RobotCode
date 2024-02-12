@@ -45,18 +45,23 @@ public class MotorIOSparkMax implements MotorIO {
                 () -> inputs.positionRadians = toReducedRadians(mEncoder.getPosition()));
         mVelocitySamples.ifPresentOrElse(
                 samples -> {
-                    inputs.velocityRadiansPerSecondSamples =
-                            samples.stream().mapToDouble(this::toReducedRadians).toArray();
+                    inputs.velocityRadiansPerSecondSamples = samples.stream()
+                            .mapToDouble(this::toReducedRadiansPerSecond)
+                            .toArray();
                     inputs.velocityRadiansPerSecond = inputs.velocityRadiansPerSecondSamples.length > 0
                             ? inputs.velocityRadiansPerSecondSamples[inputs.velocityRadiansPerSecondSamples.length - 1]
-                            : toReducedRadians(mEncoder.getVelocity());
+                            : toReducedRadiansPerSecond(mEncoder.getVelocity());
                     samples.clear();
                 },
-                () -> inputs.velocityRadiansPerSecond = toReducedRadians(mEncoder.getPosition()));
+                () -> inputs.velocityRadiansPerSecond = toReducedRadiansPerSecond(mEncoder.getVelocity()));
     }
 
     private double toReducedRadians(double value) {
         return Units.rotationsToRadians(value) * mReduction;
+    }
+
+    private double toReducedRadiansPerSecond(double value) {
+        return Units.rotationsPerMinuteToRadiansPerSecond(value) * mReduction;
     }
 
     @Override
