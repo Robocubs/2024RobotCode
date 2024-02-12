@@ -13,7 +13,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -100,15 +99,15 @@ public class RobotState {
     }
 
     @AutoLogOutput
-    public Translation2d[] getDetectedNotePoses2d() {
+    public Pose2d[] getDetectedNotePoses2d() {
         return mDetectedNotes.stream()
                 .map(note -> note.pose.getTranslation().toTranslation2d())
-                .toArray(Translation2d[]::new);
+                .toArray(Pose2d[]::new);
     }
 
     @AutoLogOutput
-    public Translation3d[] getDetectedNotePoses3d() {
-        return mDetectedNotes.stream().map(note -> note.pose.getTranslation()).toArray(Translation3d[]::new);
+    public Pose3d[] getDetectedNotePoses3d() {
+        return mDetectedNotes.stream().map(note -> note.pose).toArray(Pose3d[]::new);
     }
 
     public void addDetectedNotes(List<NoteState> notes) {
