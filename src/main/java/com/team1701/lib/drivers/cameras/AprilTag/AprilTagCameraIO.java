@@ -25,7 +25,6 @@ public interface AprilTagCameraIO {
         public PhotonPipelineResult pipelineResult = new PhotonPipelineResult();
         public boolean isConnected;
         public Pose3d[] trueTrackedAprilTagPoses;
-        public VisionConfig config;
 
         @Override
         public void toLog(LogTable table) {
