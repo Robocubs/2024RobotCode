@@ -4,11 +4,12 @@
 
 package com.team1701.robot;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.cameras.AprilTagCameraIO;
@@ -61,6 +62,7 @@ public class RobotContainer {
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
+    private final Map<String, Pose2d[]> mAutonomousPaths = new HashMap<>();
 
     public RobotContainer() {
         Optional<Drive> drive = Optional.empty();
@@ -266,10 +268,43 @@ public class RobotContainer {
         PathPlannerLogging.setLogActivePathCallback(
                 poses -> Logger.recordOutput("PathPlanner/Path", poses.toArray(Pose2d[]::new)));
 
+        // TODO: Create wrapper class for autonomous chooser
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
-        autonomousModeChooser.addDefaultOption("Demo", commands.demo());
-        autonomousModeChooser.addOption("Four Piece", commands.fourPiece());
-        autonomousModeChooser.addOption("Four Piece Planner", new PathPlannerAuto("FourPiece"));
+        var demoCommand = commands.demo();
+        var fourPieceCommand = commands.fourPiece();
+        mAutonomousPaths.put("Demo", demoCommand.path());
+        mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
+
+        autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
+        autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
+        autonomousModeChooser.getSendableChooser().onChange(this::logAutonomousPath);
+
+        var logAutonomousPathCommand =
+                runOnce(this::logAutonomousPath).ignoringDisable(true).withName("LogAutonomousPath");
+        new Trigger(Configuration::isBlueAlliance)
+                .onTrue(logAutonomousPathCommand)
+                .onFalse(logAutonomousPathCommand);
+
+        logAutonomousPath();
+    }
+
+    private void logAutonomousPath() {
+        logAutonomousPath(autonomousModeChooser.getSendableChooser().getSelected());
+    }
+
+    private void logAutonomousPath(String name) {
+        if (!mAutonomousPaths.containsKey(name)) {
+            Logger.recordOutput("Autonomous/PathPose2d", new Pose2d[] {});
+            return;
+        }
+
+        var path = mAutonomousPaths.get(name);
+
+        if (Configuration.isRedAlliance()) {
+            path = GeometryUtil.flipX(path, FieldConstants.kFieldLongLengthMeters);
+        }
+
+        Logger.recordOutput("Autonomous/PathPose2d", path);
     }
 
     private void setupStateTriggers() {

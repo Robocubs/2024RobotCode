@@ -109,6 +109,7 @@ public class Robot extends LoggedRobot {
                                     .toString(),
                             Location.EXTERNAL);
                 })
+                .get("/", ctx -> ctx.redirect("/dashboard"))
                 .start(5800);
     }
 
