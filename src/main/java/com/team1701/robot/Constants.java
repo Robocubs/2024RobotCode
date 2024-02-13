@@ -99,6 +99,14 @@ public final class Constants {
                 kPoseStrategy,
                 kFallbackPoseStrategy);
 
+        public static final VisionConfig kSniperCameraConfig = new VisionConfig(
+                "CubVisionSniper",
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                0,
+                VisionCameraConfig.kSniperCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
         public static final VisionConfig kLimelightConfig = new VisionConfig(
                 "limelight",
                 new Transform3d(
