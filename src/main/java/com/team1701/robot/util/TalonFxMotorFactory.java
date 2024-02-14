@@ -39,4 +39,21 @@ public class TalonFxMotorFactory {
 
         return motorIO;
     }
+
+    public static MotorIOTalonFX createSteerMotorIOTalonFx(int deviceId) {
+
+        var motor = new TalonFX(deviceId, "canivore1");
+
+        motor.getConfigurator().apply(kMainConfigs);
+
+        motor.setPosition(0);
+
+        var motorIO = new MotorIOTalonFX(motor, Constants.Drive.kSteerReduction);
+
+        motorIO.setPID(0, Constants.Drive.kSteerKp.get(), 0, Constants.Drive.kSteerKd.get());
+
+        motor.setInverted(Constants.Drive.kSteerMotorsInverted);
+
+        return motorIO;
+    }
 }
