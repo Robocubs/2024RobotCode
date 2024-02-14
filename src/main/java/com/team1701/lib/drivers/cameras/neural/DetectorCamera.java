@@ -48,7 +48,7 @@ public class DetectorCamera {
         mDisconnectedAlert = Alert.error("DetectorCamera " + mConfig.cameraName + " disconnected");
     }
 
-    public Pose3d getDetectedObjectPosition(Pose2d robotPose, double tx, double ty, double ta) {
+    private Pose3d getDetectedObjectPosition(Pose2d robotPose, double tx, double ty, double ta) {
         var robotToCamPose = mConfig.robotToCamPose;
         double x = PhotonUtils.calculateDistanceToTargetMeters(
                 robotToCamPose.getZ(),
