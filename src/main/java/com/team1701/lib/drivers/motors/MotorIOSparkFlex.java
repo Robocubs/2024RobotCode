@@ -42,7 +42,10 @@ public class MotorIOSparkFlex implements MotorIO {
                             : toReducedRadians(mEncoder.getPosition());
                     samples.clear();
                 },
-                () -> inputs.positionRadians = toReducedRadians(mEncoder.getPosition()));
+                () -> {
+                    inputs.positionRadians = toReducedRadians(mEncoder.getPosition());
+                    inputs.positionRadiansSamples = new double[] {};
+                });
         mVelocitySamples.ifPresentOrElse(
                 samples -> {
                     inputs.velocityRadiansPerSecondSamples = samples.stream()
@@ -53,7 +56,10 @@ public class MotorIOSparkFlex implements MotorIO {
                             : toReducedRadiansPerSecond(mEncoder.getVelocity());
                     samples.clear();
                 },
-                () -> inputs.velocityRadiansPerSecond = toReducedRadiansPerSecond(mEncoder.getVelocity()));
+                () -> {
+                    inputs.velocityRadiansPerSecond = toReducedRadiansPerSecond(mEncoder.getVelocity());
+                    inputs.velocityRadiansPerSecondSamples = new double[] {};
+                });
     }
 
     private double toReducedRadians(double value) {

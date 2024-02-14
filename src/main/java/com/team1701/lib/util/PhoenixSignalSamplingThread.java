@@ -70,8 +70,9 @@ public class PhoenixSignalSamplingThread implements SignalSamplingThread {
     private void periodic() {
         mPhoenixSignalsLock.lock();
         try {
-            if (mIsCANFD) {
+            if (mIsCANFD && mPhoenixSignals.length > 0) {
                 BaseStatusSignal.waitForAll(2 / mFrequency, mPhoenixSignals);
+                BaseStatusSignal.refreshAll(mPhoenixSignals);
             } else {
                 Thread.sleep((long) (1000.0 / mFrequency));
                 if (mPhoenixSignals.length > 0) {

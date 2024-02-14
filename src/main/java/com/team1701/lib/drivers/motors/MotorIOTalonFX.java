@@ -49,8 +49,11 @@ public class MotorIOTalonFX implements MotorIO {
                             .toArray();
                     samples.clear();
                 },
-                () -> mPositionSignal.refresh());
-
+                () -> {
+                    mPositionSignal.refresh();
+                    inputs.positionRadiansSamples = new double[] {};
+                });
+        mPositionSignal.refresh();
         inputs.positionRadians = encoderUnitsToReducedUnits(mPositionSignal.getValue());
 
         mVelocitySamples.ifPresentOrElse(
@@ -60,7 +63,10 @@ public class MotorIOTalonFX implements MotorIO {
                             .toArray();
                     samples.clear();
                 },
-                () -> mVelocitySignal.refresh());
+                () -> {
+                    mVelocitySignal.refresh();
+                    inputs.velocityRadiansPerSecondSamples = new double[] {};
+                });
 
         inputs.velocityRadiansPerSecond = encoderUnitsToReducedUnits(mVelocitySignal.getValue());
     }
@@ -71,12 +77,13 @@ public class MotorIOTalonFX implements MotorIO {
 
     @Override
     public void setPositionControl(Rotation2d position) {
-        mMotor.setControl(mPositionDutyCycle.withPosition(position.getRotations()));
+        mMotor.setControl(mPositionDutyCycle.withPosition(position.getRotations() / mReduction));
     }
 
     @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
-        mMotor.setControl(mVelocityDutyCycle.withVelocity(Units.radiansToRotations(velocityRadiansPerSecond)));
+        mMotor.setControl(
+                mVelocityDutyCycle.withVelocity(Units.radiansToRotations(velocityRadiansPerSecond) / mReduction));
     }
 
     /**
