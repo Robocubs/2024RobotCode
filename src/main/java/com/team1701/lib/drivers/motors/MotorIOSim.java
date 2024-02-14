@@ -68,9 +68,21 @@ public class MotorIOSim implements MotorIO {
     }
 
     @Override
+    public void setSmoothPositionControl(
+            Rotation2d position, double maxVelocityRadiansPerSecond, double maxAccelerationRadiansPerSecond) {
+        setPositionControl(position);
+    }
+
+    @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
         mController.setSetpoint(velocityRadiansPerSecond);
         setVoltageOutput(mController.calculate(mVelocityRadiansPerSecond) + velocityRadiansPerSecond * mFeedForward);
+    }
+
+    @Override
+    public void setSmoothVelocityControl(
+            double velocityRadiansPerSecond, double maxAccelerationRadiansPerSecondSquared) {
+        setVelocityControl(velocityRadiansPerSecond);
     }
 
     @Override
@@ -135,5 +147,10 @@ public class MotorIOSim implements MotorIO {
 
     public double getVelocityRotationsPerSecond() {
         return mVelocityRadiansPerSecond;
+    }
+
+    @Override
+    public void setPosition(Rotation2d position) {
+        mPositionRadians = position.getRadians();
     }
 }

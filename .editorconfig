@@ -1,0 +1,7 @@
+[*{json,yml,yaml,js,ts,css,html}]
+end_of_line = lf
+indent_size = 2
+
+[*{java}]
+end_of_line = lf
+indent_size = 4

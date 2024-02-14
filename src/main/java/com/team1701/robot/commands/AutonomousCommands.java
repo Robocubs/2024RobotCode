@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.PathBuilder;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
@@ -27,6 +28,13 @@ public class AutonomousCommands {
     private final Drive mDrive;
     private final Shooter mShooter;
     private final Indexer mIndexer;
+    private final PathBuilder mPathBuilder = new PathBuilder();
+
+    public static record AutonomousCommand(Command command, Pose2d[] path) {
+        public AutonomousCommand(Command command) {
+            this(command, new Pose2d[] {});
+        }
+    }
 
     public AutonomousCommands(RobotState robotState, Drive drive, Shooter shooter, Indexer indexer) {
         mRobotState = robotState;
@@ -38,10 +46,7 @@ public class AutonomousCommands {
     }
 
     private Pose2d autoFlipPose(Pose2d pose) {
-        var flippedPose = new Pose2d(
-                FieldConstants.kFieldLongLengthMeters - pose.getX(),
-                pose.getY(),
-                GeometryUtil.kRotationPi.minus(pose.getRotation()));
+        var flippedPose = GeometryUtil.flipX(pose, FieldConstants.kFieldLongLengthMeters);
         return Configuration.isRedAlliance() ? flippedPose : pose;
     }
 
@@ -66,6 +71,7 @@ public class AutonomousCommands {
     }
 
     private Command driveToPose(Pose2d pose, KinematicLimits kinematicLimits, boolean finishAtPose) {
+        mPathBuilder.addPose(pose);
         return DriveCommands.driveToPose(
                 mDrive, () -> autoFlipPose(pose), mRobotState::getPose2d, kinematicLimits, finishAtPose);
     }
@@ -79,6 +85,8 @@ public class AutonomousCommands {
         if (path == null) {
             return idle(); // Prevent auto mode from continuing if path failed to load
         }
+
+        mPathBuilder.addPath(path);
 
         var command = sequence(
                         runOnce(() -> mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits)),
@@ -99,6 +107,8 @@ public class AutonomousCommands {
             return idle(); // Prevent auto mode from continuing if trajectory failed to load
         }
 
+        mPathBuilder.addPath(trajectory.getPoses());
+
         return new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose);
     }
 
@@ -106,8 +116,8 @@ public class AutonomousCommands {
         return ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState);
     }
 
-    public Command demo() {
-        return loggedSequence(
+    public AutonomousCommand demo() {
+        var command = loggedSequence(
                         print("Starting demo"),
                         followPath("demo1", true),
                         aimAndShoot(),
@@ -119,13 +129,17 @@ public class AutonomousCommands {
                         followPath("demo2"),
                         driveToPose(new Pose2d(10.0, 5.0, GeometryUtil.kRotationMinusHalfPi), false))
                 .withName("AutonomousDemo");
+
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public Command fourPiece() {
-        return loggedSequence(
+    public AutonomousCommand fourPiece() {
+        var command = loggedSequence(
                 print("Started four piece auto"),
                 followChoreoPath("FourPiece.1", true),
                 followChoreoPath("FourPiece.2"),
                 followChoreoPath("FourPiece.3"));
+
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }

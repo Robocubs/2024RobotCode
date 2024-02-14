@@ -51,6 +51,6 @@ public class GyroIOPigeon2 implements GyroIO {
         }
 
         mYawSignal.setUpdateFrequency(samplingThread.getFrequency());
-        mYawDegreesSamples = Optional.of(samplingThread.addSignal(mYawSignal));
+        mYawDegreesSamples = Optional.of(samplingThread.addSignal(mPigeon, mYawSignal));
     }
 }

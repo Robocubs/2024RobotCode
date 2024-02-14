@@ -22,12 +22,14 @@ public class SwerveModule {
     private final MotorInputsAutoLogged mDriveMotorInputs = new MotorInputsAutoLogged();
     private final MotorInputsAutoLogged mSteerMotorInputs = new MotorInputsAutoLogged();
     private final EncoderInputsAutoLogged mSteerEncoderInputs = new EncoderInputsAutoLogged();
+    private final Rotation2d mSteerEncoderOffset;
 
     private Rotation2d mMeasuredAngle = GeometryUtil.kRotationIdentity;
     private Rotation2d mAngleOffset = GeometryUtil.kRotationIdentity;
     private boolean mAngleOffsetNotInitialized = true;
 
-    public static record SwerveModuleIO(MotorIO driveMotorIO, MotorIO steerMotorIO, EncoderIO steerEncoderIO) {
+    public static record SwerveModuleIO(
+            MotorIO driveMotorIO, MotorIO steerMotorIO, EncoderIO steerEncoderIO, Rotation2d steerEncoderOffset) {
         public static SwerveModuleIO createSim(DCMotor driveMotor, DCMotor steerMotor) {
             var driveMotorIO =
                     new MotorIOSim(driveMotor, Constants.Drive.kDriveReduction, 0.025, Constants.kLoopPeriodSeconds);
@@ -39,7 +41,7 @@ public class SwerveModule {
                     .getPosition()
                     .times(Constants.Drive.kSteerReduction)
                     .plus(encoderOffset));
-            return new SwerveModuleIO(driveMotorIO, steerMotorIO, encoderIO);
+            return new SwerveModuleIO(driveMotorIO, steerMotorIO, encoderIO, encoderOffset);
         }
     }
 
@@ -48,7 +50,7 @@ public class SwerveModule {
         mDriveMotorIO = moduleIO.driveMotorIO;
         mSteerMotorIO = moduleIO.steerMotorIO;
         mSteerEncoderIO = moduleIO.steerEncoderIO;
-
+        mSteerEncoderOffset = moduleIO.steerEncoderOffset;
         mDriveMotorIO.setPID(
                 Constants.Drive.kDriveKff.get(), Constants.Drive.kDriveKp.get(), 0, Constants.Drive.kDriveKd.get());
         mSteerMotorIO.setPID(0, Constants.Drive.kSteerKp.get(), 0, Constants.Drive.kSteerKd.get());
@@ -135,8 +137,11 @@ public class SwerveModule {
     }
 
     public void zeroSteeringMotor() {
-        mAngleOffset = mSteerEncoderInputs.position.minus(Rotation2d.fromRadians(mSteerMotorInputs.positionRadians));
-        mMeasuredAngle = mSteerEncoderInputs.position;
+        mAngleOffset = mSteerEncoderInputs
+                .position
+                .plus(mSteerEncoderOffset)
+                .minus(Rotation2d.fromRadians(mSteerMotorInputs.positionRadians));
+        mMeasuredAngle = mSteerEncoderInputs.position.plus(mSteerEncoderOffset);
     }
 
     public void stop() {

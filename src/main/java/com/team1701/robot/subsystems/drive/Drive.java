@@ -9,10 +9,14 @@ import com.team1701.lib.estimation.PoseEstimator.DriveMeasurement;
 import com.team1701.lib.swerve.SwerveSetpoint;
 import com.team1701.lib.swerve.SwerveSetpointGenerator;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
+import com.team1701.lib.util.GenericSignalSamplingThread;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.PhoenixSignalSamplingThread;
 import com.team1701.lib.util.SignalSamplingThread;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.lib.util.Util;
+import com.team1701.robot.Configuration;
+import com.team1701.robot.Configuration.RobotType;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
@@ -34,8 +38,7 @@ public class Drive extends SubsystemBase {
     private final GyroIO mGyroIO;
     private final SwerveModule[] mModules;
     private final SwerveSetpointGenerator mSetpointGenerator = new SwerveSetpointGenerator(Constants.Drive.kKinematics);
-    private final SignalSamplingThread mOdometryThread =
-            new SignalSamplingThread("OdometryThread", Constants.Drive.kOdometryFrequency);
+    private final SignalSamplingThread mOdometryThread;
 
     private KinematicLimits mKinematicLimits = Constants.Drive.kFastKinematicLimits;
     private ChassisSpeeds mDesiredChassisSpeeds = new ChassisSpeeds();
@@ -56,6 +59,11 @@ public class Drive extends SubsystemBase {
             throw new IllegalArgumentException("Module IOs must have length " + Constants.Drive.kNumModules);
         }
 
+        if (Configuration.getRobot() == RobotType.COMPETITION_BOT) {
+            mOdometryThread = new PhoenixSignalSamplingThread(Constants.Drive.kOdometryFrequency);
+        } else {
+            mOdometryThread = new GenericSignalSamplingThread("Odometry Thread", Constants.Drive.kOdometryFrequency);
+        }
         mRobotState = robotState;
 
         mDesiredModuleOrientations = new Rotation2d[moduleIOs.length];
