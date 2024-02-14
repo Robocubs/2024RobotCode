@@ -1,4 +1,4 @@
-package com.team1701.lib.drivers.cameras.AprilTag;
+package com.team1701.lib.drivers.cameras.apriltag;
 
 import java.util.ArrayList;
 import java.util.Collections;

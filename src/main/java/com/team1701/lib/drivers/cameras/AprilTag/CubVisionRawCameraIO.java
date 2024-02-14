@@ -1,4 +1,4 @@
-package com.team1701.lib.drivers.cameras.AprilTag;
+package com.team1701.lib.drivers.cameras.apriltag;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.TimestampedDoubleArray;

@@ -1,4 +1,4 @@
-package com.team1701.lib.drivers.cameras.AprilTag;
+package com.team1701.lib.drivers.cameras.apriltag;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.team1701.lib.alerts.Alert;
-import com.team1701.lib.drivers.cameras.AprilTag.AprilTagCameraIO.AprilTagInputs;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO.AprilTagInputs;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;

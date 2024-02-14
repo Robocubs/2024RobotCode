@@ -1,4 +1,4 @@
-package com.team1701.lib.drivers.cameras.ObjectDetector;
+package com.team1701.lib.drivers.cameras.neural;
 
 import java.util.ArrayList;
 import java.util.List;

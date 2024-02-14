@@ -1,4 +1,4 @@
-package com.team1701.lib.drivers.cameras.ObjectDetector;
+package com.team1701.lib.drivers.cameras.neural;
 
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import org.littletonrobotics.junction.AutoLog;

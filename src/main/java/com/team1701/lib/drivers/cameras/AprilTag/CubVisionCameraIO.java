@@ -1,6 +1,5 @@
-package com.team1701.lib.drivers.cameras.AprilTag;
+package com.team1701.lib.drivers.cameras.apriltag;
 
-import com.team1701.lib.drivers.cameras.AprilTag.CubVisionRawCameraIO.CubVisionCameraInputs;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
 import org.photonvision.simulation.SimCameraProperties;
