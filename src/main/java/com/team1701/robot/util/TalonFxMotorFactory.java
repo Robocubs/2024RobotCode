@@ -24,7 +24,7 @@ public class TalonFxMotorFactory {
 
     public static MotorIOTalonFX createDriveMotorIOTalonFx(int deviceId) {
 
-        var motor = new TalonFX(deviceId);
+        var motor = new TalonFX(deviceId, "*");
 
         motor.getConfigurator().apply(kMainConfigs);
 
