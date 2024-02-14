@@ -12,8 +12,9 @@ import java.util.stream.Stream;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
-import com.team1701.lib.drivers.cameras.AprilTagCameraIO;
-import com.team1701.lib.drivers.cameras.AprilTagCameraIOCubVision;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOCubVision;
+import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOLimelight;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
@@ -167,14 +168,12 @@ public class RobotContainer {
 
             vision = Optional.of(new Vision(
                     mRobotState,
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kFrontLeftCameraName, Constants.Vision.kFrontLeftCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kFrontRightCameraName, Constants.Vision.kFrontRightCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kBackLeftCameraName, Constants.Vision.kBackLeftCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kBackRightCameraName, Constants.Vision.kBackLeftCameraID)));
+                    new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
+                    new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
+                    new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
+                    new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig)));
+            vision.ifPresent(
+                    v -> v.constructDetectorCameras(new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)));
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(

@@ -3,6 +3,8 @@ package com.team1701.robot;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
+import com.team1701.lib.drivers.cameras.config.VisionCameraConfig;
+import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
@@ -76,36 +78,60 @@ public final class Constants {
 
         public static final double kAmbiguityThreshold = 0.15;
         public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
-        // TODO: Structure CubVision constants
-        public static final int cameraResolutionWidth = 1280;
-        public static final int cameraResolutionHeight = 720;
-        public static final int cameraAutoExposure = 0;
-        public static final int cameraExposure = 0;
-        public static final int cameraGain = 0;
-
-        public static final String kFrontLeftCameraName = "CubVisionFL";
-        public static final Transform3d kRobotToFrontLeftCamPose =
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
-        public static final int kFrontLeftCameraID = 0;
-
-        public static final String kFrontRightCameraName = "CubVisionFR";
-        public static final Transform3d kRobotToFrontRightCamPose =
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
-        public static final int kFrontRightCameraID = 1;
-
-        public static final String kBackLeftCameraName = "CubVisionBL";
-        public static final Transform3d kRobotToBackLeftCamPose =
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
-        public static final int kBackLeftCameraID = 1;
-
-        public static final String kBackRightCameraName = "CubVisionBR";
-        public static final Transform3d kRobotToBackRightCamPose =
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
-        public static final int kBackRightCameraID = 1;
-
         public static final double kMaxPoseAmbiguity = 0.03;
+        public static final double kMaxAreaFitInFrame = 0.0;
         public static final PoseStrategy kPoseStrategy = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
         public static final PoseStrategy kFallbackPoseStrategy = PoseStrategy.LOWEST_AMBIGUITY;
+
+        public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
+                "CubVisionFL",
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                0,
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
+        public static final VisionConfig kFrontRightCameraConfig = new VisionConfig(
+                "CubVisionFR",
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                2,
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
+        public static final VisionConfig kBackLeftCameraConfig = new VisionConfig(
+                "CubVisionBL",
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                1,
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
+        public static final VisionConfig kBackRightCameraConfig = new VisionConfig(
+                "CubVisionBR",
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                0,
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
+        public static final VisionConfig kSniperCameraConfig = new VisionConfig(
+                "CubVisionSniper",
+                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                0,
+                VisionCameraConfig.kSniperCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
+        public static final VisionConfig kLimelightConfig = new VisionConfig(
+                "limelight",
+                new Transform3d(
+                        new Translation3d(Units.inchesToMeters(12), 0.0, Units.inchesToMeters(21.75)),
+                        new Rotation3d(0, Units.degreesToRadians(-19), 0)),
+                0,
+                VisionCameraConfig.kLimelightConfig,
+                null,
+                null);
     }
 
     public static final class Controls {

@@ -1,12 +1,13 @@
-package com.team1701.lib.drivers.cameras;
+package com.team1701.lib.drivers.cameras.apriltag;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.team1701.lib.alerts.Alert;
-import com.team1701.lib.drivers.cameras.AprilTagCameraIO.AprilTagInputs;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO.AprilTagInputs;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -14,7 +15,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -34,26 +34,24 @@ public class AprilTagCamera {
     private final Alert mDisconnectedAlert;
 
     public AprilTagCamera(
-            String cameraName,
             AprilTagCameraIO cameraIO,
-            Transform3d robotToCamPose,
-            PoseStrategy poseStrategy,
-            PoseStrategy fallbackPoseStrategy,
             Supplier<AprilTagFieldLayout> fieldLayoutSupplier,
             Supplier<Pose3d> robotPoseSupplier) {
+        var config = cameraIO.getVisionConfig();
         mCameraIO = cameraIO;
         mCameraInputs = new AprilTagInputs();
-        mLoggingPrefix = "Camera/" + cameraName + "/";
-        mPoseEstimator = new PhotonPoseEstimator(fieldLayoutSupplier.get(), poseStrategy, null, robotToCamPose);
-        mPoseEstimator.setMultiTagFallbackStrategy(fallbackPoseStrategy);
-        mRobotToCamPose = robotToCamPose;
+        mLoggingPrefix = "Camera/" + config.cameraName + "/";
+        mPoseEstimator =
+                new PhotonPoseEstimator(fieldLayoutSupplier.get(), config.poseStrategy, null, config.robotToCamPose);
+        mPoseEstimator.setMultiTagFallbackStrategy(config.fallbackPoseStrategy);
+        mRobotToCamPose = config.robotToCamPose;
         mFieldLayoutSupplier = fieldLayoutSupplier;
         mRobotPoseSupplier = robotPoseSupplier;
-        mDisconnectedAlert = Alert.error("Camera " + cameraName + " disconnected");
+        mDisconnectedAlert = Alert.error("Camera " + config.cameraName + " disconnected");
     }
 
     public void periodic() {
-        mCameraIO.updateInputs(mCameraInputs);
+        mCameraIO.updateInputs(mCameraInputs, Optional.of(mFieldLayoutSupplier));
         Logger.processInputs(mLoggingPrefix, mCameraInputs);
 
         var pipelineResult = mCameraInputs.pipelineResult;

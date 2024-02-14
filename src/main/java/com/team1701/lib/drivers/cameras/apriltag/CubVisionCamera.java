@@ -1,4 +1,4 @@
-package com.team1701.lib.drivers.cameras;
+package com.team1701.lib.drivers.cameras.apriltag;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +9,8 @@ import java.util.function.Supplier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1701.lib.alerts.Alert;
-import com.team1701.lib.drivers.cameras.CubVisionRawCameraIO.CubVisionCameraInputs;
+import com.team1701.lib.drivers.cameras.apriltag.CubVisionRawCameraIO.CubVisionCameraInputs;
+import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.robot.Constants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -44,27 +45,26 @@ public class CubVisionCamera {
     private static final double disconnectedTimeout = 0.5;
 
     public CubVisionCamera(
-            String cameraName,
-            int cameraID,
-            CubVisionRawCameraIO cameraIO,
-            Transform3d robotToCamPose,
-            Supplier<AprilTagFieldLayout> fieldLayoutSupplier) {
+            VisionConfig config, CubVisionRawCameraIO cameraIO, Supplier<AprilTagFieldLayout> fieldLayoutSupplier) {
         mCameraIO = (CubVisionCameraIO) cameraIO;
-        mLoggingPrefix = "Camera/" + cameraName + "/";
+        mLoggingPrefix = "Camera/" + config.cameraName + "/";
 
         mCubVisionCamInputs = new CubVisionCameraInputs();
 
-        mCamToRobotPose = robotToCamPose.inverse();
+        mCamToRobotPose = config.robotToCamPose.inverse();
         mFieldLayoutSupplier = fieldLayoutSupplier;
 
-        var northstarTable = NetworkTableInstance.getDefault().getTable("CubVision/" + cameraName);
+        var northstarTable = NetworkTableInstance.getDefault().getTable("CubVision/" + config.cameraName);
         var configTable = northstarTable.getSubTable("config");
-        configTable.getIntegerTopic("camera_id").publish().set(cameraID);
-        configTable.getIntegerTopic("camera_resolution_width").publish().set(Constants.Vision.cameraResolutionWidth);
-        configTable.getIntegerTopic("camera_resolution_height").publish().set(Constants.Vision.cameraResolutionHeight);
-        configTable.getIntegerTopic("camera_auto_exposure").publish().set(Constants.Vision.cameraAutoExposure);
-        configTable.getIntegerTopic("camera_exposure").publish().set(Constants.Vision.cameraExposure);
-        configTable.getIntegerTopic("camera_gain").publish().set(Constants.Vision.cameraGain);
+        configTable.getIntegerTopic("camera_id").publish().set(config.cameraID);
+        configTable.getIntegerTopic("camera_resolution_width").publish().set(config.remoteConfig.cameraResolutionWidth);
+        configTable
+                .getIntegerTopic("camera_resolution_height")
+                .publish()
+                .set(config.remoteConfig.cameraResolutionHeight);
+        configTable.getIntegerTopic("camera_auto_exposure").publish().set(config.remoteConfig.cameraAutoExposure);
+        configTable.getIntegerTopic("camera_exposure").publish().set(config.remoteConfig.cameraExposure);
+        configTable.getIntegerTopic("camera_gain").publish().set(config.remoteConfig.cameraGain);
         configTable.getDoubleTopic("fiducial_size_m").publish().set(Constants.Vision.kAprilTagWidth);
 
         try {
@@ -86,7 +86,7 @@ public class CubVisionCamera {
                 .subscribe(new double[] {}, PubSubOption.keepDuplicates(true), PubSubOption.sendAll(true));
         fpsSubscriber = outputTable.getIntegerTopic("fps").subscribe(0);
 
-        mDisconnectedAlert = Alert.error("No data from \"" + cameraName + "\"");
+        mDisconnectedAlert = Alert.error("No data from \"" + config.cameraName + "\"");
         mDisconnectedTimer.start();
     }
 

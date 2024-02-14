@@ -19,7 +19,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -62,6 +61,13 @@ public class RobotState {
     @AutoLogOutput
     public Pose3d getPose3d() {
         return new Pose3d(mPoseEstimator.getEstimatedPose());
+    }
+
+    @AutoLogOutput
+    public double getDistanceToSpeaker() {
+        return getPose3d()
+                .getTranslation()
+                .getDistance(new Translation3d(0.47560569643974304, 5.553, FieldConstants.kSpeakerHeight));
     }
 
     public Rotation2d getHeading() {
@@ -111,15 +117,15 @@ public class RobotState {
     }
 
     @AutoLogOutput
-    public Translation2d[] getDetectedNotePoses2d() {
-        return mDetectedNotes.stream().map(note -> note.pose).toArray(Translation2d[]::new);
+    public Pose2d[] getDetectedNotePoses2d() {
+        return mDetectedNotes.stream()
+                .map(note -> note.pose.getTranslation().toTranslation2d())
+                .toArray(Pose2d[]::new);
     }
 
     @AutoLogOutput
-    public Translation3d[] getDetectedNotePoses3d() {
-        return mDetectedNotes.stream()
-                .map(note -> new Translation3d(note.pose.getX(), note.pose.getY(), 0.0))
-                .toArray(Translation3d[]::new);
+    public Pose3d[] getDetectedNotePoses3d() {
+        return mDetectedNotes.stream().map(note -> note.pose).toArray(Pose3d[]::new);
     }
 
     public void addDetectedNotes(List<NoteState> notes) {
