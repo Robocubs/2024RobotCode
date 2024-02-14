@@ -1,0 +1,16 @@
+* text=auto
+
+.* text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.java text eol=lf
+src/main/ts/** text eol=lf
+
+*.bat text eol=crlf
+
+*.jpg binary

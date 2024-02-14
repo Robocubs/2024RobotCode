@@ -114,7 +114,8 @@ public class MotorIOTalonFX implements MotorIO {
             throw new IllegalStateException("Position sampling already enabled");
         }
 
-        var queue = samplingThread.addSignal(mPositionSignal);
+        var queue = samplingThread.addSignal(mMotor, mPositionSignal);
+        mPositionSignal.setUpdateFrequency(samplingThread.getFrequency());
         mPositionSamples = Optional.of(queue);
     }
 
@@ -124,20 +125,8 @@ public class MotorIOTalonFX implements MotorIO {
             throw new IllegalStateException("Velocity sampling already enabled");
         }
 
-        var queue = samplingThread.addSignal(mVelocitySignal);
+        var queue = samplingThread.addSignal(mMotor, mVelocitySignal);
+        mVelocitySignal.setUpdateFrequency(samplingThread.getFrequency());
         mVelocitySamples = Optional.of(queue);
-    }
-
-    public void setSignalUpdateFrequency(double frequencyHz) {
-        updatePositionFrequency(frequencyHz);
-        updateVelocityFrequency(frequencyHz);
-    }
-
-    public void updatePositionFrequency(double frequencyHz) {
-        mPositionSignal.setUpdateFrequency(frequencyHz);
-    }
-
-    public void updateVelocityFrequency(double frequencyHz) {
-        mVelocitySignal.setUpdateFrequency(frequencyHz);
     }
 }

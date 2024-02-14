@@ -7,6 +7,7 @@ import com.team1701.lib.drivers.cameras.config.VisionCameraConfig;
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
+import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -20,7 +21,22 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 public final class Constants {
     public static final double kLoopPeriodSeconds = 0.02;
 
-    public static final class Robot {}
+    public static final class Robot {
+        public static final double kRobotWidth = Units.inchesToMeters(23);
+        public static final double kRobotLength = Units.inchesToMeters(28.5);
+        public static final double kRobotWidthWithBumpers = kRobotWidth + Units.inchesToMeters(8);
+        public static final double kRobotLengthWithBumpers = kRobotLength + Units.inchesToMeters(8);
+        public static final double kRobotFrontToCenter = Units.inchesToMeters(23.0 / 2.0);
+        public static final double kRobotBackToCenter = kRobotLength - kRobotFrontToCenter;
+        public static final double kRobotSideToCenter = kRobotWidth / 2.0;
+
+        public static final Transform3d kRobotToShooterHinge = new Transform3d(
+                new Translation3d(Units.inchesToMeters(-3), Units.inchesToMeters(0), Units.inchesToMeters(7.52)),
+                GeometryUtil.kRotation3dIdentity);
+        public static final Transform3d kShooterHingeToShooterExit = new Transform3d(
+                new Translation3d(Units.inchesToMeters(10.0), 0.0, Units.inchesToMeters(1.9)),
+                GeometryUtil.kRotation3dIdentity);
+    }
 
     public static final class Vision {
         /*
@@ -176,20 +192,20 @@ public final class Constants {
 
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kWheelRadiusMeters = Units.inchesToMeters(2);
+                    kWheelRadiusMeters = Units.inchesToMeters(1.95379394);
                     driveMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
                     turnMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
-                    kDriveReduction = k16ToothKitReduction;
+                    kDriveReduction = k16ToothKitReduction * kL3DriveReduction;
                     kSteerReduction = kMk4iSteerReduction;
                     kDriveMotorsInverted = true;
                     kSteerMotorsInverted = true;
                     /* TODO: Update values for 2024 bot */
                     kTrackWidthMeters = 0.465;
                     kWheelbaseMeters = 0.465;
-                    kDriveKff.initDefault(0.0002);
-                    kDriveKp.initDefault(0.00003);
+                    kDriveKff.initDefault(0.008);
+                    kDriveKp.initDefault(0.012);
                     kDriveKd.initDefault(0);
-                    kSteerKp.initDefault(1.0);
+                    kSteerKp.initDefault(2.0);
                     kSteerKd.initDefault(0);
                     break;
                 case SIMULATION_BOT:
@@ -262,13 +278,18 @@ public final class Constants {
     public static final class Shooter {
         // TODO: Update values
         public static final double kRollerReduction = 1.0;
+        public static final double kEncoderToShooterReduction = 24.0 / 42.0;
         public static final double kAngleReduction = 1.0 / 105.0;
-        public static final int kShooterUpperRollerMotorId = 0;
-        public static final int kShooterLowerRollerMotorId = 1;
-        public static final int kShooterRotationMotorId = 2;
+        public static final int kShooterRightUpperRollerMotorId = 23;
+        public static final int kShooterRightLowerRollerMotorId = 25;
+        public static final int kShooterLeftLowerRollerMotorId = 24;
+        public static final int kShooterLeftUpperRollerMotorId = 22;
+        public static final int kShooterRotationMotorId = 26;
 
-        public static final double kShooterAxisHeight = Units.inchesToMeters(10);
-        public static final double kShooterAxisOffset = Units.inchesToMeters(10); // + is toward front of bot
+        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(110);
+        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(18);
+
+        public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
 
         public static final LoggedTunableNumber kRollerKff = new LoggedTunableNumber("Shooter/Motor/Roller/Kff");
         public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");
@@ -276,13 +297,18 @@ public final class Constants {
 
         public static final LoggedTunableNumber kRotationKff = new LoggedTunableNumber("Shooter/Motor/Rotation/Kff");
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
+        public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity");
+        public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration");
+
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
         public static final Rotation2d kShooterAngleEncoderOffset;
 
         public static int kShooterEntranceSensorId;
         public static int kShooterExitSensorId;
-        public static int kShooterThroughBoreEncoderId;
+        public static int kShooterThroughBoreEncoderId = 4;
 
         public static double kThroughBoreEncoderDistancePerRotation;
 
@@ -331,7 +357,7 @@ public final class Constants {
 
     public static final class Indexer {
         // TODO: Update values and set names
-        public static final int kIndexerMotorId = 0;
+        public static final int kIndexerMotorId = 21;
         public static final double kIndexerReduction = 1;
 
         public static final int kIndexerEntranceSensorId = 1;
@@ -339,9 +365,22 @@ public final class Constants {
 
         public static final double kIndexerLoadPercent = .25;
         public static final double kIndexerFeedPercent = 1;
+        public static final double kReduction = 1.0 / 1.0;
 
         public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
         public static final LoggedTunableNumber kIndexerKd = new LoggedTunableNumber("Indexer/Motor/Kd");
+        public static double kIntakeReduction;
+    }
+
+    public class Intake {
+        public static final int kIntakeMotorId = 20;
+
+        // TODO: Add sensor Ids
+        public static final double kIntakeSpeed = 0.5;
+        public static final double kOuttakeSpeed = -0.5;
+        public static final int kIntakeEntranceSensorId = 4;
+        public static final int kIntakeExitSensorId = 5;
+        public static final double kReduction = 1.0 / 9.0;
     }
 }
