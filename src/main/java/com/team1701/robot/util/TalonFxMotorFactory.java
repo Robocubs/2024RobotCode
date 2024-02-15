@@ -1,6 +1,7 @@
 package com.team1701.robot.util;
 
 import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.team1701.lib.drivers.motors.MotorIOTalonFX;
@@ -21,9 +22,7 @@ public class TalonFxMotorFactory {
         public int QUAD_ENCODER_STATUS_FRAME_RATE_MS = 1000;
         public int ANALOG_TEMP_VBAT_STATUS_FRAME_RATE_MS = 1000;
         public int PULSE_WIDTH_STATUS_FRAME_RATE_MS = 1000;
-
     }
-
 
     public static MotorIOTalonFX createDriveMotorIOTalonFx(int deviceId) {
 
@@ -47,13 +46,15 @@ public class TalonFxMotorFactory {
 
         var motor = new TalonFX(deviceId, "canivore1");
 
-        motor.getConfigurator().apply(kMainConfigs);
-
         var rotationConfig = new ClosedLoopGeneralConfigs();
+        var reductionConfigs = new FeedbackConfigs();
+
+        reductionConfigs.SensorToMechanismRatio = Constants.Drive.kSteerReduction;
         rotationConfig.ContinuousWrap = true;
-        
+
+        motor.getConfigurator().apply(kMainConfigs);
         motor.getConfigurator().apply(rotationConfig);
-        
+        motor.getConfigurator().apply(reductionConfigs);
 
         motor.setPosition(0);
 
@@ -62,8 +63,6 @@ public class TalonFxMotorFactory {
         motorIO.setPID(0, Constants.Drive.kSteerKp.get(), 0, Constants.Drive.kSteerKd.get());
 
         motor.setInverted(Constants.Drive.kSteerMotorsInverted);
-
-        motor.
 
         return motorIO;
     }
