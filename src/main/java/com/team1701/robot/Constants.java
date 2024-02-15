@@ -56,18 +56,59 @@ public final class Constants {
          * Keys are MEASURED distances or angles collected in the lab at KNOWN standard deviations.
          * Values are standard deviations, either calculated or stored.
          */
-        public static final boolean kUseInterpolatedVisionStdDevValues = false;
+        public static final boolean kUseInterpolatedVisionStdDevValues = true;
 
         // TODO: Collect values
-        public static final double[][] kMeasuredDistanceToXYStdDevValues = {{}};
-        public static final double[][] kMeasuredDistanceToAngleStdDevValues = {{}};
-        public static InterpolatingDoubleTreeMap kVisionXYStdDevInterpolater = new InterpolatingDoubleTreeMap();
+        public static final double[][] kMeasuredDistanceToXStdDevValues = {
+            {2.13, 0.006},
+            {2.286, 0.008},
+            {2.4384, 0.009},
+            {2.5908, 0.011},
+            {2.7432, 0.015},
+            {2.9, 0.017},
+            {3.048, 0.015},
+            {3.2, 0.015},
+            {3.66, 0.022},
+            {3.96, 0.041},
+            {5.18, 0.046}
+        };
+        public static final double[][] kMeasuredDistanceToYStdDevValues = {
+            {2.13, 0.009},
+            {2.286, 0.021},
+            {2.4384, 0.022},
+            {2.5908, 0.012},
+            {2.7432, 0.04},
+            {2.9, 0.017},
+            {3.048, 0.13},
+            {3.2, 0.043},
+            {3.66, 0.06},
+            {3.96, 0.22},
+            {5.18, 0.5}
+        };
+        // I scaled the std. dev by 10 here because we want to trust our Pigeon values way more
+        public static final double[][] kMeasuredDistanceToAngleStdDevValues = {
+            {2.13, 0.007},
+            {2.286, 0.008},
+            {2.4384, 0.015},
+            {2.5908, 0.006},
+            {2.7432, 0.008},
+            {2.9, 0.017},
+            {3.048, 0.018},
+            {3.2, 0.02}
+        };
+
+        public static InterpolatingDoubleTreeMap kVisionXStdDevInterpolater = new InterpolatingDoubleTreeMap();
+        public static InterpolatingDoubleTreeMap kVisionYStdDevInterpolater = new InterpolatingDoubleTreeMap();
         public static InterpolatingDoubleTreeMap kVisionThetaStdDevInterpolater = new InterpolatingDoubleTreeMap();
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                for (double[] pair : kMeasuredDistanceToXYStdDevValues) {
-                    kVisionXYStdDevInterpolater.put(pair[0], pair[1]);
+                for (double[] pair : kMeasuredDistanceToXStdDevValues) {
+                    kVisionXStdDevInterpolater.put(pair[0], pair[1]);
+                }
+
+                for (double[] pair : kMeasuredDistanceToYStdDevValues) {
+                    kVisionYStdDevInterpolater.put(pair[0], pair[1]);
                 }
 
                 for (double[] pair : kMeasuredDistanceToAngleStdDevValues) {
@@ -85,7 +126,9 @@ public final class Constants {
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                new Transform3d(
+                        new Translation3d(0, 0, Units.inchesToMeters(28)),
+                        new Rotation3d(0, 0, Units.degreesToRadians(0))),
                 0,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
@@ -93,7 +136,9 @@ public final class Constants {
 
         public static final VisionConfig kFrontRightCameraConfig = new VisionConfig(
                 "CubVisionFR",
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                new Transform3d(
+                        new Translation3d(0, Units.inchesToMeters(-1.75), Units.inchesToMeters(27.25)),
+                        new Rotation3d(0, 0, Units.degreesToRadians(0))),
                 2,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
