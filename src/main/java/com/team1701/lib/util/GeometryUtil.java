@@ -30,8 +30,11 @@ public final class GeometryUtil {
     }
 
     public static Pose2d[] flipX(Pose2d[] poses, double fieldLength) {
-        // TODO: Flip poses
-        return poses;
+        var flippedPoses = new Pose2d[poses.length];
+        for (var i = 0; i < poses.length; i++) {
+            flippedPoses[i] = flipX(poses[i], fieldLength);
+        }
+        return flippedPoses;
     }
 
     public static Rotation2d angleModulus(Rotation2d rotation) {
@@ -52,5 +55,9 @@ public final class GeometryUtil {
             Pose2d expected, Pose2d actual, double translationTolerance, Rotation2d rotationTolerance) {
         return isNear(expected.getTranslation(), actual.getTranslation(), translationTolerance)
                 && isNear(expected.getRotation(), actual.getRotation(), rotationTolerance);
+    }
+
+    public static Twist2d multiply(Twist2d twist, double scalar) {
+        return new Twist2d(twist.dx * scalar, twist.dy * scalar, twist.dtheta * scalar);
     }
 }

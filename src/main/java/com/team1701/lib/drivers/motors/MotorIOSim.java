@@ -17,6 +17,8 @@ public class MotorIOSim implements MotorIO {
     private double mPositionRadians;
     private boolean mPositionSamplingEnabled;
     private boolean mVelocitySamplingEnabled;
+    private int mPositionSamples = 0;
+    private int mVelocitySamples = 0;
 
     public MotorIOSim(DCMotor motor, double reduction, double jKgMetersSquared, double loopPeriodSeconds) {
         mSim = new DCMotorSim(motor, 1.0 / reduction, jKgMetersSquared);
@@ -32,19 +34,31 @@ public class MotorIOSim implements MotorIO {
 
         mSim.update(mLoopPeriodSeconds);
 
-        mVelocityRadiansPerSecond = mSim.getAngularVelocityRadPerSec();
-        mPositionRadians += mVelocityRadiansPerSecond * mLoopPeriodSeconds;
-
-        inputs.positionRadians = mPositionRadians;
-        inputs.velocityRadiansPerSecond = mVelocityRadiansPerSecond;
+        inputs.velocityRadiansPerSecond = mSim.getAngularVelocityRadPerSec();
+        inputs.positionRadians = mPositionRadians + inputs.velocityRadiansPerSecond * mLoopPeriodSeconds;
 
         if (mPositionSamplingEnabled) {
-            inputs.positionRadiansSamples = new double[] {mPositionRadians};
+            var samples = mPositionSamples;
+            inputs.positionRadiansSamples = new double[samples];
+            var lerp = (inputs.positionRadians - mPositionRadians) / samples;
+            for (int i = 0; i < samples; i++) {
+                inputs.positionRadiansSamples[i] = mPositionRadians + lerp * (i + 1);
+            }
         }
 
         if (mVelocitySamplingEnabled) {
-            inputs.velocityRadiansPerSecondSamples = new double[] {mVelocityRadiansPerSecond};
+            var samples = mVelocitySamples;
+            inputs.velocityRadiansPerSecondSamples = new double[samples];
+            var lerp = (inputs.velocityRadiansPerSecond - mVelocityRadiansPerSecond) / samples;
+            for (int i = 0; i < samples; i++) {
+                inputs.velocityRadiansPerSecondSamples[i] = mVelocityRadiansPerSecond + lerp * (i + 1);
+            }
         }
+
+        mPositionRadians = inputs.positionRadians;
+        mVelocityRadiansPerSecond = inputs.velocityRadiansPerSecond;
+        mPositionSamples = 0;
+        mVelocitySamples = 0;
     }
 
     @Override
@@ -54,9 +68,21 @@ public class MotorIOSim implements MotorIO {
     }
 
     @Override
+    public void setSmoothPositionControl(
+            Rotation2d position, double maxVelocityRadiansPerSecond, double maxAccelerationRadiansPerSecond) {
+        setPositionControl(position);
+    }
+
+    @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
         mController.setSetpoint(velocityRadiansPerSecond);
         setVoltageOutput(mController.calculate(mVelocityRadiansPerSecond) + velocityRadiansPerSecond * mFeedForward);
+    }
+
+    @Override
+    public void setSmoothVelocityControl(
+            double velocityRadiansPerSecond, double maxAccelerationRadiansPerSecondSquared) {
+        setVelocityControl(velocityRadiansPerSecond);
     }
 
     @Override
@@ -85,6 +111,11 @@ public class MotorIOSim implements MotorIO {
             throw new IllegalStateException("Position sampling already enabled");
         }
 
+        samplingThread.addSignal(() -> {
+            mPositionSamples++;
+            return 0.0; // We will interpolate in updateInputs
+        });
+
         mPositionSamplingEnabled = true;
     }
 
@@ -93,6 +124,11 @@ public class MotorIOSim implements MotorIO {
         if (mVelocitySamplingEnabled) {
             throw new IllegalStateException("Velocity sampling already enabled");
         }
+
+        samplingThread.addSignal(() -> {
+            mVelocitySamples++;
+            return 0.0; // We will interpolate in updateInputs
+        });
 
         mVelocitySamplingEnabled = true;
     }
@@ -111,5 +147,10 @@ public class MotorIOSim implements MotorIO {
 
     public double getVelocityRotationsPerSecond() {
         return mVelocityRadiansPerSecond;
+    }
+
+    @Override
+    public void setPosition(Rotation2d position) {
+        mPositionRadians = position.getRadians();
     }
 }

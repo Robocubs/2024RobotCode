@@ -1,9 +1,14 @@
-package com.team1701.lib.drivers.cameras;
+package com.team1701.lib.drivers.cameras.apriltag;
 
 import java.util.ArrayList;
+import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
+import com.team1701.lib.drivers.cameras.config.VisionConfig;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
@@ -16,9 +21,10 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 public interface AprilTagCameraIO {
-    public class PhotonCameraInputs implements LoggableInputs {
+    public class AprilTagInputs implements LoggableInputs {
         public PhotonPipelineResult pipelineResult = new PhotonPipelineResult();
         public boolean isConnected;
+        public Pose3d[] trueTrackedAprilTagPoses;
 
         @Override
         public void toLog(LogTable table) {
@@ -42,6 +48,9 @@ public interface AprilTagCameraIO {
                 table.put(targetNamespace + "FiducialID", target.getFiducialId());
                 table.put(targetNamespace + "PoseAmbiguity", target.getPoseAmbiguity());
                 table.put(targetNamespace + "Pose", target.getBestCameraToTarget());
+                table.put(
+                        targetNamespace + "YawRadians",
+                        target.getBestCameraToTarget().getRotation().getZ());
                 table.put(targetNamespace + "AltPose", target.getBestCameraToTarget());
 
                 var minAreaRectCorners = target.getMinAreaRectCorners().stream()
@@ -69,6 +78,7 @@ public interface AprilTagCameraIO {
                     multiTagResult.fiducialIDsUsed.stream()
                             .mapToInt(Integer::intValue)
                             .toArray());
+            table.put("TrueTrackedAprilTagPoses", trueTrackedAprilTagPoses);
         }
 
         @Override
@@ -132,7 +142,13 @@ public interface AprilTagCameraIO {
         }
     }
 
-    public default void updateInputs(PhotonCameraInputs inputs) {}
+    public default void updateInputs(AprilTagInputs inputs) {}
+
+    public default void updateInputs(AprilTagInputs inputs, Optional<Supplier<AprilTagFieldLayout>> supplier) {}
+
+    public default VisionConfig getVisionConfig() {
+        throw new UnsupportedOperationException("Unimplemented method 'getVisionConfig'");
+    }
 
     public default void addToVisionSim(
             VisionSystemSim visionSim, SimCameraProperties cameraProperties, Transform3d robotToCamPose) {}
