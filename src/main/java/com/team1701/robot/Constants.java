@@ -16,7 +16,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public final class Constants {
     public static final double kLoopPeriodSeconds = 0.02;
@@ -121,8 +120,6 @@ public final class Constants {
         public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
         public static final double kMaxPoseAmbiguity = 0.03;
         public static final double kMaxAreaFitInFrame = 0.0;
-        public static final PoseStrategy kPoseStrategy = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
-        public static final PoseStrategy kFallbackPoseStrategy = PoseStrategy.LOWEST_AMBIGUITY;
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
@@ -131,9 +128,7 @@ public final class Constants {
                                 Units.inchesToMeters(-1.75), Units.inchesToMeters(2.32), Units.inchesToMeters(24.5)),
                         new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(45))),
                 0,
-                VisionCameraConfig.kStandardArduCamConfig,
-                kPoseStrategy,
-                kFallbackPoseStrategy);
+                VisionCameraConfig.kStandardArduCamConfig);
 
         public static final VisionConfig kFrontRightCameraConfig = new VisionConfig(
                 "CubVisionFR",
@@ -142,9 +137,7 @@ public final class Constants {
                                 Units.inchesToMeters(-1.75), Units.inchesToMeters(-2.32), Units.inchesToMeters(24.5)),
                         new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-45))),
                 2,
-                VisionCameraConfig.kStandardArduCamConfig,
-                kPoseStrategy,
-                kFallbackPoseStrategy);
+                VisionCameraConfig.kStandardArduCamConfig);
 
         public static final VisionConfig kBackLeftCameraConfig = new VisionConfig(
                 "CubVisionBL",
@@ -153,9 +146,7 @@ public final class Constants {
                                 Units.inchesToMeters(-4.44), Units.inchesToMeters(3.46), Units.inchesToMeters(24.5)),
                         new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-135))),
                 0,
-                VisionCameraConfig.kStandardArduCamConfig,
-                kPoseStrategy,
-                kFallbackPoseStrategy);
+                VisionCameraConfig.kStandardArduCamConfig);
 
         public static final VisionConfig kBackRightCameraConfig = new VisionConfig(
                 "CubVisionBR",
@@ -163,9 +154,7 @@ public final class Constants {
                         new Translation3d(Units.inchesToMeters(-4.44), 3.46, Units.inchesToMeters(24.5)),
                         new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(135))),
                 2,
-                VisionCameraConfig.kStandardArduCamConfig,
-                kPoseStrategy,
-                kFallbackPoseStrategy);
+                VisionCameraConfig.kStandardArduCamConfig);
 
         public static final VisionConfig kSniperCameraConfig = new VisionConfig(
                 "CubVisionSniper",
@@ -173,9 +162,7 @@ public final class Constants {
                         new Translation3d(Units.inchesToMeters(-0.47), 0, Units.inchesToMeters(24.5)),
                         new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(0))),
                 0,
-                VisionCameraConfig.kSniperCamConfig,
-                kPoseStrategy,
-                kFallbackPoseStrategy);
+                VisionCameraConfig.kSniperCamConfig);
 
         public static final VisionConfig kLimelightConfig = new VisionConfig(
                 "limelight",
@@ -183,9 +170,7 @@ public final class Constants {
                         new Translation3d(0, 0.0, Units.inchesToMeters(24.5)),
                         new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-180))),
                 0,
-                VisionCameraConfig.kLimelightConfig,
-                null,
-                null);
+                VisionCameraConfig.kLimelightConfig);
     }
 
     public static final class Controls {
