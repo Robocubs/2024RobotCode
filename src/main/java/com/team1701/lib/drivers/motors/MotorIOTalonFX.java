@@ -28,6 +28,10 @@ public class MotorIOTalonFX implements MotorIO {
     private Optional<Queue<Double>> mPositionSamples = Optional.empty();
     private Optional<Queue<Double>> mVelocitySamples = Optional.empty();
 
+    public MotorIOTalonFX(TalonFX motor) {
+        this(motor, 1.0);
+    }
+
     public MotorIOTalonFX(TalonFX motor, double reduction) {
         super();
         mMotor = motor;
@@ -53,7 +57,7 @@ public class MotorIOTalonFX implements MotorIO {
                     mPositionSignal.refresh();
                     inputs.positionRadiansSamples = new double[] {};
                 });
-        mPositionSignal.refresh();
+
         inputs.positionRadians = encoderUnitsToReducedUnits(mPositionSignal.getValue());
 
         mVelocitySamples.ifPresentOrElse(
@@ -121,8 +125,8 @@ public class MotorIOTalonFX implements MotorIO {
             throw new IllegalStateException("Position sampling already enabled");
         }
 
-        var queue = samplingThread.addSignal(mMotor, mPositionSignal);
         mPositionSignal.setUpdateFrequency(samplingThread.getFrequency());
+        var queue = samplingThread.addSignal(mMotor, mPositionSignal);
         mPositionSamples = Optional.of(queue);
     }
 
@@ -132,8 +136,8 @@ public class MotorIOTalonFX implements MotorIO {
             throw new IllegalStateException("Velocity sampling already enabled");
         }
 
-        var queue = samplingThread.addSignal(mMotor, mVelocitySignal);
         mVelocitySignal.setUpdateFrequency(samplingThread.getFrequency());
+        var queue = samplingThread.addSignal(mMotor, mVelocitySignal);
         mVelocitySamples = Optional.of(queue);
     }
 }
