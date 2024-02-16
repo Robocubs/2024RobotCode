@@ -90,6 +90,14 @@ public class Vision extends SubsystemBase {
         }
     }
 
+    private double[] interpolateStdDevForDistance(double distance) {
+        double[] stdDevs = new double[3];
+        stdDevs[0] = Constants.Vision.kVisionXStdDevInterpolater.get(distance);
+        stdDevs[1] = Constants.Vision.kVisionYStdDevInterpolater.get(distance);
+        stdDevs[2] = Constants.Vision.kVisionThetaStdDevInterpolater.get(distance);
+        return stdDevs;
+    }
+
     @Override
     public void periodic() {
         mAprilTagCameras.forEach(AprilTagCamera::periodic);
@@ -111,18 +119,13 @@ public class Vision extends SubsystemBase {
                     }
                     avgDistanceToTarget /= estimation.targetsUsed.size();
 
-                    double interpolatedXYStdDeviation =
-                            Constants.Vision.kVisionXYStdDevInterpolater.get(avgDistanceToTarget);
-                    double interpolatedThetaStdDeviation =
-                            Constants.Vision.kVisionThetaStdDevInterpolater.get(avgDistanceToTarget);
+                    var stdDevs = interpolateStdDevForDistance(avgDistanceToTarget);
+                    Logger.recordOutput("Vision/InterpolatedStdDev", stdDevs);
 
                     return new VisionMeasurement(
                             estimation.timestampSeconds,
                             estimation.estimatedPose.toPose2d(),
-                            VecBuilder.fill(
-                                    interpolatedXYStdDeviation,
-                                    interpolatedXYStdDeviation,
-                                    interpolatedThetaStdDeviation));
+                            VecBuilder.fill(stdDevs[0], stdDevs[1], stdDevs[2]));
                 })
                 .toArray(VisionMeasurement[]::new));
 
