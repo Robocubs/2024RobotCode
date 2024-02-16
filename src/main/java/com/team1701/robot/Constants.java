@@ -129,7 +129,7 @@ public final class Constants {
                 new Transform3d(
                         new Translation3d(0, 0, Units.inchesToMeters(28)),
                         new Rotation3d(0, 0, Units.degreesToRadians(0))),
-                0,
+                1,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
                 kFallbackPoseStrategy);
@@ -162,7 +162,9 @@ public final class Constants {
 
         public static final VisionConfig kSniperCameraConfig = new VisionConfig(
                 "CubVisionSniper",
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                new Transform3d(
+                        new Translation3d(0, 0, Units.inchesToMeters(35)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(0))),
                 0,
                 VisionCameraConfig.kSniperCamConfig,
                 kPoseStrategy,

@@ -171,7 +171,8 @@ public class RobotContainer {
                     new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
                     new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
                     new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
-                    new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig)));
+                    new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig),
+                    new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)));
             vision.ifPresent(
                     v -> v.constructDetectorCameras(new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)));
         }
