@@ -4,6 +4,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
+import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -50,5 +51,20 @@ public class DriveCommands {
         return Commands.runOnce(drive::engageSwerveLock, drive)
                 .andThen(Commands.idle(drive))
                 .withName("SwerveLock");
+    }
+
+    public static Command slowlyDriveToSpeaker(
+            Drive drive,
+            Supplier<Rotation2d> targetHeadingSupplier,
+            Supplier<Rotation2d> robotHeadingSupplier,
+            DoubleSupplier throttle,
+            DoubleSupplier strafe) {
+        return new RotateToFieldHeading(
+                drive,
+                targetHeadingSupplier,
+                robotHeadingSupplier,
+                Constants.Drive.kSlowKinematicLimits,
+                throttle,
+                strafe);
     }
 }

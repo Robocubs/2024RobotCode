@@ -1,5 +1,6 @@
 package com.team1701.robot.commands;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
@@ -43,6 +44,9 @@ public class RotateToFieldHeading extends Command {
     private TrapezoidProfile.State mRotationState = new TrapezoidProfile.State();
     private boolean mAtTargetRotation = false;
 
+    private DoubleSupplier mXSupplier;
+    private DoubleSupplier mYSupplier;
+
     RotateToFieldHeading(
             Drive drive,
             Supplier<Rotation2d> targetHeadingSupplier,
@@ -61,7 +65,23 @@ public class RotateToFieldHeading extends Command {
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
 
+        mXSupplier = () -> 0;
+        mYSupplier = () -> 0;
+
         addRequirements(drive);
+    }
+
+    RotateToFieldHeading(
+            Drive drive,
+            Supplier<Rotation2d> targetHeadingSupplier,
+            Supplier<Rotation2d> robotHeadingSupplier,
+            KinematicLimits kinematicLimits,
+            DoubleSupplier xSupplier,
+            DoubleSupplier ySupplier) {
+        this(drive, targetHeadingSupplier, robotHeadingSupplier, kinematicLimits, false);
+
+        mXSupplier = xSupplier;
+        mYSupplier = ySupplier;
     }
 
     @Override
@@ -113,7 +133,7 @@ public class RotateToFieldHeading extends Command {
             var rotationalVelocity = mRotationState.velocity + rotationPidOutput;
 
             // Set drive outputs
-            mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, rotationalVelocity, currentHeading));
+            mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(mXSupplier.getAsDouble(), mYSupplier.getAsDouble(), rotationalVelocity, currentHeading));
             setpoint = Rotation2d.fromRadians(mRotationState.position);
         }
 
