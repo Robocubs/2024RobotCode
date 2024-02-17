@@ -3,6 +3,7 @@ package com.team1701.robot.util;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.team1701.lib.drivers.motors.MotorIOTalonFX;
 import com.team1701.robot.Constants;
 
@@ -15,6 +16,7 @@ public class TalonFxMotorFactory {
         var config = new TalonFXConfiguration().withFeedback(feedbackConfig);
 
         motor.getConfigurator().apply(config);
+        motor.setNeutralMode(NeutralModeValue.Brake);
 
         motor.setPosition(0);
 
