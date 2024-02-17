@@ -126,7 +126,7 @@ public class Drive extends SubsystemBase {
         mMeasuredModulePositions =
                 Stream.of(mModules).map(SwerveModule::getPosition).toArray(SwerveModulePosition[]::new);
 
-        mFieldRelativeHeading = mRobotState.getHeading();
+        mFieldRelativeHeading = mGyroInputs.yaw.minus(mYawOffset);
 
         var timestamp = Timer.getFPGATimestamp();
         for (var state : mMeasuredModuleStates) {
