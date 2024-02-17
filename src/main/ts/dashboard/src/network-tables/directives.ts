@@ -1,7 +1,6 @@
 import { Store } from '@webbitjs/store';
 import { AsyncDirective } from 'lit/async-directive.js';
-import { Directive, directive } from 'lit/directive.js';
-import { Result } from 'postcss';
+import { directive } from 'lit/directive.js';
 
 export class SourceValue extends AsyncDirective {
   static getSourceValue(store: Store, provider: string, key: string, defaultValue: unknown): unknown {

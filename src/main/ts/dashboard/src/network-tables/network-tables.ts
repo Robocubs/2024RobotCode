@@ -3,7 +3,7 @@ import { Nt4Provider } from '@frc-web-components/fwc/source-providers';
 import { createContext } from '@lit/context';
 import { Store } from '@webbitjs/store';
 import { WebbitConfig, WebbitConnector } from '@webbitjs/webbit';
-import { Directive, DirectiveResult } from 'lit/directive.js';
+import { DirectiveResult } from 'lit/directive.js';
 import { SourceDoubleArray, SourceValue, ntDoubleArrayDirective, ntValueDirective } from './directives';
 
 export class NetworkTables {

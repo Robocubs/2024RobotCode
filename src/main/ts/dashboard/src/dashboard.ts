@@ -64,18 +64,10 @@ export class Dashboard extends LitElement {
               source-key="/SmartDashboard/Controls/Reverse"
             ></frc-toggle-button>
           </div>
-          <frc-toggle-button
-            style="width:200px; height:100px; font-size:20px;"
-            label="Arm Up"
-            source-key=""
-          ></frc-toggle-button>
+          <frc-toggle-button style="width:200px; height:100px; font-size:20px;" label="Arm Up" source-key=""></frc-toggle-button>
           <div></div>
           <div class="justify-self-end">
-            <frc-toggle-button
-              style="width:200px; height:100px; font-size:20px;"
-              label="Arm Up"
-              source-key=""
-            ></frc-toggle-button>
+            <frc-toggle-button style="width:200px; height:100px; font-size:20px;" label="Arm Up" source-key=""></frc-toggle-button>
           </div>
         </div>
       </div>
