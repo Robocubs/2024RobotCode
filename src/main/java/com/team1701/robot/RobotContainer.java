@@ -14,7 +14,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOCubVision;
-import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOLimelight;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
@@ -173,8 +172,9 @@ public class RobotContainer {
                     new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
                     new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig),
                     new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)));
-            vision.ifPresent(
-                    v -> v.constructDetectorCameras(new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)));
+            // vision.ifPresent(
+            //         v -> v.constructDetectorCameras(new
+            // DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)));
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(
@@ -250,6 +250,13 @@ public class RobotContainer {
         mDriverController.leftBumper().whileTrue(swerveLock(mDrive));
 
         mDriverController.leftTrigger().onTrue(ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState));
+
+        // mDriverController
+        //         .b()
+        //         .whileTrue(startEnd(
+        //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, .5),
+        //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0))
+        //                 .ignoringDisable(true));
 
         DriverStation.silenceJoystickConnectionWarning(true);
     }
