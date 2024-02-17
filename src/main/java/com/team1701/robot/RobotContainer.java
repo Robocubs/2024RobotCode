@@ -236,7 +236,7 @@ public class RobotContainer {
 
         mDriverController
                 .a()
-                .whileTrue(DriveCommands.slowlyDriveToSpeaker(mDrive, ))
+                .whileTrue(DriveCommands.slowlyDriveToSpeaker(mDrive, mRobotState::getSpeakerHeading, mRobotState::getHeading, -mDriverController::getLeftY, -mDriverController::getLeftX, ))
 
         mDriverController
                 .x()
