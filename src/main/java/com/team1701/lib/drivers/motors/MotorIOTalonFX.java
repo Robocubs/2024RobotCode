@@ -28,6 +28,10 @@ public class MotorIOTalonFX implements MotorIO {
     private Optional<Queue<Double>> mPositionSamples = Optional.empty();
     private Optional<Queue<Double>> mVelocitySamples = Optional.empty();
 
+    public MotorIOTalonFX(TalonFX motor) {
+        this(motor, 1.0);
+    }
+
     public MotorIOTalonFX(TalonFX motor, double reduction) {
         super();
         mMotor = motor;
@@ -49,7 +53,10 @@ public class MotorIOTalonFX implements MotorIO {
                             .toArray();
                     samples.clear();
                 },
-                () -> mPositionSignal.refresh());
+                () -> {
+                    mPositionSignal.refresh();
+                    inputs.positionRadiansSamples = new double[] {};
+                });
 
         inputs.positionRadians = encoderUnitsToReducedUnits(mPositionSignal.getValue());
 
@@ -60,7 +67,10 @@ public class MotorIOTalonFX implements MotorIO {
                             .toArray();
                     samples.clear();
                 },
-                () -> mVelocitySignal.refresh());
+                () -> {
+                    mVelocitySignal.refresh();
+                    inputs.velocityRadiansPerSecondSamples = new double[] {};
+                });
 
         inputs.velocityRadiansPerSecond = encoderUnitsToReducedUnits(mVelocitySignal.getValue());
     }
@@ -71,12 +81,13 @@ public class MotorIOTalonFX implements MotorIO {
 
     @Override
     public void setPositionControl(Rotation2d position) {
-        mMotor.setControl(mPositionDutyCycle.withPosition(position.getRotations()));
+        mMotor.setControl(mPositionDutyCycle.withPosition(position.getRotations() / mReduction));
     }
 
     @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
-        mMotor.setControl(mVelocityDutyCycle.withVelocity(Units.radiansToRotations(velocityRadiansPerSecond)));
+        mMotor.setControl(
+                mVelocityDutyCycle.withVelocity(Units.radiansToRotations(velocityRadiansPerSecond) / mReduction));
     }
 
     /**
@@ -114,8 +125,8 @@ public class MotorIOTalonFX implements MotorIO {
             throw new IllegalStateException("Position sampling already enabled");
         }
 
-        var queue = samplingThread.addSignal(mMotor, mPositionSignal);
         mPositionSignal.setUpdateFrequency(samplingThread.getFrequency());
+        var queue = samplingThread.addSignal(mMotor, mPositionSignal);
         mPositionSamples = Optional.of(queue);
     }
 
@@ -125,8 +136,8 @@ public class MotorIOTalonFX implements MotorIO {
             throw new IllegalStateException("Velocity sampling already enabled");
         }
 
-        var queue = samplingThread.addSignal(mMotor, mVelocitySignal);
         mVelocitySignal.setUpdateFrequency(samplingThread.getFrequency());
+        var queue = samplingThread.addSignal(mMotor, mVelocitySignal);
         mVelocitySamples = Optional.of(queue);
     }
 }

@@ -79,24 +79,24 @@ public class RobotContainer {
                             new SwerveModuleIO[] {
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(10),
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(11),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(11),
                                         new EncoderIOAnalog(0),
-                                        Rotation2d.fromRadians(-1.137)),
+                                        Rotation2d.fromRadians(-2.262)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(12),
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(13),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(13),
                                         new EncoderIOAnalog(1),
-                                        Rotation2d.fromRadians(-2.036)),
+                                        Rotation2d.fromRadians(-3.069)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(14),
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(15),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(15),
                                         new EncoderIOAnalog(2),
-                                        Rotation2d.fromRadians(-4.522)),
+                                        Rotation2d.fromRadians(-1.291)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(16),
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(17),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(17),
                                         new EncoderIOAnalog(3),
-                                        Rotation2d.fromRadians(-0.184)),
+                                        Rotation2d.fromRadians(-5.639)),
                             },
                             mRobotState));
 
@@ -221,6 +221,7 @@ public class RobotContainer {
 
         mDrive.setDefaultCommand(driveWithJoysticks(
                 mDrive,
+                mRobotState::getHeading,
                 () -> -mDriverController.getLeftY(),
                 () -> -mDriverController.getLeftX(),
                 () -> -mDriverController.getRightX(),
@@ -318,7 +319,8 @@ public class RobotContainer {
 
     public Command getZeroCommand() {
         return runOnce(() -> {
-                    mShooter.zeroShooterRotation();
+                    // TODO: uncomment line
+                    // mShooter.zeroShooterRotation();
                     mDrive.zeroModules();
                 })
                 .ignoringDisable(true)

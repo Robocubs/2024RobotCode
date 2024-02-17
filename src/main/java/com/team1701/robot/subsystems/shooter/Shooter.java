@@ -45,7 +45,6 @@ public class Shooter extends SubsystemBase {
     private MechanismLigament2d mShooterPost;
     private MechanismRoot2d mShooterRoot;
 
-    @AutoLogOutput(key = "Shooter/RotationMotorOffset")
     private Optional<Rotation2d> mRotationMotorOffset = Optional.empty();
 
     public Shooter(

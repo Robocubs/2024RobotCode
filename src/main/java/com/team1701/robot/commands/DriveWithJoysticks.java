@@ -8,11 +8,13 @@ import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class DriveWithJoysticks extends Command {
     private final Drive mDrive;
+    private final Supplier<Rotation2d> mHeadingSupplier;
     private final DoubleSupplier mThrottle;
     private final DoubleSupplier mStrafe;
     private final DoubleSupplier mRotation;
@@ -20,11 +22,13 @@ public class DriveWithJoysticks extends Command {
 
     DriveWithJoysticks(
             Drive drive,
+            Supplier<Rotation2d> headingSupplier,
             DoubleSupplier throttle,
             DoubleSupplier strafe,
             DoubleSupplier rotation,
             Supplier<KinematicLimits> kinematicLimits) {
         mDrive = drive;
+        mHeadingSupplier = headingSupplier;
         mThrottle = throttle;
         mStrafe = strafe;
         mRotation = rotation;
@@ -54,7 +58,7 @@ public class DriveWithJoysticks extends Command {
                     throttle * kinematicLimits.maxDriveVelocity(),
                     strafe * kinematicLimits.maxDriveVelocity(),
                     rotationRadiansPerSecond,
-                    mDrive.getFieldRelativeHeading()));
+                    mHeadingSupplier.get()));
         }
     }
 
