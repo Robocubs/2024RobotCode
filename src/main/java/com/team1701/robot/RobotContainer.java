@@ -235,6 +235,10 @@ public class RobotContainer {
         mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState));
 
         mDriverController
+                .a()
+                .whileTrue(DriveCommands.slowlyDriveToSpeaker(mDrive, ))
+
+        mDriverController
                 .x()
                 .onTrue(runOnce(() -> mDrive.zeroGyroscope(
                                 Configuration.isBlueAlliance()
