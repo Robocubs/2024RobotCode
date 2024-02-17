@@ -14,11 +14,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class DriveCommands {
     public static Command driveWithJoysticks(
             Drive drive,
+            Supplier<Rotation2d> headingSupplier,
             DoubleSupplier throttle,
             DoubleSupplier strafe,
             DoubleSupplier rotation,
             Supplier<KinematicLimits> kinematicLimits) {
-        return new DriveWithJoysticks(drive, throttle, strafe, rotation, kinematicLimits);
+        return new DriveWithJoysticks(drive, headingSupplier, throttle, strafe, rotation, kinematicLimits);
     }
 
     public static Command driveToPose(
