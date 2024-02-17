@@ -253,13 +253,15 @@ public class RobotContainer {
         mDriverController.leftTrigger().onTrue(ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState));
 
         mDriverController
-                .y()
-                .whileTrue((runOnce(() -> DriveCommands.driveToPose(
+                .b()
+                .whileTrue((DriveCommands.driveToPose(
                         mDrive,
-                        () -> new Pose2d(new Translation2d(2.251, 6.611), Rotation2d.fromRadians(-2.648)),
+                        () -> new Pose2d(
+                                new Translation2d(0.9079903960227966, 4.299035549163818),
+                                Rotation2d.fromRadians(2.079867230915455)),
                         mRobotState::getPose2d,
                         Constants.Drive.kSlowKinematicLimits,
-                        true))));
+                        false)));
 
         // mDriverController
         //         .b()
