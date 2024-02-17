@@ -47,6 +47,8 @@ public class RotateToFieldHeading extends Command {
     private DoubleSupplier mXSupplier;
     private DoubleSupplier mYSupplier;
 
+    private boolean mJoystickInputEnabled;
+
     RotateToFieldHeading(
             Drive drive,
             Supplier<Rotation2d> targetHeadingSupplier,
@@ -67,6 +69,7 @@ public class RotateToFieldHeading extends Command {
 
         mXSupplier = () -> 0;
         mYSupplier = () -> 0;
+        mJoystickInputEnabled = false;
 
         addRequirements(drive);
     }
@@ -82,6 +85,7 @@ public class RotateToFieldHeading extends Command {
 
         mXSupplier = xSupplier;
         mYSupplier = ySupplier;
+        mJoystickInputEnabled = true;
     }
 
     @Override
@@ -120,7 +124,7 @@ public class RotateToFieldHeading extends Command {
         Rotation2d setpoint;
         mAtTargetRotation = GeometryUtil.isNear(
                 targetHeading, currentHeading, Rotation2d.fromRadians(kRotationToleranceRadians.get()));
-        if (mAtTargetRotation) {
+        if (mAtTargetRotation && !mJoystickInputEnabled) {
             mDrive.stop();
             setpoint = currentHeading;
         } else {
@@ -133,7 +137,8 @@ public class RotateToFieldHeading extends Command {
             var rotationalVelocity = mRotationState.velocity + rotationPidOutput;
 
             // Set drive outputs
-            mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(mXSupplier.getAsDouble(), mYSupplier.getAsDouble(), rotationalVelocity, currentHeading));
+            mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                    mXSupplier.getAsDouble(), mYSupplier.getAsDouble(), rotationalVelocity, currentHeading));
             setpoint = Rotation2d.fromRadians(mRotationState.position);
         }
 
