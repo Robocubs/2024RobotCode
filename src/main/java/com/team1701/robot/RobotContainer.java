@@ -31,6 +31,7 @@ import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.commands.ShootCommands;
+import com.team1701.robot.controls.DashboardControls;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
@@ -248,6 +249,8 @@ public class RobotContainer {
         mDriverController.leftBumper().whileTrue(swerveLock(mDrive));
 
         mDriverController.leftTrigger().onTrue(ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState));
+
+        new DashboardControls().bindCommands(mIntake, mIndexer);
 
         DriverStation.silenceJoystickConnectionWarning(true);
     }

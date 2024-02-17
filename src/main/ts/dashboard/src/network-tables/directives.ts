@@ -57,5 +57,3 @@ export class SourceDoubleArray extends AsyncDirective {
 export const sourceDoubleArray = directive(SourceDoubleArray);
 export const ntDoubleArrayDirective = (store: Store) => (key: string, defaultValue: number[]) =>
   sourceDoubleArray(store, 'NetworkTables', key, defaultValue);
-
-
