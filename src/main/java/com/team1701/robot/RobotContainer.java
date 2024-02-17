@@ -40,6 +40,7 @@ import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.TalonFxMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -250,6 +251,15 @@ public class RobotContainer {
         mDriverController.leftBumper().whileTrue(swerveLock(mDrive));
 
         mDriverController.leftTrigger().onTrue(ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState));
+
+        mDriverController
+                .y()
+                .whileTrue((runOnce(() -> DriveCommands.driveToPose(
+                        mDrive,
+                        () -> new Pose2d(new Translation2d(2.251, 6.611), Rotation2d.fromRadians(-2.648)),
+                        mRobotState::getPose2d,
+                        Constants.Drive.kSlowKinematicLimits,
+                        true))));
 
         // mDriverController
         //         .b()
