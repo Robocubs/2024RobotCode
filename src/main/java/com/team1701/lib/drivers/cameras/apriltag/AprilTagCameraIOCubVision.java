@@ -73,7 +73,7 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
         // FPS should always be non-zero and will update at least once every 2 + latency seconds
         var timestampedFps = mFpsSubscriber.getAtomic();
         inputs.isConnected = timestampedFps.value > 0
-                && RobotController.getFPGATime() - mFpsSubscriber.getAtomic().timestamp < 2500000; // 2.5 seconds
+                && RobotController.getFPGATime() - mFpsSubscriber.getAtomic().timestamp < 3000000; // 2.5 seconds
         inputs.pipelineResult = readPhotonPipelineResult(mObservationSubscriber.getAtomic());
         ArrayList<Pose3d> tagPoses = new ArrayList<Pose3d>();
         if (supplier.isPresent()) {

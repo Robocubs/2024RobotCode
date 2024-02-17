@@ -14,7 +14,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOCubVision;
-import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOLimelight;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
@@ -41,6 +40,7 @@ import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.TalonFxMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -171,10 +171,11 @@ public class RobotContainer {
                     new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
                     new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
                     new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
-                    new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig),
-                    new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)));
-            vision.ifPresent(
-                    v -> v.constructDetectorCameras(new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)));
+                    new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig)));
+            // new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)));
+            // vision.ifPresent(
+            //         v -> v.constructDetectorCameras(new
+            // DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)));
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(
@@ -250,6 +251,24 @@ public class RobotContainer {
         mDriverController.leftBumper().whileTrue(swerveLock(mDrive));
 
         mDriverController.leftTrigger().onTrue(ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState));
+
+        mDriverController
+                .b()
+                .whileTrue((DriveCommands.driveToPose(
+                        mDrive,
+                        () -> new Pose2d(
+                                new Translation2d(0.9079903960227966, 4.299035549163818),
+                                Rotation2d.fromRadians(2.079867230915455)),
+                        mRobotState::getPose2d,
+                        Constants.Drive.kSlowKinematicLimits,
+                        false)));
+
+        // mDriverController
+        //         .b()
+        //         .whileTrue(startEnd(
+        //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, .5),
+        //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0))
+        //                 .ignoringDisable(true));
 
         DriverStation.silenceJoystickConnectionWarning(true);
     }

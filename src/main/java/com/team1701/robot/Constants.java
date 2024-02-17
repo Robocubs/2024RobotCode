@@ -127,9 +127,10 @@ public final class Constants {
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
                 new Transform3d(
-                        new Translation3d(0, 0, Units.inchesToMeters(28)),
-                        new Rotation3d(0, 0, Units.degreesToRadians(0))),
-                1,
+                        new Translation3d(
+                                Units.inchesToMeters(-1.75), Units.inchesToMeters(2.32), Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(45))),
+                0,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
                 kFallbackPoseStrategy);
@@ -137,8 +138,9 @@ public final class Constants {
         public static final VisionConfig kFrontRightCameraConfig = new VisionConfig(
                 "CubVisionFR",
                 new Transform3d(
-                        new Translation3d(0, Units.inchesToMeters(-1.75), Units.inchesToMeters(27.25)),
-                        new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                        new Translation3d(
+                                Units.inchesToMeters(-1.75), Units.inchesToMeters(-2.32), Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-45))),
                 2,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
@@ -146,16 +148,21 @@ public final class Constants {
 
         public static final VisionConfig kBackLeftCameraConfig = new VisionConfig(
                 "CubVisionBL",
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
-                1,
+                new Transform3d(
+                        new Translation3d(
+                                Units.inchesToMeters(-4.44), Units.inchesToMeters(3.46), Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-135))),
+                0,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
                 kFallbackPoseStrategy);
 
         public static final VisionConfig kBackRightCameraConfig = new VisionConfig(
                 "CubVisionBR",
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
-                0,
+                new Transform3d(
+                        new Translation3d(Units.inchesToMeters(-4.44), 3.46, Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(135))),
+                2,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
                 kFallbackPoseStrategy);
@@ -163,7 +170,7 @@ public final class Constants {
         public static final VisionConfig kSniperCameraConfig = new VisionConfig(
                 "CubVisionSniper",
                 new Transform3d(
-                        new Translation3d(0, 0, Units.inchesToMeters(35)),
+                        new Translation3d(Units.inchesToMeters(-0.47), 0, Units.inchesToMeters(24.5)),
                         new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(0))),
                 0,
                 VisionCameraConfig.kSniperCamConfig,
@@ -173,8 +180,8 @@ public final class Constants {
         public static final VisionConfig kLimelightConfig = new VisionConfig(
                 "limelight",
                 new Transform3d(
-                        new Translation3d(Units.inchesToMeters(12), 0.0, Units.inchesToMeters(21.75)),
-                        new Rotation3d(0, Units.degreesToRadians(-19), 0)),
+                        new Translation3d(0, 0.0, Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-180))),
                 0,
                 VisionCameraConfig.kLimelightConfig,
                 null,
