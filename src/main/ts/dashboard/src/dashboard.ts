@@ -73,8 +73,8 @@ export class Dashboard extends LitElement {
           <div class="justify-self-end">
             <frc-toggle-button
               style="width:200px; height:100px; font-size:20px;"
-              label="Arm Down"
-              source-key="/SmartDashboard/Controls/ArmDown"
+              label="Retract Arm"
+              source-key="/SmartDashboard/Controls/RetractArm"
             ></frc-toggle-button>
           </div>
         </div>
