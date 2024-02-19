@@ -10,7 +10,7 @@ import { customDarkTheme } from './styles/themes';
 @customElement('team1701-dashboard')
 export class Dashboard extends LitElement {
   @provide({ context: nt4Context })
-  private nt = new NetworkTables('localhost');
+  private nt = new NetworkTables(document.location.hostname);
 
   constructor() {
     super();
