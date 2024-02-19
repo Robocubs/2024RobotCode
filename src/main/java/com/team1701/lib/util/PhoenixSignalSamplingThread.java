@@ -22,15 +22,18 @@ public class PhoenixSignalSamplingThread implements SignalSamplingThread {
     private final double mFrequency;
     private static final Alert mAlert = Alert.error("Added unsupported signal type to PhoenixSignalSamplingThread");
 
-    private boolean mIsCANFD;
+    private boolean mIsCANFD = true;
 
     private BaseStatusSignal[] mPhoenixSignals = new BaseStatusSignal[] {};
 
     public PhoenixSignalSamplingThread(double frequency) {
-        var thread = new Thread(this::periodic);
-        thread.start();
         mFrequency = frequency;
-        mIsCANFD = true;
+        var thread = new Thread(() -> {
+            while (true) {
+                this.periodic();
+            }
+        });
+        thread.start();
     }
 
     public Lock getLock() {
@@ -70,7 +73,7 @@ public class PhoenixSignalSamplingThread implements SignalSamplingThread {
     private void periodic() {
         mPhoenixSignalsLock.lock();
         try {
-            if (mIsCANFD) {
+            if (mIsCANFD && mPhoenixSignals.length > 0) {
                 BaseStatusSignal.waitForAll(2 / mFrequency, mPhoenixSignals);
             } else {
                 Thread.sleep((long) (1000.0 / mFrequency));

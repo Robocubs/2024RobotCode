@@ -67,7 +67,10 @@ public class RobotState {
     public double getDistanceToSpeaker() {
         return getPose3d()
                 .getTranslation()
-                .getDistance(new Translation3d(0.47560569643974304, 5.553, FieldConstants.kSpeakerHeight));
+                .getDistance(
+                        Configuration.isBlueAlliance()
+                                ? FieldConstants.kBlueSpeakerOpeningCenter
+                                : FieldConstants.kRedSpeakerOpeningCenter);
     }
 
     public Rotation2d getHeading() {

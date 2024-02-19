@@ -56,18 +56,59 @@ public final class Constants {
          * Keys are MEASURED distances or angles collected in the lab at KNOWN standard deviations.
          * Values are standard deviations, either calculated or stored.
          */
-        public static final boolean kUseInterpolatedVisionStdDevValues = false;
+        public static final boolean kUseInterpolatedVisionStdDevValues = true;
 
         // TODO: Collect values
-        public static final double[][] kMeasuredDistanceToXYStdDevValues = {{}};
-        public static final double[][] kMeasuredDistanceToAngleStdDevValues = {{}};
-        public static InterpolatingDoubleTreeMap kVisionXYStdDevInterpolater = new InterpolatingDoubleTreeMap();
+        public static final double[][] kMeasuredDistanceToXStdDevValues = {
+            {2.13, 0.006},
+            {2.286, 0.008},
+            {2.4384, 0.009},
+            {2.5908, 0.011},
+            {2.7432, 0.015},
+            {2.9, 0.017},
+            {3.048, 0.015},
+            {3.2, 0.015},
+            {3.66, 0.022},
+            {3.96, 0.041},
+            {5.18, 0.046}
+        };
+        public static final double[][] kMeasuredDistanceToYStdDevValues = {
+            {2.13, 0.009},
+            {2.286, 0.021},
+            {2.4384, 0.022},
+            {2.5908, 0.012},
+            {2.7432, 0.04},
+            {2.9, 0.017},
+            {3.048, 0.13},
+            {3.2, 0.043},
+            {3.66, 0.06},
+            {3.96, 0.22},
+            {5.18, 0.5}
+        };
+        // I scaled the std. dev by 10 here because we want to trust our Pigeon values way more
+        public static final double[][] kMeasuredDistanceToAngleStdDevValues = {
+            {2.13, 0.007},
+            {2.286, 0.008},
+            {2.4384, 0.015},
+            {2.5908, 0.006},
+            {2.7432, 0.008},
+            {2.9, 0.017},
+            {3.048, 0.018},
+            {3.2, 0.02}
+        };
+
+        public static InterpolatingDoubleTreeMap kVisionXStdDevInterpolater = new InterpolatingDoubleTreeMap();
+        public static InterpolatingDoubleTreeMap kVisionYStdDevInterpolater = new InterpolatingDoubleTreeMap();
         public static InterpolatingDoubleTreeMap kVisionThetaStdDevInterpolater = new InterpolatingDoubleTreeMap();
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                for (double[] pair : kMeasuredDistanceToXYStdDevValues) {
-                    kVisionXYStdDevInterpolater.put(pair[0], pair[1]);
+                for (double[] pair : kMeasuredDistanceToXStdDevValues) {
+                    kVisionXStdDevInterpolater.put(pair[0], pair[1]);
+                }
+
+                for (double[] pair : kMeasuredDistanceToYStdDevValues) {
+                    kVisionYStdDevInterpolater.put(pair[0], pair[1]);
                 }
 
                 for (double[] pair : kMeasuredDistanceToAngleStdDevValues) {
@@ -85,7 +126,10 @@ public final class Constants {
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                new Transform3d(
+                        new Translation3d(
+                                Units.inchesToMeters(-1.75), Units.inchesToMeters(2.32), Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(45))),
                 0,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
@@ -93,7 +137,10 @@ public final class Constants {
 
         public static final VisionConfig kFrontRightCameraConfig = new VisionConfig(
                 "CubVisionFR",
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                new Transform3d(
+                        new Translation3d(
+                                Units.inchesToMeters(-1.75), Units.inchesToMeters(-2.32), Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-45))),
                 2,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
@@ -101,23 +148,30 @@ public final class Constants {
 
         public static final VisionConfig kBackLeftCameraConfig = new VisionConfig(
                 "CubVisionBL",
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
-                1,
+                new Transform3d(
+                        new Translation3d(
+                                Units.inchesToMeters(-4.44), Units.inchesToMeters(3.46), Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-135))),
+                0,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
                 kFallbackPoseStrategy);
 
         public static final VisionConfig kBackRightCameraConfig = new VisionConfig(
                 "CubVisionBR",
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
-                0,
+                new Transform3d(
+                        new Translation3d(Units.inchesToMeters(-4.44), 3.46, Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(135))),
+                2,
                 VisionCameraConfig.kStandardArduCamConfig,
                 kPoseStrategy,
                 kFallbackPoseStrategy);
 
         public static final VisionConfig kSniperCameraConfig = new VisionConfig(
                 "CubVisionSniper",
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0))),
+                new Transform3d(
+                        new Translation3d(Units.inchesToMeters(-0.47), 0, Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(0))),
                 0,
                 VisionCameraConfig.kSniperCamConfig,
                 kPoseStrategy,
@@ -126,8 +180,8 @@ public final class Constants {
         public static final VisionConfig kLimelightConfig = new VisionConfig(
                 "limelight",
                 new Transform3d(
-                        new Translation3d(Units.inchesToMeters(12), 0.0, Units.inchesToMeters(21.75)),
-                        new Rotation3d(0, Units.degreesToRadians(-19), 0)),
+                        new Translation3d(0, 0.0, Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-180))),
                 0,
                 VisionCameraConfig.kLimelightConfig,
                 null,
@@ -202,10 +256,10 @@ public final class Constants {
                     /* TODO: Update values for 2024 bot */
                     kTrackWidthMeters = 0.465;
                     kWheelbaseMeters = 0.465;
-                    kDriveKff.initDefault(0.008);
-                    kDriveKp.initDefault(0.012);
+                    kDriveKff.initDefault(0.06);
+                    kDriveKp.initDefault(0.06);
                     kDriveKd.initDefault(0);
-                    kSteerKp.initDefault(2.0);
+                    kSteerKp.initDefault(16.0);
                     kSteerKd.initDefault(0);
                     break;
                 case SIMULATION_BOT:

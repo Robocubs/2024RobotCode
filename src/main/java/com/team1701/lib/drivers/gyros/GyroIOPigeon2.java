@@ -21,7 +21,7 @@ public class GyroIOPigeon2 implements GyroIO {
     private Optional<Queue<Double>> mYawDegreesSamples = Optional.empty();
 
     public GyroIOPigeon2(int pigeonID) {
-        mPigeon = new Pigeon2(pigeonID);
+        mPigeon = new Pigeon2(pigeonID, "canivore1");
         mYawSignal = mPigeon.getYaw();
         mPitchSignal = mPigeon.getPitch();
         mRollSignal = mPigeon.getRoll();
