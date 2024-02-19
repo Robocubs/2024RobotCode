@@ -144,15 +144,16 @@ public final class Constants {
                 new Transform3d(
                         new Translation3d(
                                 Units.inchesToMeters(-4.44), Units.inchesToMeters(3.46), Units.inchesToMeters(24.5)),
-                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-135))),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(135))),
                 0,
                 VisionCameraConfig.kStandardArduCamConfig);
 
         public static final VisionConfig kBackRightCameraConfig = new VisionConfig(
                 "CubVisionBR",
                 new Transform3d(
-                        new Translation3d(Units.inchesToMeters(-4.44), 3.46, Units.inchesToMeters(24.5)),
-                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(135))),
+                        new Translation3d(
+                                Units.inchesToMeters(-4.44), Units.inchesToMeters(-3.46), Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-135))),
                 2,
                 VisionCameraConfig.kStandardArduCamConfig);
 
