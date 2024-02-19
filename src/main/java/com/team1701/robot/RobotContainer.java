@@ -31,6 +31,8 @@ import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.DashboardControls;
+import com.team1701.robot.controls.StreamDeck;
+import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
@@ -62,6 +64,7 @@ public class RobotContainer {
     private final Intake mIntake;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
+    private final StreamDeck mStreamDeck = new StreamDeck();
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
     private final Map<String, Pose2d[]> mAutonomousPaths = new HashMap<>();
 
@@ -272,6 +275,26 @@ public class RobotContainer {
         //                 .ignoringDisable(true));
 
         new DashboardControls().bindCommands(mIntake, mIndexer);
+
+        var toggledCommand = idle().ignoringDisable(true).withName("StreamDeckToggleButton");
+        var buttonGroupButton1Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton1");
+        var buttonGroupButton2Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton2");
+        var buttonGroupButton3Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton3");
+
+        mStreamDeck.configureButton(config -> config.addDefault(StreamDeckButton.kButton)
+                .add(StreamDeckButton.kToggleButton, toggledCommand::isScheduled)
+                .add(StreamDeckButton.kButtonGroupButton1, buttonGroupButton1Command::isScheduled)
+                .add(StreamDeckButton.kButtonGroupButton2, buttonGroupButton2Command::isScheduled)
+                .add(StreamDeckButton.kButtonGroupButton3, buttonGroupButton3Command::isScheduled));
+
+        mStreamDeck.button(StreamDeckButton.kToggleButton).toggleOnTrue(toggledCommand);
+
+        mStreamDeck
+                .buttonGroup()
+                .option(StreamDeckButton.kButtonGroupButton1, trigger -> trigger.whileTrue(buttonGroupButton1Command))
+                .option(StreamDeckButton.kButtonGroupButton2, trigger -> trigger.whileTrue(buttonGroupButton2Command))
+                .option(StreamDeckButton.kButtonGroupButton3, trigger -> trigger.whileTrue(buttonGroupButton3Command))
+                .select(StreamDeckButton.kButtonGroupButton1);
 
         DriverStation.silenceJoystickConnectionWarning(true);
     }
