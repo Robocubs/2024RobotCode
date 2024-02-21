@@ -7,6 +7,7 @@ import com.team1701.lib.drivers.encoders.EncoderIOSim;
 import com.team1701.lib.drivers.encoders.EncoderInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
+import com.team1701.lib.drivers.motors.MotorIOSparkFlex;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
@@ -83,6 +84,10 @@ public class Shooter extends SubsystemBase {
         mAngleEncoderIO = angleEncoder;
 
         createMechanism2d();
+    }
+
+    public Shooter(MotorIOSparkFlex shooterRollerSparkFlex) {
+        // TODO Auto-generated constructor stub
     }
 
     public static MotorIOSim createRollerMotorSim(DCMotor shooterMotor) {

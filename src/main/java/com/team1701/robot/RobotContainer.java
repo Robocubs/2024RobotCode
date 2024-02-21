@@ -38,6 +38,7 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.vision.Vision;
+import com.team1701.robot.util.SparkMotorFactory;
 import com.team1701.robot.util.TalonFxMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -102,6 +103,13 @@ public class RobotContainer {
                             mRobotState));
 
                     // TODO: update IDs
+                    shooter = Optional.of(new Shooter(
+                            SparkMotorFactory.createShooterRollerSparkFlex(Constants.Shooter.kShooterRightUpperRollerMotorId, true),
+                            SparkMotorFactory.createShooterRollerSparkFlex(Constants.Shooter.kShooterRightLowerRollerMotorId, false),
+                            (SparkMotorFactory.createShooterRollerSparkFlex(Constants.Shooter.kShooterLeftUpperRollerMotorId, false)),
+                            (SparkMotorFactory.createShooterRollerSparkFlex(Constants.Shooter.kShooterLeftLowerRollerMotorId, true)),
+                            (SparkMotorFactory.createShooterRotationSparkFlex(0, false)),
+                            new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
                     // shooter = Optional.of(new Shooter(
                     //         SparkMotorFactory.createShooterMotorIOSparkFlex(
                     //                 Constants.Shooter.kShooterRightUpperRollerMotorId, ShooterMotorUsage.ROLLER),
