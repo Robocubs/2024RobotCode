@@ -21,6 +21,12 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 public final class Constants {
     public static final double kLoopPeriodSeconds = 0.02;
 
+    public enum ScoringMode {
+        SPEAKER,
+        AMP,
+        CLIMB
+    }
+
     public static final class Robot {
         public static final double kRobotWidth = Units.inchesToMeters(23);
         public static final double kRobotLength = Units.inchesToMeters(28.5);
@@ -356,6 +362,17 @@ public final class Constants {
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration");
 
+        public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Rollers/IdleSpeedRadiansPerSecond", 300);
+        public static final LoggedTunableNumber kShooterAmpAngleDegrees =
+                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 85);
+        public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 400);
+        public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Roller/TrapRollerSpeedRadiansPerSecond", 200);
+        public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
+            new LoggedTunableNumber("Shooter/Roller/TargetShootSpeedRadiansPerSecond", 600);
+
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
         public static final Rotation2d kShooterAngleEncoderOffset;
@@ -398,7 +415,7 @@ public final class Constants {
         }
     }
 
-    public static final class Winch {
+    public static final class Climb {
         public static final double kWinchReduction = 1.0 / 25.0;
 
         public static final int kLeftWinchId = 40;

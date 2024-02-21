@@ -120,6 +120,13 @@ public class RobotState {
     }
 
     @AutoLogOutput
+    public Rotation2d getAmpHeading() {
+        return Configuration.isBlueAlliance()
+                ? Rotation2d.fromDegrees(90)
+                : Rotation2d.fromDegrees(-90);
+    }
+
+    @AutoLogOutput
     public Pose2d[] getDetectedNotePoses2d() {
         return mDetectedNotes.stream()
                 .map(note -> note.pose.getTranslation().toTranslation2d())

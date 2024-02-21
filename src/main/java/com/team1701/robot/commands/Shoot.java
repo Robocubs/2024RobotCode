@@ -4,6 +4,8 @@ import java.util.stream.DoubleStream;
 
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.robot.Constants;
+import com.team1701.robot.Constants.ScoringMode;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -18,8 +20,7 @@ public class Shoot extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
     private static final LoggedTunableNumber kHeadingToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceRadians", 0.01);
-    private static final LoggedTunableNumber kTargetSpeedRadiansPerSecond =
-            new LoggedTunableNumber(kLoggingPrefix + "TargetSpeedRadiansPerSecond", 600);
+    
 
     private final Shooter mShooter;
     private final Indexer mIndexer;
@@ -28,11 +29,15 @@ public class Shoot extends Command {
 
     private boolean mShooting;
 
-    public Shoot(Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForHeading) {
+    private ScoringMode mScoringMode;
+
+    public Shoot(Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForHeading, ScoringMode scoringMode) {
         mShooter = shooter;
         mIndexer = indexer;
         mRobotState = robotState;
         mWaitForHeading = waitForHeading;
+
+        mScoringMode = scoringMode;
 
         addRequirements(shooter, indexer);
     }
@@ -44,27 +49,48 @@ public class Shoot extends Command {
 
     @Override
     public void execute() {
-        var shooterAngleFromHorizontal = mRobotState.calculateShooterAngleTowardsSpeaker();
+        Rotation2d desiredShooterAngle;
+        Rotation2d targetHeading;
 
-        mShooter.setRotationAngle(shooterAngleFromHorizontal);
+        double leftTargetSpeed;
+        double rightTargetSpeed; //if we want to induce spin
 
-        // TODO: Determine linear regression of speeds
-        var targetSpeed = kTargetSpeedRadiansPerSecond.get();
-        mShooter.setRollerSpeed(targetSpeed);
+
+        switch(mScoringMode) {
+            case SPEAKER:
+            //TODO: Linear reg of speeds
+                desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
+                leftTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
+                rightTargetSpeed = leftTargetSpeed;
+                targetHeading = mRobotState.getSpeakerHeading();
+                break;
+            case AMP:
+                desiredShooterAngle = Rotation2d.fromDegrees(Constants.Shooter.kShooterAmpAngleDegrees.get());
+                leftTargetSpeed = Constants.Shooter.kAmpRollerSpeedRadiansPerSecond.get();
+                rightTargetSpeed = leftTargetSpeed;
+                targetHeading = mRobotState.getAmpHeading();
+                break;
+            default:
+                cancel();
+                return;
+        }
+
+        mShooter.setRotationAngle(desiredShooterAngle);
+        mShooter.setRollerSpeed(leftTargetSpeed);
 
         var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(), shooterAngleFromHorizontal, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
         var atHeading = !mWaitForHeading
                 || GeometryUtil.isNear(
-                        mRobotState.getSpeakerHeading(),
+                        targetHeading,
                         mRobotState.getHeading(),
                         Rotation2d.fromRadians(kHeadingToleranceRadians.get()));
 
         // TODO: Determine if time-locked boolean is needed
         // Or alternatively use a speed range based on distance
         var atSpeed = DoubleStream.of(mShooter.getRollerSpeedsRadiansPerSecond())
-                .allMatch(actualSpeed -> MathUtil.isNear(targetSpeed, actualSpeed, 10.0));
+                .allMatch(actualSpeed -> MathUtil.isNear(leftTargetSpeed, actualSpeed, 10.0));
 
         if (atAngle && atHeading && atSpeed) {
             mIndexer.setForwardShoot();
@@ -79,7 +105,7 @@ public class Shoot extends Command {
             }
         }
 
-        Logger.recordOutput(kLoggingPrefix + "TargetShooterAngle", shooterAngleFromHorizontal);
+        Logger.recordOutput(kLoggingPrefix + "TargetShooterAngle", desiredShooterAngle);
         Logger.recordOutput(kLoggingPrefix + "Shooting", mShooting);
         Logger.recordOutput(kLoggingPrefix + "AtAngle", atAngle);
         Logger.recordOutput(kLoggingPrefix + "AtHeading", atHeading);

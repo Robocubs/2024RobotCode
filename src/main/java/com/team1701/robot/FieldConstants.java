@@ -1,5 +1,6 @@
 package com.team1701.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
@@ -22,4 +23,8 @@ public final class FieldConstants {
             new Translation3d(Units.inchesToMeters(30), Units.inchesToMeters(30), 0.0);
     public static Translation3d kRedSource =
             new Translation3d(kFieldLongLengthMeters - kBlueSource.getX(), kBlueSource.getY(), kBlueSource.getZ());
+
+    public static Translation2d kBlueAmpPosition = new Translation2d(72.5, 323);
+    public static Translation2d kRedAmpPosition = new Translation2d(578.77, 323);
+
 }

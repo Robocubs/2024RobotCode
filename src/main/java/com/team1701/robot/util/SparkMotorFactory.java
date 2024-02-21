@@ -136,10 +136,10 @@ public class SparkMotorFactory {
         double reduction = 1.0;
         switch (motorUse) {
             case WINCH:
-                configureWithRetry(() -> controller.setP(Constants.Winch.kWinchKp.get()), errorAlert);
-                configureWithRetry(() -> controller.setD(Constants.Winch.kWinchKd.get()), errorAlert);
-                configureWithRetry(() -> controller.setFF(Constants.Winch.kWinchKff.get()), errorAlert);
-                reduction = Constants.Winch.kWinchReduction;
+                configureWithRetry(() -> controller.setP(Constants.Climb.kWinchKp.get()), errorAlert);
+                configureWithRetry(() -> controller.setD(Constants.Climb.kWinchKd.get()), errorAlert);
+                configureWithRetry(() -> controller.setFF(Constants.Climb.kWinchKff.get()), errorAlert);
+                reduction = Constants.Climb.kWinchReduction;
                 break;
             case ROTATION:
                 configureWithRetry(() -> controller.setP(Constants.Arm.kArmRotationKp.get()), errorAlert);

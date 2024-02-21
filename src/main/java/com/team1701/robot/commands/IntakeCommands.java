@@ -9,7 +9,17 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class IntakeCommands {
 
     public static Command reverse(Intake intake, Indexer indexer) {
-        return Commands.startEnd(() -> intake.setReverse(), () -> indexer.setReverse(), intake, indexer)
+        return Commands.startEnd(
+                        () -> {
+                            intake.setReverse();
+                            indexer.setReverse();
+                        },
+                        () -> {
+                            intake.stop();
+                            indexer.stop();
+                        },
+                        intake,
+                        indexer)
                 .withName("ReverseIntakeAndIndexer");
     }
 

@@ -25,6 +25,7 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
+import com.team1701.robot.Constants.ScoringMode;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
@@ -65,6 +66,8 @@ public class RobotContainer {
     private final Intake mIntake;
     private final Arm mArm;
     private final Climb mClimb;
+
+    private ScoringMode mScoringMode;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
@@ -232,6 +235,8 @@ public class RobotContainer {
 
         this.mClimb = climb.orElseGet(() -> new Climb(new MotorIO() {}, new MotorIO() {}));
 
+        mScoringMode = Constants.ScoringMode.SPEAKER;
+
         mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
 
         setupControllerBindings();
@@ -262,7 +267,7 @@ public class RobotContainer {
 
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
-        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState));
+        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState, mScoringMode));
 
         mArm.setDefaultCommand(Commands.startEnd(mArm::stop, () -> {}, mArm));
 
@@ -281,7 +286,17 @@ public class RobotContainer {
                         DriveCommands.rotateToSpeaker(mDrive, mRobotState, Constants.Drive.kFastKinematicLimits, true));
         mDriverController.leftBumper().whileTrue(swerveLock(mDrive));
 
-        mDriverController.leftTrigger().onTrue(ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState));
+        // Speaker Shot
+        mDriverController
+                .leftTrigger()
+                .and(() -> mScoringMode == ScoringMode.SPEAKER)
+                .onTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
+
+        // Amp Shot
+        mDriverController
+                .leftTrigger()
+                .and(() -> mScoringMode == ScoringMode.AMP)
+                .onTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
 
         mDriverController
                 .b()
