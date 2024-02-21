@@ -20,7 +20,6 @@ public class Shoot extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
     private static final LoggedTunableNumber kHeadingToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceRadians", 0.01);
-    
 
     private final Shooter mShooter;
     private final Indexer mIndexer;
@@ -31,7 +30,8 @@ public class Shoot extends Command {
 
     private ScoringMode mScoringMode;
 
-    public Shoot(Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForHeading, ScoringMode scoringMode) {
+    public Shoot(
+            Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForHeading, ScoringMode scoringMode) {
         mShooter = shooter;
         mIndexer = indexer;
         mRobotState = robotState;
@@ -53,12 +53,11 @@ public class Shoot extends Command {
         Rotation2d targetHeading;
 
         double leftTargetSpeed;
-        double rightTargetSpeed; //if we want to induce spin
+        double rightTargetSpeed; // if we want to induce spin
 
-
-        switch(mScoringMode) {
+        switch (mScoringMode) {
             case SPEAKER:
-            //TODO: Linear reg of speeds
+                // TODO: Linear reg of speeds
                 desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
                 leftTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 rightTargetSpeed = leftTargetSpeed;

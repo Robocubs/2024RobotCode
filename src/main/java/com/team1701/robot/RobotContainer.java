@@ -235,7 +235,7 @@ public class RobotContainer {
 
         this.mClimb = climb.orElseGet(() -> new Climb(new MotorIO() {}, new MotorIO() {}));
 
-        mScoringMode = Constants.ScoringMode.SPEAKER;
+        mScoringMode = Constants.ScoringMode.AMP;
 
         mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
 

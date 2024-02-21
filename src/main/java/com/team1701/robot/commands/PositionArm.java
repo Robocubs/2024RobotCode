@@ -50,9 +50,7 @@ public class PositionArm extends Command {
     public boolean isFinished() {
         return mEndAtPosition
                 ? GeometryUtil.isNear(
-                        mArm.getAngle(),
-                        mTargetRotation,
-                        Rotation2d.fromRadians(kArmAngleToleranceRadians.get()))
+                        mArm.getAngle(), mTargetRotation, Rotation2d.fromRadians(kArmAngleToleranceRadians.get()))
                 : true;
     }
 

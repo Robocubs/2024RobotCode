@@ -24,13 +24,14 @@ public class ShootCommands {
                         new Shoot(shooter, indexer, robotState, true, ScoringMode.SPEAKER),
                         DriveCommands.rotateToSpeaker(
                                 drive, robotState, Constants.Drive.kFastTrapezoidalKinematicLimits, false))
-                .withName("AimAndShoot");
+                .withName("AimAndShootInSpeaker");
     }
 
     public static Command scoreInAmp(Shooter shooter, Indexer indexer, Drive drive, Arm arm, RobotState robotState) {
         return Commands.sequence(
-                new PositionArm(arm, true, ScoringMode.AMP),
-                new Shoot(shooter, indexer, robotState, false, ScoringMode.AMP),
-                new PositionArm(arm, true, ScoringMode.AMP));
+                        new PositionArm(arm, true, ScoringMode.AMP),
+                        new Shoot(shooter, indexer, robotState, false, ScoringMode.AMP),
+                        new PositionArm(arm, true, ScoringMode.AMP))
+                .withName("scoreInAmp");
     }
 }

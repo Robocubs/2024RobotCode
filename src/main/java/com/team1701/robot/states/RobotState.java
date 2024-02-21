@@ -111,6 +111,10 @@ public class RobotState {
                 : FieldConstants.kRedSpeakerOpeningCenter;
     }
 
+    public Translation3d getAmpPose() {
+        return Configuration.isBlueAlliance() ? FieldConstants.kBlueAmpPosition : FieldConstants.kRedAmpPosition;
+    }
+
     @AutoLogOutput
     public Rotation2d getSpeakerHeading() {
         return getSpeakerPose()
@@ -121,9 +125,7 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d getAmpHeading() {
-        return Configuration.isBlueAlliance()
-                ? Rotation2d.fromDegrees(90)
-                : Rotation2d.fromDegrees(-90);
+        return Configuration.isBlueAlliance() ? Rotation2d.fromDegrees(90) : Rotation2d.fromDegrees(-90);
     }
 
     @AutoLogOutput
