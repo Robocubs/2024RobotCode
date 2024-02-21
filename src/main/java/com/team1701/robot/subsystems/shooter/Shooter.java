@@ -213,14 +213,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setUnifiedRollerSpeed(double radiansPerSecond) {
-        Logger.recordOutput("Shooter/Motors/Rollers/UpperRightDemandRadiansPerSecond", radiansPerSecond);
-        Logger.recordOutput("Shooter/Motors/Rollers/LowerRightDemandRadiansPerSecond", radiansPerSecond);
-        Logger.recordOutput("Shooter/Motors/Rollers/UpperLeftDemandRadiansPerSecond", radiansPerSecond);
-        Logger.recordOutput("Shooter/Motors/Rollers/LowerLeftDemandRadiansPerSecond", radiansPerSecond);
-        mRightUpperShooterMotorIO.setVelocityControl(radiansPerSecond);
-        mRightLowerShooterMotorIO.setVelocityControl(radiansPerSecond);
-        mLeftUpperShooterMotorIO.setVelocityControl(radiansPerSecond);
-        mLeftLowerShooterMotorIO.setVelocityControl(radiansPerSecond);
+        setRightRollerSpeeds(radiansPerSecond);
+        setLeftRollerSpeeds(radiansPerSecond);
     }
 
     public void setRightRollerSpeeds(double radiansPerSecond) {
