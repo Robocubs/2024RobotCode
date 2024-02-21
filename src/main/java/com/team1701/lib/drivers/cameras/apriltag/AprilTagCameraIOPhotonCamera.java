@@ -1,5 +1,6 @@
-package com.team1701.lib.drivers.cameras;
+package com.team1701.lib.drivers.cameras.apriltag;
 
+import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import edu.wpi.first.math.geometry.Transform3d;
 import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -8,15 +9,22 @@ import org.photonvision.simulation.VisionSystemSim;
 
 public class AprilTagCameraIOPhotonCamera implements AprilTagCameraIO {
     private final PhotonCamera mCamera;
+    private final VisionConfig mConfig;
 
-    public AprilTagCameraIOPhotonCamera(String cameraName) {
-        mCamera = new PhotonCamera(cameraName);
+    public AprilTagCameraIOPhotonCamera(VisionConfig config) {
+        mConfig = config;
+        mCamera = new PhotonCamera(config.cameraName);
     }
 
     @Override
     public void updateInputs(AprilTagInputs inputs) {
         inputs.isConnected = mCamera.isConnected();
         inputs.pipelineResult = mCamera.getLatestResult();
+    }
+
+    @Override
+    public VisionConfig getVisionConfig() {
+        return mConfig;
     }
 
     @Override

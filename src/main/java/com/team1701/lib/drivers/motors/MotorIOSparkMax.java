@@ -30,21 +30,45 @@ public class MotorIOSparkMax implements MotorIO {
 
     @Override
     public void updateInputs(MotorInputs inputs) {
+
         inputs.positionRadians = Units.rotationsToRadians(mEncoder.getPosition()) * mReduction;
         inputs.velocityRadiansPerSecond =
                 Units.rotationsPerMinuteToRadiansPerSecond(mEncoder.getVelocity()) * mReduction;
-        mPositionSamples.ifPresent(samples -> {
-            inputs.positionRadiansSamples = samples.stream()
-                    .mapToDouble((position) -> Units.rotationsToRadians(position) * mReduction)
-                    .toArray();
-            samples.clear();
-        });
-        mVelocitySamples.ifPresent(samples -> {
-            inputs.velocityRadiansPerSecondSamples = samples.stream()
-                    .mapToDouble((velocity) -> Units.rotationsPerMinuteToRadiansPerSecond(velocity) * mReduction)
-                    .toArray();
-            samples.clear();
-        });
+        mPositionSamples.ifPresentOrElse(
+                samples -> {
+                    inputs.positionRadiansSamples =
+                            samples.stream().mapToDouble(this::toReducedRadians).toArray();
+                    inputs.positionRadians = inputs.positionRadiansSamples.length > 0
+                            ? inputs.positionRadiansSamples[inputs.positionRadiansSamples.length - 1]
+                            : toReducedRadians(mEncoder.getPosition());
+                    samples.clear();
+                },
+                () -> {
+                    inputs.positionRadians = toReducedRadians(mEncoder.getPosition());
+                    inputs.positionRadiansSamples = new double[] {};
+                });
+        mVelocitySamples.ifPresentOrElse(
+                samples -> {
+                    inputs.velocityRadiansPerSecondSamples = samples.stream()
+                            .mapToDouble(this::toReducedRadiansPerSecond)
+                            .toArray();
+                    inputs.velocityRadiansPerSecond = inputs.velocityRadiansPerSecondSamples.length > 0
+                            ? inputs.velocityRadiansPerSecondSamples[inputs.velocityRadiansPerSecondSamples.length - 1]
+                            : toReducedRadiansPerSecond(mEncoder.getVelocity());
+                    samples.clear();
+                },
+                () -> {
+                    inputs.velocityRadiansPerSecond = toReducedRadiansPerSecond(mEncoder.getVelocity());
+                    inputs.velocityRadiansPerSecondSamples = new double[] {};
+                });
+    }
+
+    private double toReducedRadians(double value) {
+        return Units.rotationsToRadians(value) * mReduction;
+    }
+
+    private double toReducedRadiansPerSecond(double value) {
+        return Units.rotationsPerMinuteToRadiansPerSecond(value) * mReduction;
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.team1701.robot;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
+import com.team1701.lib.drivers.cameras.config.VisionCameraConfig;
+import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
@@ -54,18 +56,59 @@ public final class Constants {
          * Keys are MEASURED distances or angles collected in the lab at KNOWN standard deviations.
          * Values are standard deviations, either calculated or stored.
          */
-        public static final boolean kUseInterpolatedVisionStdDevValues = false;
+        public static final boolean kUseInterpolatedVisionStdDevValues = true;
 
         // TODO: Collect values
-        public static final double[][] kMeasuredDistanceToXYStdDevValues = {{}};
-        public static final double[][] kMeasuredDistanceToAngleStdDevValues = {{}};
-        public static InterpolatingDoubleTreeMap kVisionXYStdDevInterpolater = new InterpolatingDoubleTreeMap();
+        public static final double[][] kMeasuredDistanceToXStdDevValues = {
+            {2.13, 0.006},
+            {2.286, 0.008},
+            {2.4384, 0.009},
+            {2.5908, 0.011},
+            {2.7432, 0.015},
+            {2.9, 0.017},
+            {3.048, 0.015},
+            {3.2, 0.015},
+            {3.66, 0.022},
+            {3.96, 0.041},
+            {5.18, 0.046}
+        };
+        public static final double[][] kMeasuredDistanceToYStdDevValues = {
+            {2.13, 0.009},
+            {2.286, 0.021},
+            {2.4384, 0.022},
+            {2.5908, 0.012},
+            {2.7432, 0.04},
+            {2.9, 0.017},
+            {3.048, 0.13},
+            {3.2, 0.043},
+            {3.66, 0.06},
+            {3.96, 0.22},
+            {5.18, 0.5}
+        };
+        // I scaled the std. dev by 10 here because we want to trust our Pigeon values way more
+        public static final double[][] kMeasuredDistanceToAngleStdDevValues = {
+            {2.13, 0.007},
+            {2.286, 0.008},
+            {2.4384, 0.015},
+            {2.5908, 0.006},
+            {2.7432, 0.008},
+            {2.9, 0.017},
+            {3.048, 0.018},
+            {3.2, 0.02}
+        };
+
+        public static InterpolatingDoubleTreeMap kVisionXStdDevInterpolater = new InterpolatingDoubleTreeMap();
+        public static InterpolatingDoubleTreeMap kVisionYStdDevInterpolater = new InterpolatingDoubleTreeMap();
         public static InterpolatingDoubleTreeMap kVisionThetaStdDevInterpolater = new InterpolatingDoubleTreeMap();
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                for (double[] pair : kMeasuredDistanceToXYStdDevValues) {
-                    kVisionXYStdDevInterpolater.put(pair[0], pair[1]);
+                for (double[] pair : kMeasuredDistanceToXStdDevValues) {
+                    kVisionXStdDevInterpolater.put(pair[0], pair[1]);
+                }
+
+                for (double[] pair : kMeasuredDistanceToYStdDevValues) {
+                    kVisionYStdDevInterpolater.put(pair[0], pair[1]);
                 }
 
                 for (double[] pair : kMeasuredDistanceToAngleStdDevValues) {
@@ -76,36 +119,73 @@ public final class Constants {
 
         public static final double kAmbiguityThreshold = 0.15;
         public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
-        // TODO: Structure CubVision constants
-        public static final int cameraResolutionWidth = 1280;
-        public static final int cameraResolutionHeight = 720;
-        public static final int cameraAutoExposure = 0;
-        public static final int cameraExposure = 0;
-        public static final int cameraGain = 0;
-
-        public static final String kFrontLeftCameraName = "CubVisionFL";
-        public static final Transform3d kRobotToFrontLeftCamPose =
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
-        public static final int kFrontLeftCameraID = 0;
-
-        public static final String kFrontRightCameraName = "CubVisionFR";
-        public static final Transform3d kRobotToFrontRightCamPose =
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
-        public static final int kFrontRightCameraID = 1;
-
-        public static final String kBackLeftCameraName = "CubVisionBL";
-        public static final Transform3d kRobotToBackLeftCamPose =
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
-        public static final int kBackLeftCameraID = 1;
-
-        public static final String kBackRightCameraName = "CubVisionBR";
-        public static final Transform3d kRobotToBackRightCamPose =
-                new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(0)));
-        public static final int kBackRightCameraID = 1;
-
         public static final double kMaxPoseAmbiguity = 0.03;
+        public static final double kMaxAreaFitInFrame = 0.0;
         public static final PoseStrategy kPoseStrategy = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
         public static final PoseStrategy kFallbackPoseStrategy = PoseStrategy.LOWEST_AMBIGUITY;
+
+        public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
+                "CubVisionFL",
+                new Transform3d(
+                        new Translation3d(
+                                Units.inchesToMeters(-1.75), Units.inchesToMeters(2.32), Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(45))),
+                0,
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
+        public static final VisionConfig kFrontRightCameraConfig = new VisionConfig(
+                "CubVisionFR",
+                new Transform3d(
+                        new Translation3d(
+                                Units.inchesToMeters(-1.75), Units.inchesToMeters(-2.32), Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-45))),
+                2,
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
+        public static final VisionConfig kBackLeftCameraConfig = new VisionConfig(
+                "CubVisionBL",
+                new Transform3d(
+                        new Translation3d(
+                                Units.inchesToMeters(-4.44), Units.inchesToMeters(3.46), Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-135))),
+                0,
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
+        public static final VisionConfig kBackRightCameraConfig = new VisionConfig(
+                "CubVisionBR",
+                new Transform3d(
+                        new Translation3d(Units.inchesToMeters(-4.44), 3.46, Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(135))),
+                2,
+                VisionCameraConfig.kStandardArduCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
+        public static final VisionConfig kSniperCameraConfig = new VisionConfig(
+                "CubVisionSniper",
+                new Transform3d(
+                        new Translation3d(Units.inchesToMeters(-0.47), 0, Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(0))),
+                0,
+                VisionCameraConfig.kSniperCamConfig,
+                kPoseStrategy,
+                kFallbackPoseStrategy);
+
+        public static final VisionConfig kLimelightConfig = new VisionConfig(
+                "limelight",
+                new Transform3d(
+                        new Translation3d(0, 0.0, Units.inchesToMeters(24.5)),
+                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-180))),
+                0,
+                VisionCameraConfig.kLimelightConfig,
+                null,
+                null);
     }
 
     public static final class Controls {
@@ -176,10 +256,10 @@ public final class Constants {
                     /* TODO: Update values for 2024 bot */
                     kTrackWidthMeters = 0.465;
                     kWheelbaseMeters = 0.465;
-                    kDriveKff.initDefault(0.008);
-                    kDriveKp.initDefault(0.012);
+                    kDriveKff.initDefault(0.06);
+                    kDriveKp.initDefault(0.06);
                     kDriveKd.initDefault(0);
-                    kSteerKp.initDefault(2.0);
+                    kSteerKp.initDefault(16.0);
                     kSteerKd.initDefault(0);
                     break;
                 case SIMULATION_BOT:

@@ -1,9 +1,14 @@
-package com.team1701.lib.drivers.cameras;
+package com.team1701.lib.drivers.cameras.apriltag;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Optional;
+import java.util.function.Supplier;
 
+import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.robot.Constants;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -23,20 +28,26 @@ import org.photonvision.utils.PacketUtils;
 public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
     private static final PhotonPipelineResult kEmptyResult = new PhotonPipelineResult();
     private static final MultiTargetPNPResult kEmptyPnpResult = new MultiTargetPNPResult();
+    private VisionConfig mConfig;
 
     private final RawSubscriber mObservationSubscriber;
     private final IntegerSubscriber mFpsSubscriber;
 
-    public AprilTagCameraIOCubVision(String cameraName, int cameraId) {
-        var CubVisionTable = NetworkTableInstance.getDefault().getTable("CubVision/" + cameraName);
+    public AprilTagCameraIOCubVision(VisionConfig config) {
+        mConfig = config;
+        var CubVisionTable = NetworkTableInstance.getDefault().getTable("CubVision/" + config.cameraName);
 
         var configTable = CubVisionTable.getSubTable("config");
-        configTable.getIntegerTopic("camera_id").publish().set(cameraId);
-        configTable.getIntegerTopic("camera_resolution_width").publish().set(Constants.Vision.cameraResolutionWidth);
-        configTable.getIntegerTopic("camera_resolution_height").publish().set(Constants.Vision.cameraResolutionHeight);
-        configTable.getIntegerTopic("camera_auto_exposure").publish().set(Constants.Vision.cameraAutoExposure);
-        configTable.getIntegerTopic("camera_exposure").publish().set(Constants.Vision.cameraExposure);
-        configTable.getIntegerTopic("camera_gain").publish().set(Constants.Vision.cameraGain);
+        configTable.getIntegerTopic("camera_id").publish().set(config.cameraID);
+        configTable.getIntegerTopic("camera_resolution_width").publish().set(config.remoteConfig.cameraResolutionWidth);
+        configTable
+                .getIntegerTopic("camera_resolution_height")
+                .publish()
+                .set(config.remoteConfig.cameraResolutionHeight);
+        configTable.getIntegerTopic("camera_auto_exposure").publish().set(config.remoteConfig.cameraAutoExposure);
+        configTable.getIntegerTopic("camera_exposure").publish().set(config.remoteConfig.cameraExposure);
+        configTable.getIntegerTopic("camera_gain").publish().set(config.remoteConfig.cameraGain);
+        configTable.getBooleanTopic("should_stream").publish().set(config.remoteConfig.shouldStream);
         configTable.getDoubleTopic("fiducial_size_m").publish().set(Constants.Vision.kAprilTagWidth);
 
         var outputTable = CubVisionTable.getSubTable("output");
@@ -53,12 +64,28 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
 
     @Override
     public void updateInputs(AprilTagInputs inputs) {
+        updateInputs(inputs, Optional.empty());
+    }
+
+    @Override
+    public void updateInputs(AprilTagInputs inputs, Optional<Supplier<AprilTagFieldLayout>> supplier) {
         // Use fps to determine if the camera is connected
         // FPS should always be non-zero and will update at least once every 2 + latency seconds
         var timestampedFps = mFpsSubscriber.getAtomic();
         inputs.isConnected = timestampedFps.value > 0
-                && RobotController.getFPGATime() - mFpsSubscriber.getAtomic().timestamp < 2500000; // 2.5 seconds
+                && RobotController.getFPGATime() - mFpsSubscriber.getAtomic().timestamp < 3000000; // 2.5 seconds
         inputs.pipelineResult = readPhotonPipelineResult(mObservationSubscriber.getAtomic());
+        ArrayList<Pose3d> tagPoses = new ArrayList<Pose3d>();
+        if (supplier.isPresent()) {
+            inputs.pipelineResult.targets.forEach(target -> {
+                // I hate this
+                Optional<Pose3d> pose = supplier.get().get().getTagPose(target.getFiducialId());
+                if (pose.isPresent()) {
+                    tagPoses.add(pose.get());
+                }
+            });
+        }
+        inputs.trueTrackedAprilTagPoses = tagPoses.toArray(Pose3d[]::new);
     }
 
     private PhotonPipelineResult readPhotonPipelineResult(TimestampedRaw timestampedPacket) {
@@ -95,6 +122,7 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
 
         var pnpResult = kEmptyPnpResult;
         var numTagsUsedForCameraPose = packet.decodeByte();
+
         if (numTagsUsedForCameraPose > 1) {
             var tags = new ArrayList<Integer>();
             for (var i = 0; i < numTagsUsedForCameraPose; i++) {
@@ -109,6 +137,11 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
         var result = new PhotonPipelineResult(latency, targets, pnpResult);
         result.setTimestampSeconds(timestampedPacket.timestamp / 1000000.0 - latency / 1000.0);
         return result;
+    }
+
+    @Override
+    public VisionConfig getVisionConfig() {
+        return mConfig;
     }
 
     @Override

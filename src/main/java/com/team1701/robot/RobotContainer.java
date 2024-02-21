@@ -4,15 +4,16 @@
 
 package com.team1701.robot;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
-import com.team1701.lib.drivers.cameras.AprilTagCameraIO;
-import com.team1701.lib.drivers.cameras.AprilTagCameraIOCubVision;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOCubVision;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
@@ -29,6 +30,7 @@ import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.commands.ShootCommands;
+import com.team1701.robot.controls.DashboardControls;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
@@ -39,6 +41,7 @@ import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.TalonFxMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -60,6 +63,7 @@ public class RobotContainer {
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
+    private final Map<String, Pose2d[]> mAutonomousPaths = new HashMap<>();
 
     public RobotContainer() {
         Optional<Drive> drive = Optional.empty();
@@ -76,24 +80,24 @@ public class RobotContainer {
                             new SwerveModuleIO[] {
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(10),
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(11),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(11),
                                         new EncoderIOAnalog(0),
-                                        Rotation2d.fromRadians(-1.137)),
+                                        Rotation2d.fromRadians(-2.262)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(12),
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(13),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(13),
                                         new EncoderIOAnalog(1),
-                                        Rotation2d.fromRadians(-2.036)),
+                                        Rotation2d.fromRadians(-3.069)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(14),
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(15),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(15),
                                         new EncoderIOAnalog(2),
-                                        Rotation2d.fromRadians(-4.522)),
+                                        Rotation2d.fromRadians(-1.291)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFx(16),
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(17),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(17),
                                         new EncoderIOAnalog(3),
-                                        Rotation2d.fromRadians(-0.184)),
+                                        Rotation2d.fromRadians(-5.639)),
                             },
                             mRobotState));
 
@@ -165,14 +169,14 @@ public class RobotContainer {
 
             vision = Optional.of(new Vision(
                     mRobotState,
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kFrontLeftCameraName, Constants.Vision.kFrontLeftCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kFrontRightCameraName, Constants.Vision.kFrontRightCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kBackLeftCameraName, Constants.Vision.kBackLeftCameraID),
-                    new AprilTagCameraIOCubVision(
-                            Constants.Vision.kBackRightCameraName, Constants.Vision.kBackLeftCameraID)));
+                    new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
+                    new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
+                    new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
+                    new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig)));
+            // new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)));
+            // vision.ifPresent(
+            //         v -> v.constructDetectorCameras(new
+            // DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)));
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(
@@ -219,6 +223,7 @@ public class RobotContainer {
 
         mDrive.setDefaultCommand(driveWithJoysticks(
                 mDrive,
+                mRobotState::getHeading,
                 () -> -mDriverController.getLeftY(),
                 () -> -mDriverController.getLeftX(),
                 () -> -mDriverController.getRightX(),
@@ -248,6 +253,26 @@ public class RobotContainer {
 
         mDriverController.leftTrigger().onTrue(ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState));
 
+        mDriverController
+                .b()
+                .whileTrue((DriveCommands.driveToPose(
+                        mDrive,
+                        () -> new Pose2d(
+                                new Translation2d(0.9079903960227966, 4.299035549163818),
+                                Rotation2d.fromRadians(2.079867230915455)),
+                        mRobotState::getPose2d,
+                        Constants.Drive.kSlowKinematicLimits,
+                        false)));
+
+        // mDriverController
+        //         .b()
+        //         .whileTrue(startEnd(
+        //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, .5),
+        //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0))
+        //                 .ignoringDisable(true));
+
+        new DashboardControls().bindCommands(mIntake, mIndexer);
+
         DriverStation.silenceJoystickConnectionWarning(true);
     }
 
@@ -265,10 +290,43 @@ public class RobotContainer {
         PathPlannerLogging.setLogActivePathCallback(
                 poses -> Logger.recordOutput("PathPlanner/Path", poses.toArray(Pose2d[]::new)));
 
+        // TODO: Create wrapper class for autonomous chooser
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
-        autonomousModeChooser.addDefaultOption("Demo", commands.demo());
-        autonomousModeChooser.addOption("Four Piece", commands.fourPiece());
-        autonomousModeChooser.addOption("Four Piece Planner", new PathPlannerAuto("FourPiece"));
+        var demoCommand = commands.demo();
+        var fourPieceCommand = commands.fourPiece();
+        mAutonomousPaths.put("Demo", demoCommand.path());
+        mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
+
+        autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
+        autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
+        autonomousModeChooser.getSendableChooser().onChange(this::logAutonomousPath);
+
+        var logAutonomousPathCommand =
+                runOnce(this::logAutonomousPath).ignoringDisable(true).withName("LogAutonomousPath");
+        new Trigger(Configuration::isBlueAlliance)
+                .onTrue(logAutonomousPathCommand)
+                .onFalse(logAutonomousPathCommand);
+
+        logAutonomousPath();
+    }
+
+    private void logAutonomousPath() {
+        logAutonomousPath(autonomousModeChooser.getSendableChooser().getSelected());
+    }
+
+    private void logAutonomousPath(String name) {
+        if (!mAutonomousPaths.containsKey(name)) {
+            Logger.recordOutput("Autonomous/PathPose2d", new Pose2d[] {});
+            return;
+        }
+
+        var path = mAutonomousPaths.get(name);
+
+        if (Configuration.isRedAlliance()) {
+            path = GeometryUtil.flipX(path, FieldConstants.kFieldLongLengthMeters);
+        }
+
+        Logger.recordOutput("Autonomous/PathPose2ds", path);
     }
 
     private void setupStateTriggers() {
@@ -283,7 +341,8 @@ public class RobotContainer {
 
     public Command getZeroCommand() {
         return runOnce(() -> {
-                    mShooter.zeroShooterRotation();
+                    // TODO: uncomment line
+                    // mShooter.zeroShooterRotation();
                     mDrive.zeroModules();
                 })
                 .ignoringDisable(true)

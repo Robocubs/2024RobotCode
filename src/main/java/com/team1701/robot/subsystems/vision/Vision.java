@@ -8,8 +8,10 @@ import java.util.function.Supplier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1701.lib.alerts.Alert;
-import com.team1701.lib.drivers.cameras.AprilTagCamera;
-import com.team1701.lib.drivers.cameras.AprilTagCameraIO;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCamera;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO;
+import com.team1701.lib.drivers.cameras.neural.DetectorCamera;
+import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
 import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
 import com.team1701.robot.Constants;
 import com.team1701.robot.Robot;
@@ -33,16 +35,12 @@ public class Vision extends SubsystemBase {
 
     private final RobotState mRobotState;
     private AprilTagFieldLayout mAprilTagFieldLayout = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
-    private final List<AprilTagCamera> mCameras = new ArrayList<>();
+    private final List<AprilTagCamera> mAprilTagCameras = new ArrayList<>();
+    private List<DetectorCamera> mDetectorCameras = new ArrayList<>();
     private final List<EstimatedRobotPose> mEstimatedRobotPoses = new ArrayList<>();
     private Optional<VisionSystemSim> mVisionSim = Optional.empty();
 
-    public Vision(
-            RobotState robotState,
-            AprilTagCameraIO cameraIOFrontLeft,
-            AprilTagCameraIO cameraIOFrontRight,
-            AprilTagCameraIO cameraIOBackLeft,
-            AprilTagCameraIO cameraIOBackRight) {
+    public Vision(RobotState robotState, AprilTagCameraIO... cameraIOs) {
 
         mRobotState = robotState;
 
@@ -58,38 +56,9 @@ public class Vision extends SubsystemBase {
             Alert.error("Failed to load AprilTag layout for Vision").enable();
         }
 
-        mCameras.add(new AprilTagCamera(
-                Constants.Vision.kFrontLeftCameraName,
-                cameraIOFrontLeft,
-                Constants.Vision.kRobotToFrontLeftCamPose,
-                Constants.Vision.kPoseStrategy,
-                Constants.Vision.kFallbackPoseStrategy,
-                fieldLayoutSupplier,
-                mRobotState::getPose3d));
-        mCameras.add(new AprilTagCamera(
-                Constants.Vision.kFrontRightCameraName,
-                cameraIOFrontRight,
-                Constants.Vision.kRobotToFrontRightCamPose,
-                Constants.Vision.kPoseStrategy,
-                Constants.Vision.kFallbackPoseStrategy,
-                fieldLayoutSupplier,
-                mRobotState::getPose3d));
-        mCameras.add(new AprilTagCamera(
-                Constants.Vision.kBackLeftCameraName,
-                cameraIOBackLeft,
-                Constants.Vision.kRobotToBackLeftCamPose,
-                Constants.Vision.kPoseStrategy,
-                Constants.Vision.kFallbackPoseStrategy,
-                fieldLayoutSupplier,
-                mRobotState::getPose3d));
-        mCameras.add(new AprilTagCamera(
-                Constants.Vision.kBackRightCameraName,
-                cameraIOBackRight,
-                Constants.Vision.kRobotToBackRightCamPose,
-                Constants.Vision.kPoseStrategy,
-                Constants.Vision.kFallbackPoseStrategy,
-                fieldLayoutSupplier,
-                mRobotState::getPose3d));
+        for (AprilTagCameraIO cameraIO : cameraIOs) {
+            mAprilTagCameras.add(new AprilTagCamera(cameraIO, fieldLayoutSupplier, mRobotState::getPose3d));
+        }
 
         if (Robot.isSimulation()) {
             var visionSim = new VisionSystemSim("main");
@@ -102,20 +71,37 @@ public class Vision extends SubsystemBase {
             cameraProperties.setAvgLatencyMs(10);
             cameraProperties.setLatencyStdDevMs(5);
 
-            mCameras.forEach(camera -> camera.addToVisionSim(visionSim, cameraProperties));
+            mAprilTagCameras.forEach(camera -> camera.addToVisionSim(visionSim, cameraProperties));
 
             mVisionSim = Optional.of(visionSim);
         }
 
-        mCameras.forEach(camera -> {
+        mAprilTagCameras.forEach(camera -> {
             camera.addEstimatedPoseConsumer(mEstimatedRobotPoses::add);
             camera.addTargetFilter(target -> target.getPoseAmbiguity() < Constants.Vision.kAmbiguityThreshold);
         });
     }
 
+    public void constructDetectorCameras(DetectorCameraIO... detectorCameraIOs) {
+        for (DetectorCameraIO cameraIO : detectorCameraIOs) {
+            var cam = new DetectorCamera(cameraIO, mRobotState::getPose3d);
+            cam.addNoteStateConsumer(mRobotState::addDetectedNotes);
+            mDetectorCameras.add(cam);
+        }
+    }
+
+    private double[] interpolateStdDevForDistance(double distance) {
+        double[] stdDevs = new double[3];
+        stdDevs[0] = Constants.Vision.kVisionXStdDevInterpolater.get(distance);
+        stdDevs[1] = Constants.Vision.kVisionYStdDevInterpolater.get(distance);
+        stdDevs[2] = Constants.Vision.kVisionThetaStdDevInterpolater.get(distance);
+        return stdDevs;
+    }
+
     @Override
     public void periodic() {
-        mCameras.forEach(AprilTagCamera::periodic);
+        mAprilTagCameras.forEach(AprilTagCamera::periodic);
+        mDetectorCameras.forEach(DetectorCamera::periodic);
 
         mRobotState.addVisionMeasurements(mEstimatedRobotPoses.stream()
                 .map(estimation -> {
@@ -133,18 +119,13 @@ public class Vision extends SubsystemBase {
                     }
                     avgDistanceToTarget /= estimation.targetsUsed.size();
 
-                    double interpolatedXYStdDeviation =
-                            Constants.Vision.kVisionXYStdDevInterpolater.get(avgDistanceToTarget);
-                    double interpolatedThetaStdDeviation =
-                            Constants.Vision.kVisionThetaStdDevInterpolater.get(avgDistanceToTarget);
+                    var stdDevs = interpolateStdDevForDistance(avgDistanceToTarget);
+                    Logger.recordOutput("Vision/InterpolatedStdDev", stdDevs);
 
                     return new VisionMeasurement(
                             estimation.timestampSeconds,
                             estimation.estimatedPose.toPose2d(),
-                            VecBuilder.fill(
-                                    interpolatedXYStdDeviation,
-                                    interpolatedXYStdDeviation,
-                                    interpolatedThetaStdDeviation));
+                            VecBuilder.fill(stdDevs[0], stdDevs[1], stdDevs[2]));
                 })
                 .toArray(VisionMeasurement[]::new));
 
