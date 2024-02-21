@@ -116,7 +116,7 @@ public class SparkMotorFactory {
         return new MotorIOSparkFlex(motor, Constants.Indexer.kIntakeReduction);
     }
 
-    public static MotorIOSparkFlex createArmMotorIOSparkFlex(
+    public static MotorIOSparkFlex createArmClimbMotorIOSparkFlex(
             int deviceId, MotorUsage motorUse, boolean inverted) {
         var motor = new CANSparkFlex(deviceId, MotorType.kBrushless);
         var encoder = motor.getEncoder();
@@ -138,10 +138,10 @@ public class SparkMotorFactory {
         double reduction = 1.0;
         switch (motorUse) {
             case WINCH:
-                configureWithRetry(() -> controller.setP(Constants.Arm.kWinchKp.get()), errorAlert);
-                configureWithRetry(() -> controller.setD(Constants.Arm.kWinchKd.get()), errorAlert);
-                configureWithRetry(() -> controller.setFF(Constants.Arm.kWinchKff.get()), errorAlert);
-                reduction = Constants.Arm.kWinchReduction;
+                configureWithRetry(() -> controller.setP(Constants.Winch.kWinchKp.get()), errorAlert);
+                configureWithRetry(() -> controller.setD(Constants.Winch.kWinchKd.get()), errorAlert);
+                configureWithRetry(() -> controller.setFF(Constants.Winch.kWinchKff.get()), errorAlert);
+                reduction = Constants.Winch.kWinchReduction;
                 break;
             case ROTATION:
                 configureWithRetry(() -> controller.setP(Constants.Arm.kArmRotationKp.get()), errorAlert);

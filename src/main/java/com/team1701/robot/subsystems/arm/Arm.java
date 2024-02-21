@@ -21,8 +21,6 @@ import org.littletonrobotics.junction.Logger;
 
 public class Arm extends SubsystemBase {
     private final MotorIO mRotationMotorIO;
-    private final MotorIO mLeftWinchIO;
-    private final MotorIO mRightWinchIO;
 
     private final EncoderIO mAngleEncoderIO;
 
@@ -36,22 +34,17 @@ public class Arm extends SubsystemBase {
     private MechanismLigament2d mRightArmLigament;
 
     private final MotorInputsAutoLogged mRotationMotorInputs = new MotorInputsAutoLogged();
-    private final MotorInputsAutoLogged mLeftWinchMotorInputs = new MotorInputsAutoLogged();
-    private final MotorInputsAutoLogged mRightWinchMotorInputs = new MotorInputsAutoLogged();
 
     private final EncoderInputsAutoLogged mAngleEncoderInputs = new EncoderInputsAutoLogged();
 
     private Optional<Rotation2d> mRotationMotorOffset = Optional.empty();
 
-    public Arm(MotorIO rotationMotor, MotorIO leftWinch, MotorIO rightWinch, EncoderIO angleEncoder) {
+    public Arm(MotorIO rotationMotor, EncoderIO angleEncoder) {
         mRotationMotorIO = rotationMotor;
-        mLeftWinchIO = leftWinch;
-        mRightWinchIO = rightWinch;
+
         mAngleEncoderIO = angleEncoder;
 
         mRotationMotorIO.setBrakeMode(true);
-        mLeftWinchIO.setBrakeMode(true);
-        mRightWinchIO.setBrakeMode(true);
 
         mRotationMotorIO.setPID(
                 Constants.Arm.kArmRotationKff.get(),
@@ -59,15 +52,10 @@ public class Arm extends SubsystemBase {
                 0,
                 Constants.Arm.kArmRotationKd.get());
 
-        setWinchPID(Constants.Arm.kWinchKff.get(), Constants.Arm.kWinchKp.get(), 0, Constants.Arm.kWinchKd.get());
-
         createMechanism2d();
     }
 
-    private void setWinchPID(double ff, double p, double i, double d) {
-        mLeftWinchIO.setPID(ff, p, i, d);
-        mRightWinchIO.setPID(ff, p, i, d);
-    }
+    
 
     @AutoLogOutput
     private void createMechanism2d() {
@@ -92,8 +80,8 @@ public class Arm extends SubsystemBase {
         return Rotation2d.fromRadians(mRotationMotorInputs.positionRadians);
     }
 
-    public static MotorIOSim createRotationMotorIOSim(DCMotor shooterMotor) {
-        return new MotorIOSim(shooterMotor, Constants.Arm.kRotationReduction, 0.14, Constants.kLoopPeriodSeconds);
+    public static MotorIOSim createRotationMotorIOSim(DCMotor rotationMotor) {
+        return new MotorIOSim(rotationMotor, Constants.Arm.kRotationReduction, 0.14, Constants.kLoopPeriodSeconds);
     }
 
     public static EncoderIOSim createEncoderSim(MotorIOSim rotationMotor) {
@@ -108,14 +96,10 @@ public class Arm extends SubsystemBase {
         var hash = hashCode();
 
         mRotationMotorIO.updateInputs(mRotationMotorInputs);
-        mLeftWinchIO.updateInputs(mLeftWinchMotorInputs);
-        mRightWinchIO.updateInputs(mRightWinchMotorInputs);
 
         mAngleEncoderIO.updateInputs(mAngleEncoderInputs);
 
         Logger.processInputs("Arm/Motors/Rotation", mRotationMotorInputs);
-        Logger.processInputs("Arm/Motors/LeftWinch", mLeftWinchMotorInputs);
-        Logger.processInputs("Arm/Motors/RightWinch", mRightWinchMotorInputs);
 
         Logger.processInputs("Arm/Encoder", mAngleEncoderInputs);
 
@@ -127,12 +111,6 @@ public class Arm extends SubsystemBase {
                     Constants.Arm.kArmRotationKp.get(),
                     0,
                     Constants.Arm.kArmRotationKd.get());
-        }
-
-        if (Constants.Arm.kWinchKff.hasChanged(hash)
-                || Constants.Arm.kWinchKp.hasChanged(hash)
-                || Constants.Arm.kWinchKd.hasChanged(hash)) {
-            setWinchPID(Constants.Arm.kWinchKff.get(), Constants.Arm.kWinchKp.get(), 0, Constants.Arm.kWinchKd.get());
         }
 
         if (mRotationMotorOffset.isEmpty() && !Util.epsilonEquals(mAngleEncoderInputs.position.getRadians(), 0)) {
@@ -175,15 +153,7 @@ public class Arm extends SubsystemBase {
         setRotationAngle(Rotation2d.fromDegrees(0));
     }
 
-    public void retractWinch(double distanceMeters) {
-        var rotations = distanceMeters / Constants.Arm.kWinchCircumference;
-        mLeftWinchIO.setSmoothPositionControl(
-                Rotation2d.fromRotations(rotations),
-                Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-                Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
-        mRightWinchIO.setSmoothPositionControl(
-                Rotation2d.fromRotations(rotations),
-                Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-                Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
+    public void stop() {
+        mRotationMotorIO.setPercentOutput(0);
     }
 }
