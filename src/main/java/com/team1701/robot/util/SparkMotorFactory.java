@@ -254,7 +254,7 @@ public class SparkMotorFactory {
     public static MotorIOSparkFlex createIntakeMotorIOSparkFlex(int deviceId) {
         return createMotorSparkFlex(new SparkMotorConfiguration(deviceId)
                 .smartCurrentLimit(20)
-                .reduction(Constants.Indexer.kIntakeReduction));
+                .reduction(Constants.Intake.kReduction));
     }
 
     public static MotorIOSparkMax createDriveMotorIOSparkMax(int deviceId) {
@@ -277,6 +277,10 @@ public class SparkMotorFactory {
                 .positionPIDWrappingMaxInput(1 / Constants.Drive.kSteerReduction)
                 .inverted(Constants.Drive.kDriveMotorsInverted)
                 .reduction(Constants.Drive.kDriveReduction));
+    }
+
+    public static MotorIOSparkFlex createIndexerMotorIOSparkFlex(int deviceId) {
+        return createMotorSparkFlex(new SparkMotorConfiguration(deviceId));
     }
 
     // public static MotorIOSparkFlex createShooterMotorIOSparkFlex(
