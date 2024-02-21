@@ -66,7 +66,6 @@ public class ScoreInAmp extends Command {
                 Rotation2d.fromDegrees(Constants.Arm.kArmAmpRotationDegrees.get()),
                 Rotation2d.fromRadians(kArmAngleToleranceRadians.get()));
 
-
         var atSpeed = DoubleStream.of(mShooter.getRollerSpeedsRadiansPerSecond())
                 .allMatch(actualSpeed -> MathUtil.isNear(targetSpeed, actualSpeed, 10.0));
 
@@ -100,6 +99,4 @@ public class ScoreInAmp extends Command {
     public boolean isFinished() {
         return mShooting && !mRobotState.hasNote();
     }
-
-
 }

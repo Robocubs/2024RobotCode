@@ -30,6 +30,7 @@ import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.commands.ShootCommands;
+import com.team1701.robot.controls.DashboardControls;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.arm.Arm;
 import com.team1701.robot.subsystems.climb.Climb;
@@ -300,6 +301,8 @@ public class RobotContainer {
         //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0))
         //                 .ignoringDisable(true));
 
+        new DashboardControls().bindCommands(mIntake, mIndexer);
+
         DriverStation.silenceJoystickConnectionWarning(true);
     }
 
@@ -353,7 +356,7 @@ public class RobotContainer {
             path = GeometryUtil.flipX(path, FieldConstants.kFieldLongLengthMeters);
         }
 
-        Logger.recordOutput("Autonomous/PathPose2d", path);
+        Logger.recordOutput("Autonomous/PathPose2ds", path);
     }
 
     private void setupStateTriggers() {

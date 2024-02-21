@@ -5,17 +5,18 @@ import { customElement } from 'lit/decorators.js';
 import { NetworkTables, nt4Context } from './network-tables/network-tables';
 import { ensureSendableChooserInitialized } from './network-tables/util';
 import { globalStylesCss } from './styles/styles';
+import { customDarkTheme } from './styles/themes';
 
 @customElement('team1701-dashboard')
 export class Dashboard extends LitElement {
   @provide({ context: nt4Context })
-  private nt = new NetworkTables('localhost');
+  private nt = new NetworkTables(document.location.hostname);
 
   constructor() {
     super();
 
     const themes = new DashboardThemes();
-    themes.addThemeRules('dark', darkTheme);
+    themes.addThemeRules('dark', { ...darkTheme, ...customDarkTheme });
     themes.setTheme(document.body, 'dark');
   }
 
@@ -41,10 +42,42 @@ export class Dashboard extends LitElement {
             rotation-unit="rad"
             width="0.5"
             length="0.6"
-            .pose=${this.nt.$pose2d('/AdvantageKit/RealOutputs/RobotState/Pose2d', [])}
+            .pose=${this.nt.$doubleArray('/AdvantageKit/RealOutputs/RobotState/Pose2d', [])}
           ></frc-field-robot>
+          <frc-field-path
+            color="violet"
+            opacity="1"
+            .poses=${this.nt.$doubleArray('/AdvantageKit/RealOutputs/Autonomous/PathPose2ds', [])}
+          ></frc-field-path>
         </frc-field>
-        <team1701-match-timer timer=${this.nt.$value('/AdvantageKit/RealOutputs/RobotState/MatchTime', '0')}></team1701-match-timer>
+        <div class="flex flex-row items-end grid gap-x-8 gap-y-4 grid-cols-3">
+          <frc-toggle-button
+            style="width:200px; height:100px; font-size:20px;"
+            label="Stop Intake"
+            source-key="/SmartDashboard/Controls/StopIntake"
+          ></frc-toggle-button>
+          <team1701-match-timer timer=${this.nt.$value('/AdvantageKit/RealOutputs/RobotState/MatchTime', '0')}></team1701-match-timer>
+          <div class="justify-self-end">
+            <frc-toggle-button
+              style="width:200px; height:100px; font-size:20px;"
+              label="Reverse"
+              source-key="/SmartDashboard/Controls/Reverse"
+            ></frc-toggle-button>
+          </div>
+          <frc-toggle-button
+            style="width:200px; height:100px; font-size:20px;"
+            label="Arm Up"
+            source-key="/SmartDashboard/Controls/ArmUp"
+          ></frc-toggle-button>
+          <div></div>
+          <div class="justify-self-end">
+            <frc-toggle-button
+              style="width:200px; height:100px; font-size:20px;"
+              label="Retract Arm"
+              source-key="/SmartDashboard/Controls/RetractArm"
+            ></frc-toggle-button>
+          </div>
+        </div>
       </div>
     `;
   }

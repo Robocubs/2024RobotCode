@@ -13,8 +13,7 @@ import com.team1701.lib.drivers.motors.MotorIOSparkMax;
 import com.team1701.robot.Constants;
 
 public class SparkMotorFactory {
-    public static MotorIOSparkFlex createShooterMotorIOSparkFlex(
-            int deviceId, MotorUsage motorUse, boolean inverted) {
+    public static MotorIOSparkFlex createShooterMotorIOSparkFlex(int deviceId, MotorUsage motorUse, boolean inverted) {
         var motor = new CANSparkFlex(deviceId, MotorType.kBrushless);
         var encoder = motor.getEncoder();
         var controller = motor.getPIDController();
@@ -116,8 +115,7 @@ public class SparkMotorFactory {
         return new MotorIOSparkFlex(motor, Constants.Indexer.kIntakeReduction);
     }
 
-    public static MotorIOSparkFlex createArmClimbMotorIOSparkFlex(
-            int deviceId, MotorUsage motorUse, boolean inverted) {
+    public static MotorIOSparkFlex createArmClimbMotorIOSparkFlex(int deviceId, MotorUsage motorUse, boolean inverted) {
         var motor = new CANSparkFlex(deviceId, MotorType.kBrushless);
         var encoder = motor.getEncoder();
         var controller = motor.getPIDController();

@@ -55,8 +55,6 @@ public class Arm extends SubsystemBase {
         createMechanism2d();
     }
 
-    
-
     @AutoLogOutput
     private void createMechanism2d() {
         var heightFromCenter = 0;
