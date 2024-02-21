@@ -29,6 +29,7 @@ import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
+import com.team1701.robot.commands.RejectNote;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.DashboardControls;
 import com.team1701.robot.controls.StreamDeck;
@@ -255,6 +256,8 @@ public class RobotContainer {
         mDriverController.leftBumper().whileTrue(swerveLock(mDrive));
 
         mDriverController.leftTrigger().onTrue(ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState));
+
+        mDriverController.y().whileTrue(new RejectNote(mIntake, mIndexer, mRobotState, true));
 
         mDriverController
                 .b()
