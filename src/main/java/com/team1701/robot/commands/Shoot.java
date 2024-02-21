@@ -18,8 +18,10 @@ public class Shoot extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
     private static final LoggedTunableNumber kHeadingToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceRadians", 0.01);
-    private static final LoggedTunableNumber kTargetSpeedRadiansPerSecond =
-            new LoggedTunableNumber(kLoggingPrefix + "TargetSpeedRadiansPerSecond", 600);
+    private static final LoggedTunableNumber kRightTargetSpeedRadiansPerSecond =
+            new LoggedTunableNumber(kLoggingPrefix + "TargetSpeedRadiansPerSecond/Right", 600);
+    private static final LoggedTunableNumber kLeftTargetSpeedRadiansPerSecond =
+            new LoggedTunableNumber(kLoggingPrefix + "TargetSpeedRadiansPerSecond/Left", 600);
 
     private final Shooter mShooter;
     private final Indexer mIndexer;
@@ -49,8 +51,10 @@ public class Shoot extends Command {
         mShooter.setRotationAngle(shooterAngleFromHorizontal);
 
         // TODO: Determine linear regression of speeds
-        var targetSpeed = kTargetSpeedRadiansPerSecond.get();
-        mShooter.setRollerSpeed(targetSpeed);
+        var leftTargetSpeed = kLeftTargetSpeedRadiansPerSecond.get();
+        var rightTargetSpeed = kRightTargetSpeedRadiansPerSecond.get();
+        mShooter.setLeftRollerSpeeds(leftTargetSpeed);
+        mShooter.setRightRollerSpeeds(rightTargetSpeed);
 
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), shooterAngleFromHorizontal, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
@@ -63,8 +67,10 @@ public class Shoot extends Command {
 
         // TODO: Determine if time-locked boolean is needed
         // Or alternatively use a speed range based on distance
-        var atSpeed = DoubleStream.of(mShooter.getRollerSpeedsRadiansPerSecond())
-                .allMatch(actualSpeed -> MathUtil.isNear(targetSpeed, actualSpeed, 10.0));
+        var atSpeed = DoubleStream.of(mShooter.getLeftRollerSpeedsRadiansPerSecond())
+                        .allMatch(actualSpeed -> MathUtil.isNear(leftTargetSpeed, actualSpeed, 10.0))
+                && DoubleStream.of(mShooter.getRightRollerSpeedsRadiansPerSecond())
+                        .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 10.0));
 
         if (atAngle && atHeading && atSpeed) {
             mIndexer.setForwardShoot();
