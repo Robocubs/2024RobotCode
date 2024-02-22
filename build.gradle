@@ -1,9 +1,10 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2024.2.1"
+    id "edu.wpi.first.GradleRIO" version "2024.3.1"
     id "com.diffplug.spotless" version "6.23.3"
     id "com.peterabeles.gversion" version "1.10.2"
     id "com.github.node-gradle.node" version "7.0.1"
+    id 'com.google.protobuf' version '0.9.4'
 }
 
 java {
@@ -259,4 +260,27 @@ task lint() {
     dependsOn System.getenv('CI') ? spotlessCheck : spotlessApply
     dependsOn System.getenv('CI') ? prettierCheck : prettierApply
     dependsOn System.getenv('CI') ? npmRunLintCi : npmRunLint
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.21.12'
+    }
+    plugins {
+        quickbuf {
+            artifact = 'us.hebi.quickbuf:protoc-gen-quickbuf:1.3.3'
+        }
+    }
+    generateProtoTasks {
+        all().configureEach { task ->
+            task.builtins {
+                remove java
+            }
+            task.plugins {
+                quickbuf {
+                    option "gen_descriptors=true"
+                }
+            }
+        }
+    }
 }

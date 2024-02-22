@@ -2,6 +2,7 @@ package com.team1701.lib.util;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -59,5 +60,9 @@ public final class GeometryUtil {
 
     public static Twist2d multiply(Twist2d twist, double scalar) {
         return new Twist2d(twist.dx * scalar, twist.dy * scalar, twist.dtheta * scalar);
+    }
+
+    public static Pose3d toPose3d(Transform3d transform) {
+        return new Pose3d(transform.getTranslation(), transform.getRotation());
     }
 }

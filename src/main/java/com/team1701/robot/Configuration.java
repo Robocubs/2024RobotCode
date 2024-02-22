@@ -10,7 +10,7 @@ public final class Configuration {
     private static boolean mInvalidRobotAlerted = false;
 
     public static RobotType getRobot() {
-        if (Robot.isReal() && kRobot == RobotType.SIMULATION_BOT) {
+        if (Robot.isReal() && (kRobot == RobotType.SIMULATION_BOT || kRobot == RobotType.SIMULATION_VISION)) {
             if (!mInvalidRobotAlerted) {
                 Alert.warning("Invalid robot configured. Using competition bot as default.")
                         .enable();
@@ -28,6 +28,7 @@ public final class Configuration {
             case COMPETITION_BOT:
                 return Robot.isReal() ? Mode.REAL : Mode.REPLAY;
             case SIMULATION_BOT:
+            case SIMULATION_VISION:
                 return Mode.SIMULATION;
             default:
                 return Mode.REAL;
@@ -44,7 +45,8 @@ public final class Configuration {
 
     public static enum RobotType {
         COMPETITION_BOT,
-        SIMULATION_BOT
+        SIMULATION_BOT,
+        SIMULATION_VISION,
     }
 
     public static enum Mode {

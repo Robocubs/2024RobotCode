@@ -24,10 +24,10 @@ public class DetectorCamera {
     private final DetectorCameraInputsAutoLogged mDetectorCameraInputs;
     private final String mLoggingPrefix;
     private final Supplier<Pose3d> mRobotPoseSupplier;
-    private final ArrayList<Predicate<Pose3d>> mPoseFilters = new ArrayList<>();
+    private final List<Predicate<Pose3d>> mPoseFilters = new ArrayList<>();
     private final VisionConfig mConfig;
     private final Alert mDisconnectedAlert;
-    private ArrayList<Consumer<List<NoteState>>> mNoteStateConsumers = new ArrayList<>();
+    private final List<Consumer<List<NoteState>>> mNoteStateConsumers = new ArrayList<>();
 
     /*
      * Big TODO:
@@ -49,7 +49,7 @@ public class DetectorCamera {
     }
 
     private Pose3d getDetectedObjectPosition(Pose2d robotPose, double tx, double ty, double ta) {
-        var robotToCamPose = mConfig.robotToCamPose;
+        var robotToCamPose = mConfig.robotToCamera;
         double x = PhotonUtils.calculateDistanceToTargetMeters(
                 robotToCamPose.getZ(),
                 FieldConstants.kNoteHeight,

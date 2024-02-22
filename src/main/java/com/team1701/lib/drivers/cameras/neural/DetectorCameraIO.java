@@ -38,9 +38,7 @@ public interface DetectorCameraIO {
         }
     }
 
-    public default VisionConfig getVisionConfig() {
-        throw new UnsupportedOperationException("Unimplemented method 'getVisionConfig'");
-    }
+    public VisionConfig getVisionConfig();
 
     public default void updateInputs(DetectorCameraInputs inputs) {}
 }
