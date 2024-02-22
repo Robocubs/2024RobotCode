@@ -307,7 +307,7 @@ public class RobotContainer {
 
         mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb));
 
-        //TODO: add Triggers for updating mScoringMode
+        // TODO: add Triggers for updating mScoringMode
 
         mDriverController
                 .x()
