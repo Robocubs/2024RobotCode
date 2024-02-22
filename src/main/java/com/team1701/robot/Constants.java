@@ -20,12 +20,6 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
     public static final double kLoopPeriodSeconds = 0.02;
 
-    public enum ScoringMode {
-        SPEAKER,
-        AMP,
-        CLIMB
-    }
-
     public static final class Robot {
         public static final double kRobotWidth = Units.inchesToMeters(23);
         public static final double kRobotLength = Units.inchesToMeters(28.5);

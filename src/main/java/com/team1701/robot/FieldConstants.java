@@ -23,6 +23,8 @@ public final class FieldConstants {
     public static Translation3d kRedSource =
             new Translation3d(kFieldLongLengthMeters - kBlueSource.getX(), kBlueSource.getY(), kBlueSource.getZ());
 
-    public static Translation3d kBlueAmpPosition = new Translation3d(72.5, 323, 53.38);
-    public static Translation3d kRedAmpPosition = new Translation3d(578.77, 323, 53.38);
+    public static Translation3d kBlueAmpPosition =
+            new Translation3d(Units.inchesToMeters(72.5), Units.inchesToMeters(323), Units.inchesToMeters(53.38));
+    public static Translation3d kRedAmpPosition =
+            new Translation3d(Units.inchesToMeters(578.77), Units.inchesToMeters(323), Units.inchesToMeters(53.38));
 }

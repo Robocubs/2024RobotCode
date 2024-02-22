@@ -7,6 +7,7 @@ import java.util.Optional;
 import com.team1701.lib.estimation.PoseEstimator;
 import com.team1701.lib.estimation.PoseEstimator.DriveMeasurement;
 import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
+import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
@@ -32,6 +33,8 @@ public class RobotState {
     private Optional<Indexer> mIndexer = Optional.empty();
     private Optional<Intake> mIntake = Optional.empty();
     private Optional<Shooter> mShooter = Optional.empty();
+
+    private ScoringMode mScoringMode = ScoringMode.SPEAKER;
 
     private final PoseEstimator mPoseEstimator =
             new PoseEstimator(Constants.Drive.kKinematics, VecBuilder.fill(0.005, 0.005, 0.0005));
@@ -124,7 +127,6 @@ public class RobotState {
         return Configuration.isBlueAlliance() ? FieldConstants.kBlueAmpPosition : FieldConstants.kRedAmpPosition;
     }
 
-    @AutoLogOutput
     public Rotation2d getSpeakerHeading() {
         return getSpeakerPose()
                 .toTranslation2d()
@@ -132,9 +134,8 @@ public class RobotState {
                 .getAngle();
     }
 
-    @AutoLogOutput
     public Rotation2d getAmpHeading() {
-        return Configuration.isBlueAlliance() ? Rotation2d.fromDegrees(90) : Rotation2d.fromDegrees(-90);
+        return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;
     }
 
     @AutoLogOutput
@@ -186,5 +187,19 @@ public class RobotState {
                         .getTranslation());
 
         return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
+    }
+
+    public void setScoringMode(ScoringMode scoringMode) {
+        this.mScoringMode = scoringMode;
+    }
+
+    public ScoringMode getScoringMode() {
+        return mScoringMode;
+    }
+
+    public enum ScoringMode {
+        SPEAKER,
+        AMP,
+        CLIMB
     }
 }
