@@ -75,7 +75,7 @@ public class Shoot extends Command {
         }
 
         mShooter.setRotationAngle(desiredShooterAngle);
-        mShooter.setRollerSpeed(leftTargetSpeed);
+        mShooter.setUnifiedRollerSpeed(leftTargetSpeed);
 
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
@@ -88,8 +88,10 @@ public class Shoot extends Command {
 
         // TODO: Determine if time-locked boolean is needed
         // Or alternatively use a speed range based on distance
-        var atSpeed = DoubleStream.of(mShooter.getRollerSpeedsRadiansPerSecond())
-                .allMatch(actualSpeed -> MathUtil.isNear(leftTargetSpeed, actualSpeed, 10.0));
+        var atSpeed = DoubleStream.of(mShooter.getLeftRollerSpeedsRadiansPerSecond())
+                        .allMatch(actualSpeed -> MathUtil.isNear(leftTargetSpeed, actualSpeed, 10.0))
+                && DoubleStream.of(mShooter.getRightRollerSpeedsRadiansPerSecond())
+                        .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 10.0));
 
         if (atAngle && atHeading && atSpeed) {
             mIndexer.setForwardShoot();

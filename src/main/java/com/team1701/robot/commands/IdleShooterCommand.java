@@ -59,7 +59,7 @@ public class IdleShooterCommand extends Command {
         }
 
         mShooter.setRotationAngle(desiredShooterAngle);
-        mShooter.setRollerSpeed(shooterSpeed);
+        mShooter.setUnifiedRollerSpeed(shooterSpeed);
 
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
