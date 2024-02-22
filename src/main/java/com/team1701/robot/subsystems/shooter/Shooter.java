@@ -199,12 +199,51 @@ public class Shooter extends SubsystemBase {
         };
     }
 
-    public void setRollerSpeed(double radiansPerSecond) {
-        Logger.recordOutput("Shooter/Motors/Rollers/RightDemandRadiansPerSecond", radiansPerSecond);
-        Logger.recordOutput("Shooter/Motors/Rollers/LeftDemandRadiansPerSecond", radiansPerSecond);
+    public double[] getRightRollerSpeedsRadiansPerSecond() {
+        return new double[] {
+            mRightUpperShooterMotorInputs.velocityRadiansPerSecond,
+            mRightLowerShooterMotorInputs.velocityRadiansPerSecond
+        };
+    }
+
+    public double[] getLeftRollerSpeedsRadiansPerSecond() {
+        return new double[] {
+            mLeftUpperShooterMotorInputs.velocityRadiansPerSecond, mLeftLowerShooterMotorInputs.velocityRadiansPerSecond
+        };
+    }
+
+    public void setUnifiedRollerSpeed(double radiansPerSecond) {
+        setRightRollerSpeeds(radiansPerSecond);
+        setLeftRollerSpeeds(radiansPerSecond);
+    }
+
+    public void setRightRollerSpeeds(double radiansPerSecond) {
+        setUpperRightRollerSpeed(radiansPerSecond);
+        setLowerRightRollerSpeed(radiansPerSecond);
+    }
+
+    public void setLeftRollerSpeeds(double radiansPerSecond) {
+        setUpperLeftRollerSpeed(radiansPerSecond);
+        setLowerLeftRollerSpeed(radiansPerSecond);
+    }
+
+    public void setUpperRightRollerSpeed(double radiansPerSecond) {
+        Logger.recordOutput("Shooter/Motors/Rollers/UpperRightDemandRadiansPerSecond", radiansPerSecond);
         mRightUpperShooterMotorIO.setVelocityControl(radiansPerSecond);
+    }
+
+    public void setLowerRightRollerSpeed(double radiansPerSecond) {
+        Logger.recordOutput("Shooter/Motors/Rollers/LowerRightDemandRadiansPerSecond", radiansPerSecond);
         mRightLowerShooterMotorIO.setVelocityControl(radiansPerSecond);
+    }
+
+    public void setUpperLeftRollerSpeed(double radiansPerSecond) {
+        Logger.recordOutput("Shooter/Motors/Rollers/UpperLeftDemandRadiansPerSecond", radiansPerSecond);
         mLeftUpperShooterMotorIO.setVelocityControl(radiansPerSecond);
+    }
+
+    public void setLowerLeftRollerSpeed(double radiansPerSecond) {
+        Logger.recordOutput("Shooter/Motors/Rollers/LowerLeftDemandRadiansPerSecond", radiansPerSecond);
         mLeftLowerShooterMotorIO.setVelocityControl(radiansPerSecond);
     }
 
