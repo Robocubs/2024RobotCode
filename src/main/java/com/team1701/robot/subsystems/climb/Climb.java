@@ -22,7 +22,7 @@ public class Climb extends SubsystemBase {
         mLeftWinchIO.setBrakeMode(true);
         mRightWinchIO.setBrakeMode(true);
 
-        setWinchPID(Constants.Winch.kWinchKff.get(), Constants.Winch.kWinchKp.get(), 0, Constants.Winch.kWinchKd.get());
+        setWinchPID(Constants.Climb.kWinchKff.get(), Constants.Climb.kWinchKp.get(), 0, Constants.Climb.kWinchKd.get());
     }
 
     private void setWinchPID(double ff, double p, double i, double d) {
@@ -31,7 +31,7 @@ public class Climb extends SubsystemBase {
     }
 
     public static MotorIOSim createWinchMotorIOSim(DCMotor winchMotor) {
-        return new MotorIOSim(winchMotor, Constants.Winch.kWinchReduction, 0.14, Constants.kLoopPeriodSeconds);
+        return new MotorIOSim(winchMotor, Constants.Climb.kWinchReduction, 0.14, Constants.kLoopPeriodSeconds);
     }
 
     @Override
@@ -41,16 +41,16 @@ public class Climb extends SubsystemBase {
         mLeftWinchIO.updateInputs(mLeftWinchMotorInputs);
         mRightWinchIO.updateInputs(mRightWinchMotorInputs);
 
-        if (Constants.Winch.kWinchKff.hasChanged(hash)
-                || Constants.Winch.kWinchKp.hasChanged(hash)
-                || Constants.Winch.kWinchKd.hasChanged(hash)) {
+        if (Constants.Climb.kWinchKff.hasChanged(hash)
+                || Constants.Climb.kWinchKp.hasChanged(hash)
+                || Constants.Climb.kWinchKd.hasChanged(hash)) {
             setWinchPID(
-                    Constants.Winch.kWinchKff.get(), Constants.Winch.kWinchKp.get(), 0, Constants.Winch.kWinchKd.get());
+                    Constants.Climb.kWinchKff.get(), Constants.Climb.kWinchKp.get(), 0, Constants.Climb.kWinchKd.get());
         }
     }
 
     public void retractWinch(double distanceMeters) {
-        var rotations = distanceMeters / Constants.Winch.kWinchCircumference;
+        var rotations = distanceMeters / Constants.Climb.kWinchCircumference;
         mLeftWinchIO.setSmoothPositionControl(
                 Rotation2d.fromRotations(rotations),
                 Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),

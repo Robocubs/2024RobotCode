@@ -113,7 +113,7 @@ public class AutonomousCommands {
     }
 
     private Command aimAndShoot() {
-        return ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState);
+        return ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState);
     }
 
     public AutonomousCommand demo() {

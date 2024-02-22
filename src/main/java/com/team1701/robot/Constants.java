@@ -318,8 +318,8 @@ public final class Constants {
     public static final class Shooter {
         // TODO: Update values
         public static final double kRollerReduction = 1.0;
-        public static final double kEncoderToShooterReduction = 24.0 / 42.0;
-        public static final double kAngleReduction = 1.0 / 105.0;
+        public static final double kEncoderToShooterReduction = 30.0 / 50.0;
+        public static final double kAngleReduction = (1.0 / 4.0) * (1.0 / 5.0) * (20.0 / 93.0);
         public static final int kShooterRightUpperRollerMotorId = 23;
         public static final int kShooterRightLowerRollerMotorId = 25;
         public static final int kShooterLeftLowerRollerMotorId = 24;
@@ -341,6 +341,17 @@ public final class Constants {
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity");
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration");
+
+        public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Rollers/IdleSpeedRadiansPerSecond", 100);
+        public static final LoggedTunableNumber kShooterAmpAngleDegrees =
+                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 85);
+        public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 400);
+        public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Roller/TrapRollerSpeedRadiansPerSecond", 200);
+        public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Roller/TargetShootSpeedRadiansPerSecond", 600);
 
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
@@ -368,7 +379,7 @@ public final class Constants {
                     break;
                 case SIMULATION_BOT:
                     kRollerKff.initDefault(0.017);
-                    kRollerKp.initDefault(0.1);
+                    kRollerKp.initDefault(0.2);
                     kRollerKd.initDefault(0.0);
 
                     kRotationKff.initDefault(0.0);
@@ -384,7 +395,7 @@ public final class Constants {
         }
     }
 
-    public static final class Winch {
+    public static final class Climb {
         public static final double kWinchReduction = 1.0 / 25.0;
 
         public static final int kLeftWinchId = 40;
@@ -456,7 +467,7 @@ public final class Constants {
                     break;
                 case SIMULATION_BOT:
                     kArmRotationKff.initDefault(0.0);
-                    kArmRotationKp.initDefault(0.0);
+                    kArmRotationKp.initDefault(0.2);
                     kArmRotationKd.initDefault(0.0);
 
                     kArmAngleEncoderOffset = Rotation2d.fromRotations(Math.random());

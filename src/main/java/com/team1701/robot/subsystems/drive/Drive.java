@@ -297,6 +297,10 @@ public class Drive extends SubsystemBase {
         setVelocity(new ChassisSpeeds());
     }
 
+    public KinematicLimits getKinematicLimits() {
+        return mKinematicLimits;
+    }
+
     public enum DriveControlState {
         VELOCITY_CONTROL,
         ORIENT_MODULES,

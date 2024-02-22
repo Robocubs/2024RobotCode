@@ -1,6 +1,5 @@
 package com.team1701.robot.controls;
 
-import com.team1701.robot.commands.ArmCommands;
 import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
@@ -23,10 +22,6 @@ public class DashboardControls {
         createTriggeredCommand(stopIntake, IntakeCommands.stop(intake));
 
         createTriggeredCommand(reverseIntakeAndIndexer, IntakeCommands.reverse(intake, indexer));
-
-        createTriggeredCommand(moveArm, ArmCommands.moveToAmp());
-
-        createTriggeredCommand(retractArm, ArmCommands.retractArm());
     }
 
     private void createTriggeredCommand(LoggedDashboardBoolean dashboardBoolean, Command command) {

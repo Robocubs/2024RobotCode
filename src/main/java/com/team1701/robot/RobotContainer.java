@@ -28,6 +28,7 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
+import com.team1701.robot.commands.ArmCommands;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
@@ -37,6 +38,7 @@ import com.team1701.robot.controls.DashboardControls;
 import com.team1701.robot.controls.StreamDeck;
 import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
 import com.team1701.robot.states.RobotState;
+import com.team1701.robot.states.RobotState.ScoringMode;
 import com.team1701.robot.subsystems.arm.Arm;
 import com.team1701.robot.subsystems.climb.Climb;
 import com.team1701.robot.subsystems.drive.Drive;
@@ -295,11 +297,13 @@ public class RobotContainer {
 
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
-        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState));
+        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mDrive, mRobotState));
 
-        mArm.setDefaultCommand(Commands.startEnd(mArm::stop, () -> {}, mArm));
+        mArm.setDefaultCommand(ArmCommands.idleArmCommand(mArm, mRobotState));
 
         mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb));
+
+        // TODO: add Triggers for updating mScoringMode
 
         mDriverController
                 .x()
@@ -314,7 +318,17 @@ public class RobotContainer {
                         DriveCommands.rotateToSpeaker(mDrive, mRobotState, Constants.Drive.kFastKinematicLimits, true));
         mDriverController.leftBumper().whileTrue(swerveLock(mDrive));
 
-        mDriverController.leftTrigger().onTrue(ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState));
+        // Speaker Shot
+        mDriverController
+                .leftTrigger()
+                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
+                .onTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
+
+        // Amp Shot
+        mDriverController
+                .leftTrigger()
+                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
+                .onTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
 
         mDriverController
                 .b()
