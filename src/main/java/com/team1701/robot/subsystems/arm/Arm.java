@@ -114,15 +114,13 @@ public class Arm extends SubsystemBase {
         if (mRotationMotorOffset.isEmpty() && !Util.epsilonEquals(mAngleEncoderInputs.position.getRadians(), 0)) {
             mRotationMotorOffset =
                     Optional.of(mAngleEncoderInputs.position.minus(Constants.Arm.kArmAngleEncoderOffset));
-
-            zeroShooterRotation();
         }
 
         Logger.recordOutput("Arm/Mechanism/Left", mLeftArmMechanism);
         Logger.recordOutput("Arm/Mechanism/Right", mRightArmMechanism);
     }
 
-    public void zeroShooterRotation() {
+    public void zeroArmRotation() {
         mRotationMotorIO.setPosition(mRotationMotorOffset
                 .get()
                 .minus(Constants.Arm.kArmAngleEncoderOffset)

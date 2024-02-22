@@ -21,9 +21,9 @@ public class ScoreInAmp extends Command {
     private static final LoggedTunableNumber kArmAngleToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "ArmAngleToleranceRadians", 0.01);
     private static final LoggedTunableNumber kTargetSpeedRadiansPerSecond =
-            new LoggedTunableNumber(kLoggingPrefix + "TargetSpeedRadiansPerSecond", 600);
+            new LoggedTunableNumber(kLoggingPrefix + "TargetSpeedRadiansPerSecond", 100);
     private static final LoggedTunableNumber kShooterAmpAngleDegrees =
-            new LoggedTunableNumber(kLoggingPrefix + "Shooter/AmpAngleDegrees", 85);
+            new LoggedTunableNumber(kLoggingPrefix + "Shooter/AmpAngleDegrees", 60);
 
     private final Shooter mShooter;
     private final Indexer mIndexer;
@@ -52,7 +52,6 @@ public class ScoreInAmp extends Command {
         mShooter.setRotationAngle(Rotation2d.fromDegrees(kShooterAmpAngleDegrees.get()));
         mArm.rotateToAmpPosition();
 
-        // TODO: Determine linear regression of speeds
         var targetSpeed = kTargetSpeedRadiansPerSecond.get();
         mShooter.setRollerSpeed(targetSpeed);
 

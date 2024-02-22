@@ -159,8 +159,6 @@ public class Shooter extends SubsystemBase {
         if (mRotationMotorOffset.isEmpty() && !Util.epsilonEquals(mAngleEncoderInputs.position.getRadians(), 0)) {
             mRotationMotorOffset =
                     Optional.of(mAngleEncoderInputs.position.minus(Constants.Shooter.kShooterAngleEncoderOffset));
-
-            zeroShooterRotation();
         }
 
         Logger.recordOutput("Shooter/mech", mShooterMechanism);
