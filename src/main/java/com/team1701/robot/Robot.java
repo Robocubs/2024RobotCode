@@ -7,6 +7,7 @@ package com.team1701.robot;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import com.team1701.lib.commands.CommandLogger;
 import com.team1701.robot.Configuration.Mode;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -116,6 +117,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+        CommandLogger.getInstance().periodic();
         mRobotContainer.getRobotState().periodic();
     }
 
