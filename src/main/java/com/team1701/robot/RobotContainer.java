@@ -57,7 +57,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -73,9 +72,6 @@ public class RobotContainer {
     private final Intake mIntake;
     private final Arm mArm;
     private final Climb mClimb;
-
-    @AutoLogOutput(key = "ScoringMode")
-    private ScoringMode mScoringMode;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final StreamDeck mStreamDeck = new StreamDeck();
@@ -273,8 +269,6 @@ public class RobotContainer {
 
         mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
 
-        mScoringMode = mRobotState.getScoringMode();
-
         setupControllerBindings();
         setupAutonomous();
         setupStateTriggers();
@@ -336,13 +330,13 @@ public class RobotContainer {
         // Speaker Shot
         mDriverController
                 .leftTrigger()
-                .and(() -> mScoringMode.equals(ScoringMode.SPEAKER))
+                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
                 .onTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
 
         // Amp Shot
         mDriverController
                 .leftTrigger()
-                .and(() -> mScoringMode.equals(ScoringMode.AMP))
+                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .onTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
 
         mDriverController
