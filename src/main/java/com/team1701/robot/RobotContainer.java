@@ -273,6 +273,8 @@ public class RobotContainer {
 
         mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
 
+        mScoringMode = mRobotState.getScoringMode();
+
         setupControllerBindings();
         setupAutonomous();
         setupStateTriggers();
@@ -325,13 +327,13 @@ public class RobotContainer {
         // Speaker Shot
         mDriverController
                 .leftTrigger()
-                .and(() -> mScoringMode == ScoringMode.SPEAKER)
+                .and(() -> mScoringMode.equals(ScoringMode.SPEAKER))
                 .onTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
 
         // Amp Shot
         mDriverController
                 .leftTrigger()
-                .and(() -> mScoringMode == ScoringMode.AMP)
+                .and(() -> mScoringMode.equals(ScoringMode.AMP))
                 .onTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
 
         mDriverController
