@@ -1,14 +1,11 @@
 package com.team1701.lib.drivers.cameras.apriltag;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
+import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Constants;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -19,16 +16,10 @@ import edu.wpi.first.wpilibj.RobotController;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.MultiTargetPNPResult;
-import org.photonvision.targeting.PNPResult;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.utils.PacketUtils;
 
 public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
-    private static final PhotonPipelineResult kEmptyResult = new PhotonPipelineResult();
-    private static final MultiTargetPNPResult kEmptyPnpResult = new MultiTargetPNPResult();
-    private VisionConfig mConfig;
+    private final VisionConfig mConfig;
 
     private final RawSubscriber mObservationSubscriber;
     private final IntegerSubscriber mFpsSubscriber;
@@ -57,86 +48,60 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
                         "ObservationsPacket",
                         new byte[] {},
                         PubSubOption.keepDuplicates(true),
-                        PubSubOption.sendAll(true));
+                        PubSubOption.sendAll(true),
+                        PubSubOption.periodic(0.05)); // Default robot loop
 
         mFpsSubscriber = outputTable.getIntegerTopic("fps").subscribe(0);
     }
 
     @Override
     public void updateInputs(AprilTagInputs inputs) {
-        updateInputs(inputs, Optional.empty());
-    }
-
-    @Override
-    public void updateInputs(AprilTagInputs inputs, Optional<Supplier<AprilTagFieldLayout>> supplier) {
         // Use fps to determine if the camera is connected
         // FPS should always be non-zero and will update at least once every 2 + latency seconds
         var timestampedFps = mFpsSubscriber.getAtomic();
         inputs.isConnected = timestampedFps.value > 0
-                && RobotController.getFPGATime() - mFpsSubscriber.getAtomic().timestamp < 3000000; // 2.5 seconds
-        inputs.pipelineResult = readPhotonPipelineResult(mObservationSubscriber.getAtomic());
-        ArrayList<Pose3d> tagPoses = new ArrayList<Pose3d>();
-        if (supplier.isPresent()) {
-            inputs.pipelineResult.targets.forEach(target -> {
-                // I hate this
-                Optional<Pose3d> pose = supplier.get().get().getTagPose(target.getFiducialId());
-                if (pose.isPresent()) {
-                    tagPoses.add(pose.get());
-                }
-            });
-        }
-        inputs.trueTrackedAprilTagPoses = tagPoses.toArray(Pose3d[]::new);
+                && RobotController.getFPGATime() - mFpsSubscriber.getAtomic().timestamp < 5000000; // 5 seconds
+
+        var observations = mObservationSubscriber.readQueue();
+        inputs.pipelineResults = new AprilTagPipelineResult[observations.length];
+        Arrays.setAll(inputs.pipelineResults, i -> readPipelineResult(observations[i]));
     }
 
-    private PhotonPipelineResult readPhotonPipelineResult(TimestampedRaw timestampedPacket) {
+    private AprilTagPipelineResult readPipelineResult(TimestampedRaw timestampedPacket) {
         if (timestampedPacket.value.length == 0) {
-            return kEmptyResult;
+            return AprilTagPipelineResult.kEmpty;
         }
 
         var packet = new Packet(timestampedPacket.value);
         var latency = packet.decodeDouble();
+        var timestamp = timestampedPacket.timestamp / 1000000.0 - latency / 1000.0;
 
-        var targets = new ArrayList<PhotonTrackedTarget>();
-        var numTargets = packet.decodeByte();
-        for (var i = 0; i < numTargets; i++) {
+        var targets = new AprilTagTarget[packet.decodeByte()];
+        for (var i = 0; i < targets.length; i++) {
             var targetId = packet.decodeByte();
             var bestCameraToTargetError = packet.decodeDouble();
             var bestCameraToTarget = PacketUtils.unpackTransform3d(packet);
             var altCameraToTargetError = packet.decodeDouble();
-            var altCameratoTarget = PacketUtils.unpackTransform3d(packet);
+            var altCameraToTarget = PacketUtils.unpackTransform3d(packet);
             var ambiguity = altCameraToTargetError > 0 ? bestCameraToTargetError / altCameraToTargetError : 1.0;
 
-            // The packet only includes data needed for pose estimation
-            targets.add(new PhotonTrackedTarget(
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    (int) targetId,
-                    bestCameraToTarget,
-                    altCameratoTarget,
-                    ambiguity,
-                    Collections.emptyList(),
-                    Collections.emptyList()));
+            targets[i] = new AprilTagTarget(targetId, bestCameraToTarget, altCameraToTarget, ambiguity);
         }
 
-        var pnpResult = kEmptyPnpResult;
+        Optional<AprilTagMultiTargetResult> multiTargetResult = Optional.empty();
         var numTagsUsedForCameraPose = packet.decodeByte();
-
         if (numTagsUsedForCameraPose > 1) {
-            var tags = new ArrayList<Integer>();
+            var tags = new int[numTagsUsedForCameraPose];
             for (var i = 0; i < numTagsUsedForCameraPose; i++) {
-                tags.add((int) packet.decodeByte());
+                tags[i] = (int) packet.decodeByte();
             }
-            var error = packet.decodeDouble();
-            var pose = PacketUtils.unpackTransform3d(packet);
 
-            pnpResult = new MultiTargetPNPResult(new PNPResult(pose, error), tags);
+            var reprojectionError = packet.decodeDouble();
+            var cameraPose = GeometryUtil.toPose3d(PacketUtils.unpackTransform3d(packet));
+            multiTargetResult = Optional.of(new AprilTagMultiTargetResult(tags, cameraPose, reprojectionError));
         }
 
-        var result = new PhotonPipelineResult(latency, targets, pnpResult);
-        result.setTimestampSeconds(timestampedPacket.timestamp / 1000000.0 - latency / 1000.0);
-        return result;
+        return new AprilTagPipelineResult(latency, timestamp, targets, multiTargetResult);
     }
 
     @Override

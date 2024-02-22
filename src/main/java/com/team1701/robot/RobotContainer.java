@@ -14,6 +14,9 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOCubVision;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOPhotonCamera;
+import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
+import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOLimelight;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
@@ -31,6 +34,8 @@ import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.DashboardControls;
+import com.team1701.robot.controls.StreamDeck;
+import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.arm.Arm;
 import com.team1701.robot.subsystems.climb.Climb;
@@ -59,14 +64,15 @@ import static edu.wpi.first.wpilibj2.command.Commands.*;
 public class RobotContainer {
     private final RobotState mRobotState = new RobotState();
     public final Drive mDrive;
-    public final Shooter mShooter;
     public final Vision mVision;
+    public final Shooter mShooter;
     private final Indexer mIndexer;
     private final Intake mIntake;
     private final Arm mArm;
     private final Climb mClimb;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
+    private final StreamDeck mStreamDeck = new StreamDeck();
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
     private final Map<String, Pose2d[]> mAutonomousPaths = new HashMap<>();
 
@@ -107,6 +113,17 @@ public class RobotContainer {
                                         Rotation2d.fromRadians(-5.639)),
                             },
                             mRobotState));
+
+                    vision = Optional.of(new Vision(
+                            mRobotState,
+                            new AprilTagCameraIO[] {
+                                new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)
+                            },
+                            new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
 
                     // TODO: update IDs
                     // shooter = Optional.of(new Shooter(
@@ -154,6 +171,17 @@ public class RobotContainer {
 
                     drive = Optional.of(simDrive);
 
+                    vision = Optional.of(new Vision(
+                            mRobotState,
+                            new AprilTagCameraIO[] {
+                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontLeftCameraConfig),
+                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontRightCameraConfig),
+                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackLeftCameraConfig),
+                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackRightCameraConfig),
+                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kSniperCameraConfig)
+                            },
+                            new DetectorCameraIO[] {() -> Constants.Vision.kLimelightConfig}));
+
                     var rotationMotor = Shooter.createRotationMotorSim(DCMotor.getNeoVortex(1));
                     shooter = Optional.of(new Shooter(
                             Shooter.createRollerMotorSim(DCMotor.getNeoVortex(1)),
@@ -185,20 +213,21 @@ public class RobotContainer {
                             Climb.createWinchMotorIOSim(DCMotor.getNeoVortex(1)),
                             Climb.createWinchMotorIOSim(DCMotor.getNeoVortex(1))));
                     break;
+                case SIMULATION_VISION:
+                    vision = Optional.of(new Vision(
+                            mRobotState,
+                            new AprilTagCameraIO[] {
+                                new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)
+                            },
+                            new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
+                    break;
                 default:
                     break;
             }
-
-            vision = Optional.of(new Vision(
-                    mRobotState,
-                    new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
-                    new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
-                    new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
-                    new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig)));
-            // new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)));
-            // vision.ifPresent(
-            //         v -> v.constructDetectorCameras(new
-            // DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)));
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(
@@ -211,10 +240,14 @@ public class RobotContainer {
 
         this.mVision = vision.orElseGet(() -> new Vision(
                 mRobotState,
-                new AprilTagCameraIO() {},
-                new AprilTagCameraIO() {},
-                new AprilTagCameraIO() {},
-                new AprilTagCameraIO() {}));
+                new AprilTagCameraIO[] {
+                    () -> Constants.Vision.kFrontLeftCameraConfig,
+                    () -> Constants.Vision.kFrontRightCameraConfig,
+                    () -> Constants.Vision.kBackLeftCameraConfig,
+                    () -> Constants.Vision.kBackRightCameraConfig,
+                    () -> Constants.Vision.kSniperCameraConfig
+                },
+                new DetectorCameraIO[] {() -> Constants.Vision.kLimelightConfig}));
 
         this.mShooter = shooter.orElseGet(() -> new Shooter(
                 new MotorIO() {},
@@ -302,6 +335,26 @@ public class RobotContainer {
         //                 .ignoringDisable(true));
 
         new DashboardControls().bindCommands(mIntake, mIndexer);
+
+        var toggledCommand = idle().ignoringDisable(true).withName("StreamDeckToggleButton");
+        var buttonGroupButton1Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton1");
+        var buttonGroupButton2Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton2");
+        var buttonGroupButton3Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton3");
+
+        mStreamDeck.configureButton(config -> config.addDefault(StreamDeckButton.kButton)
+                .add(StreamDeckButton.kToggleButton, toggledCommand::isScheduled)
+                .add(StreamDeckButton.kButtonGroupButton1, buttonGroupButton1Command::isScheduled)
+                .add(StreamDeckButton.kButtonGroupButton2, buttonGroupButton2Command::isScheduled)
+                .add(StreamDeckButton.kButtonGroupButton3, buttonGroupButton3Command::isScheduled));
+
+        mStreamDeck.button(StreamDeckButton.kToggleButton).toggleOnTrue(toggledCommand);
+
+        mStreamDeck
+                .buttonGroup()
+                .option(StreamDeckButton.kButtonGroupButton1, trigger -> trigger.whileTrue(buttonGroupButton1Command))
+                .option(StreamDeckButton.kButtonGroupButton2, trigger -> trigger.whileTrue(buttonGroupButton2Command))
+                .option(StreamDeckButton.kButtonGroupButton3, trigger -> trigger.whileTrue(buttonGroupButton3Command))
+                .select(StreamDeckButton.kButtonGroupButton1);
 
         DriverStation.silenceJoystickConnectionWarning(true);
     }

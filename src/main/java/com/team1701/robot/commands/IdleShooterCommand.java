@@ -35,7 +35,7 @@ public class IdleShooterCommand extends Command {
         var shooterAngleFromHorizontal = mRobotState.calculateShooterAngleTowardsSpeaker();
 
         mShooter.setRotationAngle(shooterAngleFromHorizontal);
-        mShooter.setRollerSpeed(kIdleSpeedRadiansPerSecond.get());
+        mShooter.setUnifiedRollerSpeed(kIdleSpeedRadiansPerSecond.get());
 
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), shooterAngleFromHorizontal, Rotation2d.fromRadians(kAngleToleranceRadians.get()));

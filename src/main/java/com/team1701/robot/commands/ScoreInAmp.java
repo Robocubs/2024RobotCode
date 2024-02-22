@@ -53,7 +53,7 @@ public class ScoreInAmp extends Command {
         mArm.rotateToAmpPosition();
 
         var targetSpeed = kTargetSpeedRadiansPerSecond.get();
-        mShooter.setRollerSpeed(targetSpeed);
+        mShooter.setUnifiedRollerSpeed(targetSpeed);
 
         var atShooterAngle = GeometryUtil.isNear(
                 mShooter.getAngle(),

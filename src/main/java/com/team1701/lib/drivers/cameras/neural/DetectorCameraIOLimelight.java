@@ -18,9 +18,9 @@ public class DetectorCameraIOLimelight implements DetectorCameraIO {
     public static final double kVPW = 2.0 * Math.tan(Math.toRadians(kHorizontalFOV / 2.0));
     public static final double kVPH = 2.0 * Math.tan(Math.toRadians(kVerticalFOV / 2.0));
 
-    private NetworkTable mNetworkTable;
-    private String mName;
-    private JSONParser mParser = new JSONParser();
+    private final NetworkTable mNetworkTable;
+    private final String mName;
+    private final JSONParser mParser = new JSONParser();
     private final VisionConfig mConfig;
 
     public DetectorCameraIOLimelight(VisionConfig config) {
