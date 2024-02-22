@@ -37,6 +37,8 @@ import com.team1701.robot.controls.DashboardControls;
 import com.team1701.robot.controls.StreamDeck;
 import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
 import com.team1701.robot.states.RobotState;
+import com.team1701.robot.subsystems.arm.Arm;
+import com.team1701.robot.subsystems.climb.Climb;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
 import com.team1701.robot.subsystems.indexer.Indexer;
@@ -50,6 +52,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.Logger;
@@ -65,6 +68,8 @@ public class RobotContainer {
     public final Shooter mShooter;
     private final Indexer mIndexer;
     private final Intake mIntake;
+    private final Arm mArm;
+    private final Climb mClimb;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final StreamDeck mStreamDeck = new StreamDeck();
@@ -77,6 +82,8 @@ public class RobotContainer {
         Optional<Shooter> shooter = Optional.empty();
         Optional<Indexer> indexer = Optional.empty();
         Optional<Intake> intake = Optional.empty();
+        Optional<Arm> arm = Optional.empty();
+        Optional<Climb> climb = Optional.empty();
 
         if (Configuration.getMode() != Mode.REPLAY) {
             switch (Configuration.getRobot()) {
@@ -139,6 +146,16 @@ public class RobotContainer {
                     //         SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                     //         new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId),
                     //         new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId)));
+                    // arm = Optional.of(new Arm(
+                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                    //                 Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
+                    //         new EncoderIOAnalog(Constants.Arm.kEncoderId)));
+                    // climb = Optional.of(new Climb(
+                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                    //                 Constants.Winch.kLeftWinchId, MotorUsage.WINCH, true),
+                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                    //                 Constants.Winch.kRightWinchId, MotorUsage.WINCH, false))); //TODO: determine
+                    // inversion
 
                     break;
                 case SIMULATION_BOT:
@@ -190,6 +207,11 @@ public class RobotContainer {
                                     Constants.kLoopPeriodSeconds),
                             new DigitalIOSim(() -> false),
                             new DigitalIOSim(() -> false)));
+                    var armRotationMotorSim = Shooter.createRotationMotorSim(DCMotor.getNeoVortex(1));
+                    arm = Optional.of(new Arm(armRotationMotorSim, Arm.createEncoderSim(armRotationMotorSim)));
+                    climb = Optional.of(new Climb(
+                            Climb.createWinchMotorIOSim(DCMotor.getNeoVortex(1)),
+                            Climb.createWinchMotorIOSim(DCMotor.getNeoVortex(1))));
                     break;
                 case SIMULATION_VISION:
                     vision = Optional.of(new Vision(
@@ -239,6 +261,10 @@ public class RobotContainer {
 
         this.mIntake = intake.orElseGet(() -> new Intake(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
+        this.mArm = arm.orElseGet(() -> new Arm(new MotorIO() {}, new EncoderIO() {}));
+
+        this.mClimb = climb.orElseGet(() -> new Climb(new MotorIO() {}, new MotorIO() {}));
+
         mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
 
         setupControllerBindings();
@@ -270,6 +296,10 @@ public class RobotContainer {
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
         mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState));
+
+        mArm.setDefaultCommand(Commands.startEnd(mArm::stop, () -> {}, mArm));
+
+        mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb));
 
         mDriverController
                 .x()
@@ -395,7 +425,8 @@ public class RobotContainer {
     public Command getZeroCommand() {
         return runOnce(() -> {
                     // TODO: uncomment line
-                    // mShooter.zeroShooterRotation();
+                    mShooter.zeroShooterRotation();
+                    mArm.zeroArmRotation();
                     mDrive.zeroModules();
                 })
                 .ignoringDisable(true)

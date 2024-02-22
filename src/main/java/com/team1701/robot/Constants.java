@@ -384,15 +384,87 @@ public final class Constants {
         }
     }
 
-    public static final class Elevator {
-        // TODO: Update values
-        public static final double kElevatorReduction = 1;
-        public static final int kElevatorLeftDeviceId = 1;
-        public static final int kElevatorRightDeviceId = 2;
+    public static final class Winch {
+        public static final double kWinchReduction = 1.0 / 25.0;
 
-        public static final LoggedTunableNumber kElevatorKff = new LoggedTunableNumber("Elevator/Motor/Kff");
-        public static final LoggedTunableNumber kElevatorKp = new LoggedTunableNumber("Elevator/Motor/Kp");
-        public static final LoggedTunableNumber kElevatorKd = new LoggedTunableNumber("Elevator/Motor/Kd");
+        public static final int kLeftWinchId = 40;
+        public static final int kRightWinchId = 41;
+
+        public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Arm/Winch/Kff");
+        public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Arm/Winch/Kp");
+        public static final LoggedTunableNumber kWinchKd = new LoggedTunableNumber("Arm/Winch/Kd");
+
+        public static final double kWinchCircumference =
+                Math.PI * Units.inchesToMeters(1.5); // idk, TODO: update diameter
+
+        static {
+            switch (Configuration.getRobot()) {
+                case COMPETITION_BOT:
+                    kWinchKff.initDefault(0.0);
+                    kWinchKp.initDefault(0.0);
+                    kWinchKd.initDefault(0.0);
+                    break;
+                case SIMULATION_BOT:
+                    kWinchKff.initDefault(0.0);
+                    kWinchKp.initDefault(2.0);
+                    kWinchKd.initDefault(0.0);
+
+                    break;
+                default:
+            }
+        }
+    }
+
+    public static final class Arm {
+        // TODO: Update values
+        public static final double kRotationReduction = 1.0 / 20.0;
+
+        public static final double kArmUpperLimitRotations = Units.degreesToRotations(135);
+        public static final double kArmLowerLimitRotations = Units.degreesToRotations(0);
+
+        public static final double kEncoderToArmReduction = 1; // TODO: get value (prob 1 but check)
+
+        // TODO: add IDs
+
+        public static final int kRotationMotorId = 42;
+        public static final int kEncoderId = 43;
+
+        public static final LoggedTunableNumber kArmRotationKff = new LoggedTunableNumber("Arm/RotationMotor/Kff");
+        public static final LoggedTunableNumber kArmRotationKp = new LoggedTunableNumber("Arm/RotationMotor/Kp");
+        public static final LoggedTunableNumber kArmRotationKd = new LoggedTunableNumber("Arm/RotationMotor/Kd");
+
+        // TODO: update values
+        public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity");
+        public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration");
+
+        public static final Rotation2d kArmAngleEncoderOffset;
+
+        public static final LoggedTunableNumber kArmAmpRotationDegrees =
+                new LoggedTunableNumber("Arm/AmpRotationDegrees");
+        ; // TODO: update
+
+        static {
+            switch (Configuration.getRobot()) {
+                case COMPETITION_BOT:
+                    kArmRotationKff.initDefault(0.0);
+                    kArmRotationKp.initDefault(0.0);
+                    kArmRotationKd.initDefault(0.0);
+
+                    kArmAngleEncoderOffset = Rotation2d.fromRotations(0); // TODO: Update value
+                    break;
+                case SIMULATION_BOT:
+                    kArmRotationKff.initDefault(0.0);
+                    kArmRotationKp.initDefault(0.0);
+                    kArmRotationKd.initDefault(0.0);
+
+                    kArmAngleEncoderOffset = Rotation2d.fromRotations(Math.random());
+                    break;
+                default:
+                    kArmAngleEncoderOffset = Rotation2d.fromRotations(0);
+            }
+        }
     }
 
     public static final class Indexer {
