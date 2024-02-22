@@ -1,7 +1,7 @@
 package com.team1701.robot.commands;
 
 import java.util.stream.DoubleStream;
-import java.util.function.Supplier;
+
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.Constants;
