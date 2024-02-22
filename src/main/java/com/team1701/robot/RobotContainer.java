@@ -14,6 +14,9 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOCubVision;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOPhotonCamera;
+import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
+import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOLimelight;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
@@ -58,8 +61,8 @@ import static edu.wpi.first.wpilibj2.command.Commands.*;
 public class RobotContainer {
     private final RobotState mRobotState = new RobotState();
     public final Drive mDrive;
-    public final Shooter mShooter;
     public final Vision mVision;
+    public final Shooter mShooter;
     private final Indexer mIndexer;
     private final Intake mIntake;
 
@@ -104,6 +107,17 @@ public class RobotContainer {
                             },
                             mRobotState));
 
+                    vision = Optional.of(new Vision(
+                            mRobotState,
+                            new AprilTagCameraIO[] {
+                                new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)
+                            },
+                            new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
+
                     // TODO: update IDs
                     // shooter = Optional.of(new Shooter(
                     //         SparkMotorFactory.createShooterMotorIOSparkFlex(
@@ -140,6 +154,17 @@ public class RobotContainer {
 
                     drive = Optional.of(simDrive);
 
+                    vision = Optional.of(new Vision(
+                            mRobotState,
+                            new AprilTagCameraIO[] {
+                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontLeftCameraConfig),
+                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontRightCameraConfig),
+                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackLeftCameraConfig),
+                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackRightCameraConfig),
+                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kSniperCameraConfig)
+                            },
+                            new DetectorCameraIO[] {() -> Constants.Vision.kLimelightConfig}));
+
                     var rotationMotor = Shooter.createRotationMotorSim(DCMotor.getNeoVortex(1));
                     shooter = Optional.of(new Shooter(
                             Shooter.createRollerMotorSim(DCMotor.getNeoVortex(1)),
@@ -166,20 +191,21 @@ public class RobotContainer {
                             new DigitalIOSim(() -> false),
                             new DigitalIOSim(() -> false)));
                     break;
+                case SIMULATION_VISION:
+                    vision = Optional.of(new Vision(
+                            mRobotState,
+                            new AprilTagCameraIO[] {
+                                new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig),
+                                new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)
+                            },
+                            new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
+                    break;
                 default:
                     break;
             }
-
-            vision = Optional.of(new Vision(
-                    mRobotState,
-                    new AprilTagCameraIOCubVision(Constants.Vision.kFrontLeftCameraConfig),
-                    new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
-                    new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
-                    new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig)));
-            // new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)));
-            // vision.ifPresent(
-            //         v -> v.constructDetectorCameras(new
-            // DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)));
         }
 
         this.mDrive = drive.orElseGet(() -> new Drive(
@@ -192,10 +218,14 @@ public class RobotContainer {
 
         this.mVision = vision.orElseGet(() -> new Vision(
                 mRobotState,
-                new AprilTagCameraIO() {},
-                new AprilTagCameraIO() {},
-                new AprilTagCameraIO() {},
-                new AprilTagCameraIO() {}));
+                new AprilTagCameraIO[] {
+                    () -> Constants.Vision.kFrontLeftCameraConfig,
+                    () -> Constants.Vision.kFrontRightCameraConfig,
+                    () -> Constants.Vision.kBackLeftCameraConfig,
+                    () -> Constants.Vision.kBackRightCameraConfig,
+                    () -> Constants.Vision.kSniperCameraConfig
+                },
+                new DetectorCameraIO[] {() -> Constants.Vision.kLimelightConfig}));
 
         this.mShooter = shooter.orElseGet(() -> new Shooter(
                 new MotorIO() {},
