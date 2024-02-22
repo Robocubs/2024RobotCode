@@ -18,6 +18,7 @@ import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOPhotonCamera;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOLimelight;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
+import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
@@ -43,6 +44,7 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.vision.Vision;
+import com.team1701.robot.util.SparkMotorFactory;
 import com.team1701.robot.util.TalonFxMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -120,26 +122,23 @@ public class RobotContainer {
 
                     // TODO: update IDs
                     // shooter = Optional.of(new Shooter(
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterRightUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterRightLowerRollerMotorId, ShooterMotorUsage.ROLLER),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterLeftUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterLeftLowerRollerMotorId, ShooterMotorUsage.ROLLER),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
+                    //         SparkMotorFactory.createShooterRollerSparkFlex(Constants.Shooter.kShooterRightUpperRollerMotorId, true),
+                    //         SparkMotorFactory.createShooterRollerSparkFlex(Constants.Shooter.kShooterRightLowerRollerMotorId, false),
+                    //         (SparkMotorFactory.createShooterRollerSparkFlex(Constants.Shooter.kShooterLeftUpperRollerMotorId, false)),
+                    //         (SparkMotorFactory.createShooterRollerSparkFlex(Constants.Shooter.kShooterLeftLowerRollerMotorId, true)),
+                    //         (SparkMotorFactory.createShooterRotationSparkFlex(0, false)),
                     //         new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
+
                     // indexer = Optional.of(new Indexer(
                     //         SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
                     //         new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
                     //         new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
+                            
                     // intake = Optional.of(new Intake(
-                    //         SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
+                    //     SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                     //         new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId),
                     //         new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId)));
-
+                    
                     break;
                 case SIMULATION_BOT:
                     var gyroIO = new GyroIOSim(mRobotState::getHeading);
