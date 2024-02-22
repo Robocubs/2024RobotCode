@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package team1701.proto;
+
+import "geometry3d.proto";
+import "photon.proto";
+
+option java_package = "com.team1701.proto";
+
+message ProtobufAprilTagTarget {
+  int32 id = 1;
+  wpi.proto.ProtobufTransform3d best_camera_to_target = 2;
+  wpi.proto.ProtobufTransform3d alt_camera_to_target = 3;
+  double ambiguity = 4;
+}
+
+message ProtobufAprilTagMultiTargetResult {
+  repeated int32 target_ids = 1;
+  wpi.proto.ProtobufPose3d camera_pose = 2;
+  double reprojection_error = 3;
+}
+
+message ProtobufAprilTagPipelineResult {
+  double latency = 1;
+  double timestamp = 2;
+  repeated ProtobufAprilTagTarget targets = 3;
+  optional ProtobufAprilTagMultiTargetResult multi_target_result = 4;
+}
+
+message ProtobufAprilTagPipelineResults {
+  repeated ProtobufAprilTagPipelineResult results = 1;
+}

@@ -113,7 +113,7 @@ public class AutonomousCommands {
     }
 
     private Command aimAndShoot() {
-        return ShootCommands.aimAndShoot(mShooter, mIndexer, mDrive, mRobotState);
+        return ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState);
     }
 
     public AutonomousCommand demo() {
@@ -136,8 +136,11 @@ public class AutonomousCommands {
     public AutonomousCommand fourPiece() {
         var command = loggedSequence(
                 print("Started four piece auto"),
+                waitSeconds(.5),
                 followChoreoPath("FourPiece.1", true),
+                waitSeconds(.5),
                 followChoreoPath("FourPiece.2"),
+                waitSeconds(.5),
                 followChoreoPath("FourPiece.3"));
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());

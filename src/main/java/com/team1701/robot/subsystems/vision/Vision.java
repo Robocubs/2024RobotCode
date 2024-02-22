@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCamera;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCamera.EstimatedRobotPose;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO;
 import com.team1701.lib.drivers.cameras.neural.DetectorCamera;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
@@ -25,10 +26,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.EstimatedRobotPose;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Vision extends SubsystemBase {
     private static final Vector<N3> kDefaultStdDevs = VecBuilder.fill(0.05, 0.05, 0.05);
@@ -40,7 +39,7 @@ public class Vision extends SubsystemBase {
     private final List<EstimatedRobotPose> mEstimatedRobotPoses = new ArrayList<>();
     private Optional<VisionSystemSim> mVisionSim = Optional.empty();
 
-    public Vision(RobotState robotState, AprilTagCameraIO... cameraIOs) {
+    public Vision(RobotState robotState, AprilTagCameraIO[] cameraIOs, DetectorCameraIO[] detectorCameraIOs) {
 
         mRobotState = robotState;
 
@@ -57,7 +56,8 @@ public class Vision extends SubsystemBase {
         }
 
         for (AprilTagCameraIO cameraIO : cameraIOs) {
-            mAprilTagCameras.add(new AprilTagCamera(cameraIO, fieldLayoutSupplier, mRobotState::getPose3d));
+            mAprilTagCameras.add(new AprilTagCamera(
+                    cameraIO, fieldLayoutSupplier, mRobotState::getPose3d, this::interpolateStdDevForDistance));
         }
 
         if (Robot.isSimulation()) {
@@ -65,7 +65,7 @@ public class Vision extends SubsystemBase {
             visionSim.addAprilTags(mAprilTagFieldLayout);
 
             var cameraProperties = new SimCameraProperties();
-            cameraProperties.setCalibration(960, 720, Rotation2d.fromDegrees(90));
+            cameraProperties.setCalibration(960, 720, Rotation2d.fromDegrees(0));
             cameraProperties.setCalibError(0.035, 0.010);
             cameraProperties.setFPS(70);
             cameraProperties.setAvgLatencyMs(10);
@@ -78,16 +78,23 @@ public class Vision extends SubsystemBase {
 
         mAprilTagCameras.forEach(camera -> {
             camera.addEstimatedPoseConsumer(mEstimatedRobotPoses::add);
-            camera.addTargetFilter(target -> target.getPoseAmbiguity() < Constants.Vision.kAmbiguityThreshold);
+            camera.addTargetFilter(target -> target.ambiguity < Constants.Vision.kAmbiguityThreshold);
         });
-    }
 
-    public void constructDetectorCameras(DetectorCameraIO... detectorCameraIOs) {
         for (DetectorCameraIO cameraIO : detectorCameraIOs) {
             var cam = new DetectorCamera(cameraIO, mRobotState::getPose3d);
             cam.addNoteStateConsumer(mRobotState::addDetectedNotes);
             mDetectorCameras.add(cam);
         }
+    }
+
+    private Vector<N3> interpolateStdDevForDistance(double distance) {
+        return Constants.Vision.kUseInterpolatedVisionStdDevValues
+                ? VecBuilder.fill(
+                        Constants.Vision.kVisionXStdDevInterpolater.get(distance),
+                        Constants.Vision.kVisionYStdDevInterpolater.get(distance),
+                        Constants.Vision.kVisionThetaStdDevInterpolater.get(distance))
+                : kDefaultStdDevs;
     }
 
     @Override
@@ -96,34 +103,8 @@ public class Vision extends SubsystemBase {
         mDetectorCameras.forEach(DetectorCamera::periodic);
 
         mRobotState.addVisionMeasurements(mEstimatedRobotPoses.stream()
-                .map(estimation -> {
-                    if (!Constants.Vision.kUseInterpolatedVisionStdDevValues) {
-                        return new VisionMeasurement(
-                                estimation.timestampSeconds, estimation.estimatedPose.toPose2d(), kDefaultStdDevs);
-                    }
-
-                    double avgDistanceToTarget = 0.0;
-
-                    for (PhotonTrackedTarget target : estimation.targetsUsed) {
-                        // TODO: can I always use the bestCamToTarget here?
-                        avgDistanceToTarget +=
-                                target.getBestCameraToTarget().getTranslation().getNorm();
-                    }
-                    avgDistanceToTarget /= estimation.targetsUsed.size();
-
-                    double interpolatedXYStdDeviation =
-                            Constants.Vision.kVisionXYStdDevInterpolater.get(avgDistanceToTarget);
-                    double interpolatedThetaStdDeviation =
-                            Constants.Vision.kVisionThetaStdDevInterpolater.get(avgDistanceToTarget);
-
-                    return new VisionMeasurement(
-                            estimation.timestampSeconds,
-                            estimation.estimatedPose.toPose2d(),
-                            VecBuilder.fill(
-                                    interpolatedXYStdDeviation,
-                                    interpolatedXYStdDeviation,
-                                    interpolatedThetaStdDeviation));
-                })
+                .map(estimation -> new VisionMeasurement(
+                        estimation.timestamp(), estimation.estimatedPose().toPose2d(), estimation.stdDevs()))
                 .toArray(VisionMeasurement[]::new));
 
         mEstimatedRobotPoses.clear();
