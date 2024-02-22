@@ -154,4 +154,19 @@ public class Arm extends SubsystemBase {
     public void stop() {
         mRotationMotorIO.setPercentOutput(0);
     }
+
+    public enum ArmPosition {
+        // TODO: update values
+        HOME(0),
+        LOW(45),
+        LOW_CLIMB(75),
+        HIGH_CLIMB(90),
+        AMP(Constants.Arm.kArmAmpRotationDegrees.get());
+
+        public Rotation2d armRotation;
+
+        private ArmPosition(double degrees) {
+            armRotation = Rotation2d.fromDegrees(degrees);
+        }
+    }
 }

@@ -30,6 +30,7 @@ import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
+import com.team1701.robot.commands.PositionArm;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.DashboardControls;
 import com.team1701.robot.states.RobotState;
@@ -51,6 +52,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -67,6 +70,7 @@ public class RobotContainer {
     private final Arm mArm;
     private final Climb mClimb;
 
+    @AutoLogOutput(key = "ScoringMode")
     private ScoringMode mScoringMode;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
@@ -267,9 +271,9 @@ public class RobotContainer {
 
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
-        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState, mScoringMode));
+        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState, () -> mScoringMode));
 
-        mArm.setDefaultCommand(Commands.startEnd(mArm::stop, () -> {}, mArm));
+        mArm.setDefaultCommand(new PositionArm(mArm, false, true, mRobotState, () -> mScoringMode));
 
         mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb));
 

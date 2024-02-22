@@ -105,6 +105,15 @@ public class RobotState {
                 : poseX < FieldConstants.kWingLength;
     }
 
+    public double getDistanceToAmp() {
+        return getPose3d()
+                .getTranslation()
+                .getDistance(
+                        Configuration.isBlueAlliance()
+                                ? FieldConstants.kBlueAmpPosition
+                                : FieldConstants.kRedAmpPosition);
+    }
+
     public Translation3d getSpeakerPose() {
         return Configuration.isBlueAlliance()
                 ? FieldConstants.kBlueSpeakerOpeningCenter

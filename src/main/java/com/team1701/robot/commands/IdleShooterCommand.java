@@ -1,5 +1,6 @@
 package com.team1701.robot.commands;
 
+import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 
 import com.team1701.lib.util.GeometryUtil;
@@ -22,9 +23,9 @@ public class IdleShooterCommand extends Command {
 
     private final Shooter mShooter;
     private final RobotState mRobotState;
-    private final ScoringMode mScoringMode;
+    private final Supplier<ScoringMode> mScoringMode;
 
-    public IdleShooterCommand(Shooter shooter, RobotState robotState, ScoringMode scoringMode) {
+    public IdleShooterCommand(Shooter shooter, RobotState robotState, Supplier<ScoringMode> scoringMode) {
         mShooter = shooter;
         mRobotState = robotState;
         mScoringMode = scoringMode;
@@ -37,7 +38,7 @@ public class IdleShooterCommand extends Command {
         Rotation2d desiredShooterAngle;
         double shooterSpeed;
 
-        switch (mScoringMode) {
+        switch (mScoringMode.get()) {
             case SPEAKER:
                 // TODO: ramp up speeds on approach
                 desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();

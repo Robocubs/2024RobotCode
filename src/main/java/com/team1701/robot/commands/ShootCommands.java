@@ -1,5 +1,7 @@
 package com.team1701.robot.commands;
 
+import java.util.function.Supplier;
+
 import com.team1701.robot.Constants;
 import com.team1701.robot.Constants.ScoringMode;
 import com.team1701.robot.states.RobotState;
@@ -11,7 +13,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ShootCommands {
-    public static Command idleShooterCommand(Shooter shooter, RobotState robotState, ScoringMode scoringMode) {
+    public static Command idleShooterCommand(
+            Shooter shooter, RobotState robotState, Supplier<ScoringMode> scoringMode) {
         return new IdleShooterCommand(shooter, robotState, scoringMode);
     }
 
@@ -29,9 +32,8 @@ public class ShootCommands {
 
     public static Command scoreInAmp(Shooter shooter, Indexer indexer, Drive drive, Arm arm, RobotState robotState) {
         return Commands.sequence(
-                        new PositionArm(arm, true, ScoringMode.AMP),
-                        new Shoot(shooter, indexer, robotState, false, ScoringMode.AMP),
-                        new PositionArm(arm, true, ScoringMode.AMP))
+                        new PositionArm(arm, true, false, robotState, () -> ScoringMode.AMP),
+                        new Shoot(shooter, indexer, robotState, false, ScoringMode.AMP))
                 .withName("scoreInAmp");
     }
 }
