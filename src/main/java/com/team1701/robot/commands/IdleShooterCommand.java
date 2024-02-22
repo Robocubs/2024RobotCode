@@ -1,12 +1,10 @@
 package com.team1701.robot.commands;
 
-import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.Constants;
-import com.team1701.robot.Constants.ScoringMode;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.shooter.*;
 import edu.wpi.first.math.MathUtil;
@@ -23,12 +21,10 @@ public class IdleShooterCommand extends Command {
 
     private final Shooter mShooter;
     private final RobotState mRobotState;
-    private final Supplier<ScoringMode> mScoringMode;
 
-    public IdleShooterCommand(Shooter shooter, RobotState robotState, Supplier<ScoringMode> scoringMode) {
+    public IdleShooterCommand(Shooter shooter, RobotState robotState) {
         mShooter = shooter;
         mRobotState = robotState;
-        mScoringMode = scoringMode;
 
         addRequirements(shooter);
     }
@@ -38,7 +34,7 @@ public class IdleShooterCommand extends Command {
         Rotation2d desiredShooterAngle;
         double shooterSpeed;
 
-        switch (mScoringMode.get()) {
+        switch (mRobotState.getScoringMode()) {
             case SPEAKER:
                 // TODO: ramp up speeds on approach
                 desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
@@ -49,8 +45,8 @@ public class IdleShooterCommand extends Command {
                 shooterSpeed = Constants.Shooter.kAmpRollerSpeedRadiansPerSecond.get();
                 break;
             case CLIMB:
-                desiredShooterAngle = Rotation2d.fromDegrees(85);
-                shooterSpeed = Constants.Shooter.kTrapRollerSpeedRadiansPerSecond.get();
+                desiredShooterAngle = Rotation2d.fromDegrees(0);
+                shooterSpeed = 0;
                 break;
             default:
                 desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();

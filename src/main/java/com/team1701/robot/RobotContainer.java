@@ -28,17 +28,17 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
-import com.team1701.robot.Constants.ScoringMode;
+import com.team1701.robot.commands.ArmCommands;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
-import com.team1701.robot.commands.PositionArm;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.DashboardControls;
 import com.team1701.robot.controls.StreamDeck;
 import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
 import com.team1701.robot.states.RobotState;
+import com.team1701.robot.states.RobotState.ScoringMode;
 import com.team1701.robot.subsystems.arm.Arm;
 import com.team1701.robot.subsystems.climb.Climb;
 import com.team1701.robot.subsystems.drive.Drive;
@@ -271,8 +271,6 @@ public class RobotContainer {
 
         this.mClimb = climb.orElseGet(() -> new Climb(new MotorIO() {}, new MotorIO() {}));
 
-        mScoringMode = Constants.ScoringMode.AMP;
-
         mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
 
         setupControllerBindings();
@@ -303,11 +301,13 @@ public class RobotContainer {
 
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
-        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState, () -> mScoringMode));
+        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState));
 
-        mArm.setDefaultCommand(new PositionArm(mArm, false, true, mRobotState, () -> mScoringMode));
+        mArm.setDefaultCommand(ArmCommands.idleArmCommand(mArm, mRobotState));
 
         mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb));
+
+        // TODO: add Triggers for updating mScoringMode
 
         mDriverController
                 .a()
