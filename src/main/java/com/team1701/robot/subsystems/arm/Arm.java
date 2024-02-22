@@ -24,14 +24,14 @@ public class Arm extends SubsystemBase {
 
     private final EncoderIO mAngleEncoderIO;
 
+    @AutoLogOutput(key = "Arm/LeftArmLigament")
     private Mechanism2d mLeftArmMechanism;
+
+    @AutoLogOutput(key = "Arm/RightArmMechanism")
     private Mechanism2d mRightArmMechanism;
 
     private MechanismRoot2d mLeftArmRoot;
     private MechanismRoot2d mRightArmRoot;
-
-    private MechanismLigament2d mLeftArmLigament;
-    private MechanismLigament2d mRightArmLigament;
 
     private final MotorInputsAutoLogged mRotationMotorInputs = new MotorInputsAutoLogged();
 
@@ -67,9 +67,9 @@ public class Arm extends SubsystemBase {
         mLeftArmRoot = mLeftArmMechanism.getRoot("leftRoot", 5 - distanceFromCenter, heightFromCenter);
         mRightArmRoot = mRightArmMechanism.getRoot("rightRoot", 5 - distanceFromCenter, heightFromCenter);
 
-        mLeftArmLigament = mLeftArmRoot.append(
+        mLeftArmRoot.append(
                 new MechanismLigament2d("leftArm", length, getAngle().getDegrees()));
-        mRightArmLigament = mRightArmRoot.append(
+        mRightArmRoot.append(
                 new MechanismLigament2d("rightArm", length, getAngle().getDegrees()));
     }
 
