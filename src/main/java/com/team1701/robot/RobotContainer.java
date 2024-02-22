@@ -443,8 +443,8 @@ public class RobotContainer {
     public Command getZeroCommand() {
         return runOnce(() -> {
                     // TODO: uncomment line
-                    // mShooter.zeroShooterRotation();
-                    // mArm.zeroArmRotation();
+                    mShooter.zeroShooterRotation();
+                    mArm.zeroArmRotation();
                     mDrive.zeroModules();
                 })
                 .ignoringDisable(true)
