@@ -8,6 +8,7 @@ import com.team1701.lib.drivers.encoders.EncoderInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
+import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -44,6 +45,7 @@ public class Shooter extends SubsystemBase {
     private MechanismLigament2d mShooterLigament;
     private MechanismLigament2d mShooterPost;
     private MechanismRoot2d mShooterRoot;
+    private Rotation2d mAngle;
 
     private Optional<Rotation2d> mRotationMotorOffset = Optional.empty();
 
@@ -74,11 +76,7 @@ public class Shooter extends SubsystemBase {
                 0,
                 Constants.Shooter.kRollerKd.get());
 
-        setRotationPID(
-                Constants.Shooter.kRotationKff.get(),
-                Constants.Shooter.kRotationKp.get(),
-                0,
-                Constants.Shooter.kRotationKd.get());
+        setRotationPID(0, Constants.Shooter.kRotationKp.get(), 0, Constants.Shooter.kRotationKd.get());
 
         mAngleEncoderIO = angleEncoder;
 
@@ -133,7 +131,7 @@ public class Shooter extends SubsystemBase {
 
         Logger.processInputs("Shooter/Motors/Rotation", mRotationShooterMotorInputs);
 
-        Logger.processInputs("Shooter/Encoder", mRotationShooterMotorInputs);
+        Logger.processInputs("Shooter/Encoder", mAngleEncoderInputs);
 
         if (Constants.Shooter.kRollerKff.hasChanged(hash)
                 || Constants.Shooter.kRollerKp.hasChanged(hash)
@@ -145,24 +143,29 @@ public class Shooter extends SubsystemBase {
                     Constants.Shooter.kRollerKd.get());
         }
 
-        if (Constants.Shooter.kRotationKff.hasChanged(hash)
-                || Constants.Shooter.kRotationKp.hasChanged(hash)
-                || Constants.Shooter.kRotationKd.hasChanged(hash)) {
-            setRotationPID(
-                    Constants.Shooter.kRotationKff.get(),
-                    Constants.Shooter.kRotationKp.get(),
-                    0,
-                    Constants.Shooter.kRotationKd.get());
+        if (Constants.Shooter.kRotationKp.hasChanged(hash) || Constants.Shooter.kRotationKd.hasChanged(hash)) {
+            setRotationPID(0, Constants.Shooter.kRotationKp.get(), 0, Constants.Shooter.kRotationKd.get());
         }
+
+        var angle = mAngleEncoderInputs
+                .position
+                .plus(Constants.Shooter.kShooterAngleEncoderOffset)
+                .times(Constants.Shooter.kEncoderToShooterReduction);
+
+        // var angleWithOffset = Rotation2d.fromRadians((mAngleEncoderInputs.position.getRadians()
+        //         + Constants.Shooter.kShooterAngleEncoderOffset.getRadians()));
+        // var angle = GeometryUtil.angleModulus(angleWithOffset).times(Constants.Shooter.kEncoderToShooterReduction);
+        mAngle = GeometryUtil.angleModulus(angle, GeometryUtil.kRotationMinusHalfPi, GeometryUtil.kRotationThreeHalfPi);
 
         // Initialize the rotation motor offset once the angle encoder is sending values
         if (mRotationMotorOffset.isEmpty() && !Util.epsilonEquals(mAngleEncoderInputs.position.getRadians(), 0)) {
-            mRotationMotorOffset =
-                    Optional.of(mAngleEncoderInputs.position.minus(Constants.Shooter.kShooterAngleEncoderOffset));
+            mRotationMotorOffset = Optional.of(angle.div(Constants.Shooter.kAngleReduction));
 
             zeroShooterRotation();
         }
 
+        Logger.recordOutput("Shooter/calculatedAngle", angle);
+        Logger.recordOutput("Shooter/calculatedAngleModulus", mAngle);
         Logger.recordOutput("Shooter/mech", mShooterMechanism);
     }
 
@@ -178,10 +181,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void zeroShooterRotation() {
-        mRotationShooterMotorIO.setPosition(mRotationMotorOffset
-                .get()
-                .minus(Constants.Shooter.kShooterAngleEncoderOffset)
-                .times(Constants.Shooter.kEncoderToShooterReduction));
+        mRotationShooterMotorIO.setPosition(mAngle);
     }
 
     @AutoLogOutput
@@ -271,5 +271,9 @@ public class Shooter extends SubsystemBase {
 
     public void stopRotation() {
         mRotationShooterMotorIO.setPercentOutput(0);
+    }
+
+    public void setRotationPercentOutput(double percent) {
+        mRotationShooterMotorIO.setPercentOutput(percent);
     }
 }

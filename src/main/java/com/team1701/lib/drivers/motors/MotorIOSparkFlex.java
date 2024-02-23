@@ -144,6 +144,6 @@ public class MotorIOSparkFlex implements MotorIO {
 
     @Override
     public void setPosition(Rotation2d position) {
-        mEncoder.setPosition(position.getRotations());
+        mEncoder.setPosition(position.getRotations() / mReduction);
     }
 }

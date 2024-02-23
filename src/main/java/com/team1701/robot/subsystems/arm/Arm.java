@@ -8,6 +8,7 @@ import com.team1701.lib.drivers.encoders.EncoderInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
+import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -124,7 +125,7 @@ public class Arm extends SubsystemBase {
 
     public void zeroArmRotation() {
         mRotationMotorIO.setPosition(mRotationMotorOffset
-                .get()
+                .orElse(GeometryUtil.kRotationIdentity)
                 .minus(Constants.Arm.kArmAngleEncoderOffset)
                 .times(Constants.Arm.kEncoderToArmReduction));
     }

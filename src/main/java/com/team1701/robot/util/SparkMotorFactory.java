@@ -34,24 +34,27 @@ public class SparkMotorFactory {
         double reduction = 1.0;
         switch (motorUse) {
             case SHOOTER_ROLLER:
-                configureWithRetry(() -> controller.setP(Constants.Shooter.kRollerKp.get()), errorAlert);
-                configureWithRetry(() -> controller.setD(Constants.Shooter.kRollerKd.get()), errorAlert);
-                configureWithRetry(() -> controller.setFF(Constants.Shooter.kRollerKff.get()), errorAlert);
+                configureWithRetry(() -> controller.setP(/*Constants.Shooter.kRollerKp.get()*/ 0), errorAlert);
+                configureWithRetry(() -> controller.setD(/*Constants.Shooter.kRollerKd.get()*/ 0), errorAlert);
+                configureWithRetry(() -> controller.setFF(/*Constants.Shooter.kRollerKff.get()*/ 0), errorAlert);
                 reduction = Constants.Shooter.kRollerReduction;
                 break;
             case ROTATION:
                 configureWithRetry(() -> controller.setP(Constants.Shooter.kRotationKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Shooter.kRotationKd.get()), errorAlert);
-                configureWithRetry(() -> controller.setFF(Constants.Shooter.kRotationKff.get()), errorAlert);
+                configureWithRetry(() -> controller.setFF(0), errorAlert);
                 configureWithRetry(
-                        () -> motor.setSoftLimit(
-                                SoftLimitDirection.kForward, (float) Constants.Shooter.kShooterUpperLimitRotations),
+                        () -> motor.setSoftLimit(SoftLimitDirection.kForward, (float)
+                                (Constants.Shooter.kShooterUpperLimitRotations / Constants.Shooter.kAngleReduction)),
                         errorAlert);
                 configureWithRetry(
-                        () -> motor.setSoftLimit(
-                                SoftLimitDirection.kReverse, (float) Constants.Shooter.kShooterLowerLimitRotations),
+                        () -> motor.setSoftLimit(SoftLimitDirection.kReverse, (float)
+                                (Constants.Shooter.kShooterLowerLimitRotations / Constants.Shooter.kAngleReduction)),
                         errorAlert);
+                configureWithRetry(() -> motor.enableSoftLimit(SoftLimitDirection.kForward, true), errorAlert);
+                configureWithRetry(() -> motor.enableSoftLimit(SoftLimitDirection.kReverse, true), errorAlert);
                 reduction = Constants.Shooter.kAngleReduction;
+
                 break;
             default:
                 break;
@@ -60,6 +63,7 @@ public class SparkMotorFactory {
         configureWithRetry(() -> motor.burnFlash(), errorAlert);
 
         motor.setCANTimeout(0);
+        motor.setInverted(inverted);
 
         return new MotorIOSparkFlex(motor, reduction);
     }

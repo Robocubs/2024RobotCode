@@ -326,8 +326,8 @@ public final class Constants {
         public static final int kShooterLeftUpperRollerMotorId = 22;
         public static final int kShooterRotationMotorId = 26;
 
-        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(110);
-        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(18);
+        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(85);
+        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(10);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
 
@@ -335,7 +335,6 @@ public final class Constants {
         public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");
         public static final LoggedTunableNumber kRollerKd = new LoggedTunableNumber("Shooter/Motor/Roller/Kd");
 
-        public static final LoggedTunableNumber kRotationKff = new LoggedTunableNumber("Shooter/Motor/Rotation/Kff");
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity");
@@ -370,11 +369,10 @@ public final class Constants {
                     kRollerKp.initDefault(0.0);
                     kRollerKd.initDefault(0.0);
 
-                    kRotationKff.initDefault(0.0);
                     kRotationKp.initDefault(0.0);
                     kRotationKd.initDefault(0.0);
 
-                    kShooterAngleEncoderOffset = Rotation2d.fromRotations(0); // TODO: Update value
+                    kShooterAngleEncoderOffset = Rotation2d.fromRadians(0.135); // final calculated value .488
 
                     break;
                 case SIMULATION_BOT:
@@ -382,7 +380,6 @@ public final class Constants {
                     kRollerKp.initDefault(0.2);
                     kRollerKd.initDefault(0.0);
 
-                    kRotationKff.initDefault(0.0);
                     kRotationKp.initDefault(2.0);
                     kRotationKd.initDefault(0.0);
 

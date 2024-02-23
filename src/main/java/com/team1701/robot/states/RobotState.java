@@ -139,16 +139,16 @@ public class RobotState {
         return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;
     }
 
-    @AutoLogOutput
+    // @AutoLogOutput
     public Pose2d[] getDetectedNotePoses2d() {
-        return mDetectedNotes.stream()
-                .map(note -> note.pose.getTranslation().toTranslation2d())
-                .toArray(Pose2d[]::new);
+        return mDetectedNotes.stream().map(note -> note.pose.toPose2d()).toArray(Pose2d[]::new);
+        // return new Pose2d[] {};
     }
 
-    @AutoLogOutput
+    // @AutoLogOutput
     public Pose3d[] getDetectedNotePoses3d() {
         return mDetectedNotes.stream().map(note -> note.pose).toArray(Pose3d[]::new);
+        // return new Pose3d[] {};
     }
 
     public void addDetectedNotes(List<NoteState> notes) {
