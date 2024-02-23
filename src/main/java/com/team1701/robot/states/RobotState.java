@@ -140,16 +140,16 @@ public class RobotState {
     }
 
     // @AutoLogOutput
-    public Pose2d[] getDetectedNotePoses2d() {
-        return mDetectedNotes.stream().map(note -> note.pose.toPose2d()).toArray(Pose2d[]::new);
-        // return new Pose2d[] {};
-    }
+    // public Pose2d[] getDetectedNotePoses2d() {
+    //     return mDetectedNotes.stream().map(note -> note.pose.toPose2d()).toArray(Pose2d[]::new);
+    //     // return new Pose2d[] {};
+    // }
 
     // @AutoLogOutput
-    public Pose3d[] getDetectedNotePoses3d() {
-        return mDetectedNotes.stream().map(note -> note.pose).toArray(Pose3d[]::new);
-        // return new Pose3d[] {};
-    }
+    // public Pose3d[] getDetectedNotePoses3d() {
+    //     return mDetectedNotes.stream().map(note -> note.pose).toArray(Pose3d[]::new);
+    //     // return new Pose3d[] {};
+    // }
 
     public void addDetectedNotes(List<NoteState> notes) {
         for (var newNote : notes) {

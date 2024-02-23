@@ -58,7 +58,8 @@ public class Shoot extends Command {
         switch (mScoringMode) {
             case SPEAKER:
                 // TODO: Linear reg of speeds
-                desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
+                desiredShooterAngle =
+                        mRobotState.calculateShooterAngleTowardsSpeaker().plus(Rotation2d.fromDegrees(2.5));
                 leftTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 rightTargetSpeed = leftTargetSpeed;
                 targetHeading = mRobotState.getSpeakerHeading();
@@ -89,9 +90,9 @@ public class Shoot extends Command {
         // TODO: Determine if time-locked boolean is needed
         // Or alternatively use a speed range based on distance
         var atSpeed = DoubleStream.of(mShooter.getLeftRollerSpeedsRadiansPerSecond())
-                        .allMatch(actualSpeed -> MathUtil.isNear(leftTargetSpeed, actualSpeed, 10.0))
+                        .allMatch(actualSpeed -> MathUtil.isNear(leftTargetSpeed, actualSpeed, 50.0))
                 && DoubleStream.of(mShooter.getRightRollerSpeedsRadiansPerSecond())
-                        .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 10.0));
+                        .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 50.0));
 
         if (atAngle && atHeading && atSpeed) {
             mIndexer.setForwardShoot();

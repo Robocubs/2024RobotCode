@@ -317,17 +317,17 @@ public final class Constants {
 
     public static final class Shooter {
         // TODO: Update values
-        public static final double kRollerReduction = 1.0;
+        public static final double kRollerReduction = 1.0; // 32.0 /18.0
         public static final double kEncoderToShooterReduction = 30.0 / 50.0;
         public static final double kAngleReduction = (1.0 / 4.0) * (1.0 / 5.0) * (20.0 / 93.0);
         public static final int kShooterRightUpperRollerMotorId = 23;
         public static final int kShooterRightLowerRollerMotorId = 25;
-        public static final int kShooterLeftLowerRollerMotorId = 24;
-        public static final int kShooterLeftUpperRollerMotorId = 22;
+        public static final int kShooterLeftLowerRollerMotorId = 22;
+        public static final int kShooterLeftUpperRollerMotorId = 24;
         public static final int kShooterRotationMotorId = 26;
 
-        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(85);
-        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(10);
+        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(75);
+        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(30);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
 
@@ -337,12 +337,12 @@ public final class Constants {
 
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity");
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity", 1.0);
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
-                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration");
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration", 1.0);
 
         public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Rollers/IdleSpeedRadiansPerSecond", 100);
+                new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 100);
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =
                 new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 85);
         public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
@@ -350,7 +350,7 @@ public final class Constants {
         public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/TrapRollerSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Roller/TargetShootSpeedRadiansPerSecond", 600);
+                new LoggedTunableNumber("Shooter/Roller/TargetShootSpeedRadiansPerSecond", 450);
 
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
@@ -365,14 +365,19 @@ public final class Constants {
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kRollerKff.initDefault(0.0);
-                    kRollerKp.initDefault(0.0);
+                    kRollerKff.initDefault(0.000165);
+                    kRollerKp.initDefault(0.00035);
                     kRollerKd.initDefault(0.0);
 
-                    kRotationKp.initDefault(0.0);
+                    kRotationKp.initDefault(0.3);
                     kRotationKd.initDefault(0.0);
 
+                    kTargetShootSpeedRadiansPerSecond.initDefault(450);
+
                     kShooterAngleEncoderOffset = Rotation2d.fromRadians(0.135); // final calculated value .488
+
+                    kMaxRotationVelocityRadiansPerSecond.initDefault(0);
+                    kMaxRotationAccelerationRadiansPerSecondSquared.initDefault(0);
 
                     break;
                 case SIMULATION_BOT:
@@ -480,27 +485,44 @@ public final class Constants {
         public static final int kIndexerMotorId = 21;
         public static final double kIndexerReduction = 1;
 
-        public static final int kIndexerEntranceSensorId = 1;
-        public static final int kIndexerExitSensorId = 3;
+        public static final int kIndexerEntranceSensorId = 0;
+        public static final int kIndexerExitSensorId = 2;
 
-        public static final double kIndexerLoadPercent = .25;
-        public static final double kIndexerFeedPercent = 1;
+        public static final double kIndexerPercent = 1;
         public static final double kReduction = 1.0 / 1.0;
 
         public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
         public static final LoggedTunableNumber kIndexerKd = new LoggedTunableNumber("Indexer/Motor/Kd");
         public static double kIntakeReduction;
+
+        static {
+            switch (Configuration.getRobot()) {
+                case COMPETITION_BOT:
+                    kIndexerKff.initDefault(0.0);
+                    kIndexerKp.initDefault(0.0);
+                    kIndexerKd.initDefault(0.0);
+
+                    break;
+                case SIMULATION_BOT:
+                    kIndexerKff.initDefault(0.0);
+                    kIndexerKp.initDefault(0.0);
+                    kIndexerKd.initDefault(0.0);
+
+                    break;
+                default:
+            }
+        }
     }
 
     public class Intake {
         public static final int kIntakeMotorId = 20;
 
-        // TODO: Add sensor Ids
-        public static final double kIntakeSpeed = 0.5;
+        public static final int kIntakeEntranceSensorId = 3;
+        public static final int kIntakeExitSensorId = 1;
+
+        public static final double kIntakeSpeed = 0.8;
         public static final double kOuttakeSpeed = -0.5;
-        public static final int kIntakeEntranceSensorId = 4;
-        public static final int kIntakeExitSensorId = 5;
         public static final double kReduction = 1.0 / 9.0;
     }
 }

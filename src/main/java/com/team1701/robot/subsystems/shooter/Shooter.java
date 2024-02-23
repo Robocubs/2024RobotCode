@@ -253,10 +253,11 @@ public class Shooter extends SubsystemBase {
             return;
         }
 
-        mRotationShooterMotorIO.setSmoothPositionControl(
-                rotation,
-                Constants.Shooter.kMaxRotationVelocityRadiansPerSecond.get(),
-                Constants.Shooter.kMaxRotationAccelerationRadiansPerSecondSquared.get());
+        // mRotationShooterMotorIO.setSmoothPositionControl(
+        //         rotation,
+        //         Constants.Shooter.kMaxRotationVelocityRadiansPerSecond.get(),
+        //         Constants.Shooter.kMaxRotationAccelerationRadiansPerSecondSquared.get());
+        mRotationShooterMotorIO.setPositionControl(rotation);
 
         mShooterLigament.setAngle(rotation.getDegrees() - 90);
         Logger.recordOutput("Shooter/Motors/Rotation/Demand", rotation);

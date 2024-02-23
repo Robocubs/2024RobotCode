@@ -19,7 +19,7 @@ public class DashboardControls {
     private LoggedDashboardBoolean retractArm = new LoggedDashboardBoolean("Controls/RetractArm");
 
     public void bindCommands(Intake intake, Indexer indexer) {
-        createTriggeredCommand(stopIntake, IntakeCommands.stop(intake));
+        createTriggeredCommand(stopIntake, IntakeCommands.stopIntake(intake, indexer));
 
         createTriggeredCommand(reverseIntakeAndIndexer, IntakeCommands.reverse(intake, indexer));
     }

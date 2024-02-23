@@ -18,6 +18,7 @@ import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOPhotonCamera;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOLimelight;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
+import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
@@ -34,6 +35,7 @@ import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
+import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.DashboardControls;
 import com.team1701.robot.controls.StreamDeck;
@@ -127,18 +129,18 @@ public class RobotContainer {
                                 new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
                                 new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
                                 new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig),
-                                new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)
+                                // new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)
                             },
                             new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
 
                     // TODO: update IDs
                     shooter = Optional.of(new Shooter(
                             SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterRightUpperRollerMotorId,
+                                    Constants.Shooter.kShooterRightUpperRollerMotorId, MotorUsage.SHOOTER_ROLLER, true),
+                            SparkMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterRightLowerRollerMotorId,
                                     MotorUsage.SHOOTER_ROLLER,
                                     false),
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterRightLowerRollerMotorId, MotorUsage.SHOOTER_ROLLER, true),
                             SparkMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterLeftUpperRollerMotorId, MotorUsage.SHOOTER_ROLLER, true),
                             SparkMotorFactory.createShooterMotorIOSparkFlex(
@@ -147,14 +149,14 @@ public class RobotContainer {
                                     Constants.Shooter.kShooterRotationMotorId, MotorUsage.ROTATION, true),
                             new EncoderIORevThroughBore(Constants.Shooter.kShooterThroughBoreEncoderId, true)));
 
-                    // indexer = Optional.of(new Indexer(
-                    //         SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
-                    //         new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
-                    //         new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
-                    // intake = Optional.of(new Intake(
-                    //         SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
-                    //         new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId),
-                    //         new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId)));
+                    indexer = Optional.of(new Indexer(
+                            SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
+                            new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId, false),
+                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, true)));
+                    intake = Optional.of(new Intake(
+                            SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
+                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, false),
+                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, false)));
                     // arm = Optional.of(new Arm(
                     //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                     //                 Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
@@ -293,7 +295,7 @@ public class RobotContainer {
 
         mDrive.setDefaultCommand(driveWithJoysticks(
                 mDrive,
-                mRobotState::getHeading,
+                mDrive::getFieldRelativeHeading,
                 () -> -mDriverController.getLeftY(),
                 () -> -mDriverController.getLeftX(),
                 () -> -mDriverController.getRightX(),
@@ -306,7 +308,7 @@ public class RobotContainer {
         // mShooter));
 
         // TODO: update should load when intake is completed
-        mIndexer.setDefaultCommand(new IndexCommand(mIndexer, mRobotState::hasNote));
+        mIndexer.setDefaultCommand(new IndexCommand(mIndexer, () -> true));
 
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
@@ -344,13 +346,13 @@ public class RobotContainer {
         mDriverController
                 .leftTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-                .onTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
+                .whileTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
 
         // Amp Shot
         mDriverController
                 .leftTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
-                .onTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
+                .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
 
         mDriverController
                 .b()
@@ -373,17 +375,23 @@ public class RobotContainer {
         new DashboardControls().bindCommands(mIntake, mIndexer);
 
         var toggledCommand = idle().ignoringDisable(true).withName("StreamDeckToggleButton");
+        var stopIntakingCommand = runOnce(() -> IntakeCommands.stopIntake(mIntake, mIndexer), mIntake, mIndexer)
+                .ignoringDisable(false)
+                .withName("StreamDeckStopIntakingButton");
         var buttonGroupButton1Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton1");
         var buttonGroupButton2Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton2");
         var buttonGroupButton3Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton3");
 
         mStreamDeck.configureButton(config -> config.addDefault(StreamDeckButton.kButton)
                 .add(StreamDeckButton.kToggleButton, toggledCommand::isScheduled)
+                .add(StreamDeckButton.kStopIntakeButton, stopIntakingCommand::isScheduled)
                 .add(StreamDeckButton.kButtonGroupButton1, buttonGroupButton1Command::isScheduled)
                 .add(StreamDeckButton.kButtonGroupButton2, buttonGroupButton2Command::isScheduled)
                 .add(StreamDeckButton.kButtonGroupButton3, buttonGroupButton3Command::isScheduled));
 
         mStreamDeck.button(StreamDeckButton.kToggleButton).toggleOnTrue(toggledCommand);
+
+        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(stopIntakingCommand);
 
         mStreamDeck
                 .buttonGroup()

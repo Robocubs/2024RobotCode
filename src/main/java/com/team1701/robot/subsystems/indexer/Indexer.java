@@ -62,15 +62,15 @@ public class Indexer extends SubsystemBase {
     }
 
     public void setForwardLoad() {
-        mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerLoadPercent);
+        mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerPercent);
     }
 
     public void setForwardShoot() {
-        mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerFeedPercent);
+        mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerPercent);
     }
 
     public void setReverse() {
-        mIndexerMotorIO.setPercentOutput(-Constants.Indexer.kIndexerFeedPercent);
+        mIndexerMotorIO.setPercentOutput(-Constants.Indexer.kIndexerPercent);
     }
 
     public void stop() {
