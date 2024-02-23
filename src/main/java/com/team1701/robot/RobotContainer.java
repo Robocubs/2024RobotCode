@@ -34,7 +34,6 @@ import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.commands.ShootCommands;
-import com.team1701.robot.controls.DashboardControls;
 import com.team1701.robot.controls.StreamDeck;
 import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
 import com.team1701.robot.states.RobotState;
@@ -347,8 +346,6 @@ public class RobotContainer {
         //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, .5),
         //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0))
         //                 .ignoringDisable(true));
-
-        new DashboardControls().bindCommands(mIntake, mIndexer);
 
         var toggledCommand = idle().ignoringDisable(true).withName("StreamDeckToggleButton");
         var buttonGroupButton1Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton1");
