@@ -156,7 +156,7 @@ public class RobotContainer {
                     intake = Optional.of(new Intake(
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                             new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, false),
-                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, false)));
+                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
                     // arm = Optional.of(new Arm(
                     //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                     //                 Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
