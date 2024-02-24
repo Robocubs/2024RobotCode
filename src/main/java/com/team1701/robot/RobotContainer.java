@@ -129,7 +129,7 @@ public class RobotContainer {
                                 new AprilTagCameraIOCubVision(Constants.Vision.kFrontRightCameraConfig),
                                 new AprilTagCameraIOCubVision(Constants.Vision.kBackLeftCameraConfig),
                                 new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig),
-                                // new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)
+                                new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)
                             },
                             new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
 
@@ -378,6 +378,12 @@ public class RobotContainer {
         var stopIntakingCommand = runOnce(() -> IntakeCommands.stopIntake(mIntake, mIndexer), mIntake, mIndexer)
                 .ignoringDisable(false)
                 .withName("StreamDeckStopIntakingButton");
+        var setSpeakerModeCommand =
+                runOnce(() -> mRobotState.setScoringMode(ScoringMode.SPEAKER)).withName("SetSpeakerScoringMode");
+        var setAmpModeCommand =
+                runOnce(() -> mRobotState.setScoringMode(ScoringMode.AMP)).withName("SetAmpScoringMode");
+        var setClimbModeCommand =
+                runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB)).withName("SetClimbScoringMode");
         var buttonGroupButton1Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton1");
         var buttonGroupButton2Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton2");
         var buttonGroupButton3Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton3");
@@ -392,6 +398,7 @@ public class RobotContainer {
         mStreamDeck.button(StreamDeckButton.kToggleButton).toggleOnTrue(toggledCommand);
 
         mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(stopIntakingCommand);
+        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(setSpeakerModeCommand);
 
         mStreamDeck
                 .buttonGroup()

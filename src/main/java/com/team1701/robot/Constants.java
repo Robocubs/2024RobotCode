@@ -435,7 +435,7 @@ public final class Constants {
         public static final double kArmUpperLimitRotations = Units.degreesToRotations(135);
         public static final double kArmLowerLimitRotations = Units.degreesToRotations(0);
 
-        public static final double kEncoderToArmReduction = 1; // TODO: get value (prob 1 but check)
+        public static final double kAngleReduction = 1;
 
         // TODO: add IDs
 
