@@ -56,7 +56,7 @@ public class CommandLogger {
         var count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
         var totalCount = commandTotalCounts.getOrDefault(name, 0) + (active ? 1 : 0);
         commandCounts.put(name, count);
-        commandTotalCounts.put(event, totalCount);
+        commandTotalCounts.put(name, totalCount);
 
         var hash = Integer.toHexString(command.hashCode());
         Logger.recordOutput("Command/" + name + "/Active/" + hash, active);

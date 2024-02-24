@@ -22,6 +22,7 @@ import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
+import com.team1701.lib.drivers.encoders.EncoderIORevThroughBore;
 import com.team1701.lib.drivers.gyros.GyroIO;
 import com.team1701.lib.drivers.gyros.GyroIOPigeon2;
 import com.team1701.lib.drivers.gyros.GyroIOSim;
@@ -53,7 +54,6 @@ import com.team1701.robot.util.SparkMotorFactory;
 import com.team1701.robot.util.TalonFxMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -132,23 +132,31 @@ public class RobotContainer {
                             new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
 
                     // TODO: update IDs
-                    // shooter = Optional.of(new Shooter(
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterRightUpperRollerMotorId, MotorUsage.SHOOTER_ROLLER,
-                    // true),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterRightLowerRollerMotorId,
-                    //                 MotorUsage.SHOOTER_ROLLER,
-                    //                 false),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterLeftUpperRollerMotorId, MotorUsage.SHOOTER_ROLLER,
-                    // true),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterLeftLowerRollerMotorId, MotorUsage.SHOOTER_ROLLER,
-                    // false),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterRotationMotorId, MotorUsage.ROTATION, true),
-                    //         new EncoderIORevThroughBore(Constants.Shooter.kShooterThroughBoreEncoderId, true)));
+                    shooter = Optional.of(new Shooter(
+                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                            //                 Constants.Shooter.kShooterRightUpperRollerMotorId,
+                            // MotorUsage.SHOOTER_ROLLER,
+                            // true),
+                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                            //                 Constants.Shooter.kShooterRightLowerRollerMotorId,
+                            //                 MotorUsage.SHOOTER_ROLLER,
+                            //                 false),
+                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                            //                 Constants.Shooter.kShooterLeftUpperRollerMotorId,
+                            // MotorUsage.SHOOTER_ROLLER,
+                            // true),
+                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                            //                 Constants.Shooter.kShooterLeftLowerRollerMotorId,
+                            // MotorUsage.SHOOTER_ROLLER,
+                            // false),
+                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                            //                 Constants.Shooter.kShooterRotationMotorId, MotorUsage.ROTATION, true),
+                            new MotorIO() {},
+                            new MotorIO() {},
+                            new MotorIO() {},
+                            new MotorIO() {},
+                            new MotorIO() {},
+                            new EncoderIORevThroughBore(Constants.Shooter.kShooterThroughBoreEncoderId, true)));
 
                     indexer = Optional.of(new Indexer(
                             SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
@@ -156,7 +164,7 @@ public class RobotContainer {
                             new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, true)));
                     intake = Optional.of(new Intake(
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
-                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, false),
+                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
                             new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
                     // arm = Optional.of(new Arm(
                     //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
@@ -294,8 +302,6 @@ public class RobotContainer {
                         || !DriverStation.getJoystickIsXbox(
                                 mDriverController.getHID().getPort()));
 
-        
-
         mDrive.setDefaultCommand(driveWithJoysticks(
                 mDrive,
                 mDrive::getFieldRelativeHeading,
@@ -357,16 +363,22 @@ public class RobotContainer {
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
 
+        // mDriverController
+        //         .b()
+        //         .whileTrue((DriveCommands.driveToPose(
+        //                 mDrive,
+        //                 () -> new Pose2d(
+        //                         new Translation2d(0.9079903960227966, 4.299035549163818),
+        //                         Rotation2d.fromRadians(2.079867230915455)),
+        //                 mRobotState::getPose2d,
+        //                 Constants.Drive.kSlowKinematicLimits,
+        //                 false)));
+
+        mDriverController.b().whileTrue(IntakeCommands.reverse(mIntake, mIndexer));
+
         mDriverController
-                .b()
-                .whileTrue((DriveCommands.driveToPose(
-                        mDrive,
-                        () -> new Pose2d(
-                                new Translation2d(0.9079903960227966, 4.299035549163818),
-                                Rotation2d.fromRadians(2.079867230915455)),
-                        mRobotState::getPose2d,
-                        Constants.Drive.kSlowKinematicLimits,
-                        false)));
+                .y()
+                .whileTrue(DriveCommands.driveToPiece(mDrive, mRobotState, Constants.Drive.kSlowKinematicLimits));
 
         // mDriverController
         //         .b()
