@@ -22,7 +22,6 @@ import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
-import com.team1701.lib.drivers.encoders.EncoderIORevThroughBore;
 import com.team1701.lib.drivers.gyros.GyroIO;
 import com.team1701.lib.drivers.gyros.GyroIOPigeon2;
 import com.team1701.lib.drivers.gyros.GyroIOSim;
@@ -51,7 +50,6 @@ import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.SparkMotorFactory;
-import com.team1701.robot.util.SparkMotorFactory.MotorUsage;
 import com.team1701.robot.util.TalonFxMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -134,20 +132,23 @@ public class RobotContainer {
                             new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
 
                     // TODO: update IDs
-                    shooter = Optional.of(new Shooter(
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterRightUpperRollerMotorId, MotorUsage.SHOOTER_ROLLER, true),
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterRightLowerRollerMotorId,
-                                    MotorUsage.SHOOTER_ROLLER,
-                                    false),
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterLeftUpperRollerMotorId, MotorUsage.SHOOTER_ROLLER, true),
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterLeftLowerRollerMotorId, MotorUsage.SHOOTER_ROLLER, false),
-                            SparkMotorFactory.createShooterMotorIOSparkFlex(
-                                    Constants.Shooter.kShooterRotationMotorId, MotorUsage.ROTATION, true),
-                            new EncoderIORevThroughBore(Constants.Shooter.kShooterThroughBoreEncoderId, true)));
+                    // shooter = Optional.of(new Shooter(
+                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                    //                 Constants.Shooter.kShooterRightUpperRollerMotorId, MotorUsage.SHOOTER_ROLLER,
+                    // true),
+                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                    //                 Constants.Shooter.kShooterRightLowerRollerMotorId,
+                    //                 MotorUsage.SHOOTER_ROLLER,
+                    //                 false),
+                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                    //                 Constants.Shooter.kShooterLeftUpperRollerMotorId, MotorUsage.SHOOTER_ROLLER,
+                    // true),
+                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                    //                 Constants.Shooter.kShooterLeftLowerRollerMotorId, MotorUsage.SHOOTER_ROLLER,
+                    // false),
+                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                    //                 Constants.Shooter.kShooterRotationMotorId, MotorUsage.ROTATION, true),
+                    //         new EncoderIORevThroughBore(Constants.Shooter.kShooterThroughBoreEncoderId, true)));
 
                     indexer = Optional.of(new Indexer(
                             SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
@@ -292,6 +293,8 @@ public class RobotContainer {
                                 mDriverController.getHID().getPort())
                         || !DriverStation.getJoystickIsXbox(
                                 mDriverController.getHID().getPort()));
+
+        
 
         mDrive.setDefaultCommand(driveWithJoysticks(
                 mDrive,

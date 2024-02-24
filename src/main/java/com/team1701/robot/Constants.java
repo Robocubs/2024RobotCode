@@ -169,7 +169,7 @@ public final class Constants {
                 "limelight",
                 new Transform3d(
                         new Translation3d(0, 0.0, Units.inchesToMeters(24.5)),
-                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-180))),
+                        new Rotation3d(0, Units.degreesToRadians(20), Units.degreesToRadians(-180))),
                 0,
                 VisionCameraConfig.kLimelightConfig);
     }
