@@ -144,6 +144,14 @@ public class Arm extends SubsystemBase {
         }
     }
 
+    public void setArmUp() {
+        mRotationMotorIO.setPercentOutput(10);
+    }
+
+    public void setArmDown() {
+        mRotationMotorIO.setPercentOutput(-10);
+    }
+
     public void rotateToAmpPosition() {
         setRotationAngle(Rotation2d.fromDegrees(Constants.Arm.kArmAmpRotationDegrees.get()));
     }

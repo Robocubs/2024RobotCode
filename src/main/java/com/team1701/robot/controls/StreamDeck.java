@@ -72,6 +72,10 @@ public class StreamDeck {
     public static enum StreamDeckButton {
         kButton(0, 0, "Controls/TestButton", "ArrowUpward", "Button"),
         kStopIntakeButton(0, 2, "Controls/StopIntakingButton", "Circle", "Stop Intaking"),
+        kRejectButton(2, 0, "Controls/RejectButton", "Circle", "Reject Intakeing"),
+        kForwardButton(0, 0, "Controls/ForwardButton", "Circle", "Forward Intakeing"),
+        kArmUpButton(0, 1, "Controls/ArmUpButton", "Circle", "Arm Up"),
+        kArmDownButton(2, 1, "Controls/ArmDownButton", "Cirlce", "Arm Down"),
         kToggleButton(2, 0, "Controls/TestToggleButton", "Circle", "Toggle"),
         kButtonGroupButton1(0, 4, "Controls/TestButtonGroupButton1", "ArrowUpward", "BG Up"),
         kButtonGroupButton2(1, 4, "Controls/TestButtonGroupButton2", "Circle", "BG Mid"),
