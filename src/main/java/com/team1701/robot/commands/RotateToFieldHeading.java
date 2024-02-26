@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
@@ -124,7 +125,9 @@ public class RotateToFieldHeading extends Command {
         Rotation2d setpoint;
         mAtTargetRotation = GeometryUtil.isNear(
                 targetHeading, currentHeading, Rotation2d.fromRadians(kRotationToleranceRadians.get()));
-        if (mAtTargetRotation && !mJoystickInputEnabled) {
+        if (mAtTargetRotation
+                && Util.epsilonEquals(mXSupplier.getAsDouble(), 0.0)
+                && Util.epsilonEquals(mYSupplier.getAsDouble(), 0.0)) {
             mDrive.stop();
             setpoint = currentHeading;
         } else {

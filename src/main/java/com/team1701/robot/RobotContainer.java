@@ -378,7 +378,8 @@ public class RobotContainer {
 
         mDriverController
                 .y()
-                .whileTrue(DriveCommands.driveToPiece(mDrive, mRobotState, Constants.Drive.kSlowKinematicLimits));
+                .whileTrue(DriveCommands.driveToPiece(
+                        mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits));
 
         // mDriverController
         //         .b()

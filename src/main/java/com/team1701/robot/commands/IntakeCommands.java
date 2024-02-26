@@ -24,9 +24,14 @@ public class IntakeCommands {
     }
 
     public static Command stopIntake(Intake intake, Indexer indexer) {
-        return Commands.parallel(
-                        Commands.startEnd(() -> intake.stop(), () -> {}, intake),
-                        Commands.startEnd(() -> indexer.stop(), () -> {}, indexer))
+        return Commands.startEnd(
+                        () -> {
+                            intake.stop();
+                            indexer.stop();
+                        },
+                        () -> {},
+                        intake,
+                        indexer)
                 .withName("StopIntaking");
     }
 

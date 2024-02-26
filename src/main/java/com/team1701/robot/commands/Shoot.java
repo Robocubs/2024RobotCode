@@ -18,6 +18,8 @@ public class Shoot extends Command {
     private static final String kLoggingPrefix = "Command/Shoot/";
     private static final LoggedTunableNumber kAngleToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
+    private static final LoggedTunableNumber kSpeedToleranceRadiansPerSecond =
+            new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 50.0);
     private static final LoggedTunableNumber kHeadingToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceRadians", 0.01);
 
@@ -90,7 +92,8 @@ public class Shoot extends Command {
         // TODO: Determine if time-locked boolean is needed
         // Or alternatively use a speed range based on distance
         var atSpeed = DoubleStream.of(mShooter.getLeftRollerSpeedsRadiansPerSecond())
-                        .allMatch(actualSpeed -> MathUtil.isNear(leftTargetSpeed, actualSpeed, 50.0))
+                        .allMatch(actualSpeed ->
+                                MathUtil.isNear(leftTargetSpeed, actualSpeed, kSpeedToleranceRadiansPerSecond.get()))
                 && DoubleStream.of(mShooter.getRightRollerSpeedsRadiansPerSecond())
                         .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 50.0));
 
