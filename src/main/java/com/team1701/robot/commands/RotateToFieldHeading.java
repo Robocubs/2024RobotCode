@@ -125,7 +125,9 @@ public class RotateToFieldHeading extends Command {
         Rotation2d setpoint;
         mAtTargetRotation = GeometryUtil.isNear(
                 targetHeading, currentHeading, Rotation2d.fromRadians(kRotationToleranceRadians.get()));
-        if (mAtTargetRotation && Util.epsilonEquals(mXSupplier.getAsDouble(), 0.0) && Util.epsilonEquals(mYSupplier.getAsDouble(), 0.0)) {
+        if (mAtTargetRotation
+                && Util.epsilonEquals(mXSupplier.getAsDouble(), 0.0)
+                && Util.epsilonEquals(mYSupplier.getAsDouble(), 0.0)) {
             mDrive.stop();
             setpoint = currentHeading;
         } else {
