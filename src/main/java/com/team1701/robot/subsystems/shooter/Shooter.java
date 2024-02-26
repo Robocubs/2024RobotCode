@@ -152,9 +152,6 @@ public class Shooter extends SubsystemBase {
                 .plus(Constants.Shooter.kShooterAngleEncoderOffset)
                 .times(Constants.Shooter.kEncoderToShooterReduction);
 
-        // var angleWithOffset = Rotation2d.fromRadians((mAngleEncoderInputs.position.getRadians()
-        //         + Constants.Shooter.kShooterAngleEncoderOffset.getRadians()));
-        // var angle = GeometryUtil.angleModulus(angleWithOffset).times(Constants.Shooter.kEncoderToShooterReduction);
         mAngle = GeometryUtil.angleModulus(angle, GeometryUtil.kRotationMinusHalfPi, GeometryUtil.kRotationThreeHalfPi);
 
         // Initialize the rotation motor offset once the angle encoder is sending values

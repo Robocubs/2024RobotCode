@@ -116,9 +116,6 @@ public class Arm extends SubsystemBase {
 
         var angle = mAngleEncoderInputs.position.plus(Constants.Arm.kArmAngleEncoderOffset);
 
-        // var angleWithOffset = Rotation2d.fromRadians((mAngleEncoderInputs.position.getRadians()
-        //         + Constants.Shooter.kShooterAngleEncoderOffset.getRadians()));
-        // var angle = GeometryUtil.angleModulus(angleWithOffset).times(Constants.Shooter.kEncoderToShooterReduction);
         mAngle = GeometryUtil.angleModulus(angle, GeometryUtil.kRotationMinusHalfPi, GeometryUtil.kRotationThreeHalfPi);
 
         if (mRotationMotorOffset.isEmpty() && !Util.epsilonEquals(mAngleEncoderInputs.position.getRadians(), 0)) {
