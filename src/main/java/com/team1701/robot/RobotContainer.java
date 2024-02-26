@@ -36,6 +36,7 @@ import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.commands.IntakeCommands;
+import com.team1701.robot.commands.ManualShoot;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.StreamDeck;
 import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
@@ -386,7 +387,6 @@ public class RobotContainer {
         //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0))
         //                 .ignoringDisable(true));
 
-        var toggledCommand = idle().ignoringDisable(true).withName("StreamDeckToggleButton");
         var stopIntakingCommand = runOnce(() -> IntakeCommands.stopIntake(mIntake, mIndexer), mIntake, mIndexer)
                 .ignoringDisable(false)
                 .withName("StreamDeckStopIntakingButton");
@@ -422,21 +422,65 @@ public class RobotContainer {
                 runOnce(() -> mRobotState.setScoringMode(ScoringMode.AMP)).withName("SetAmpScoringMode");
         var setClimbModeCommand =
                 runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB)).withName("SetClimbScoringMode");
-        var buttonGroupButton1Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton1");
-        var buttonGroupButton2Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton2");
-        var buttonGroupButton3Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton3");
-        mStreamDeck.configureButton(config -> config.addDefault(StreamDeckButton.kButton)
-                .add(StreamDeckButton.kToggleButton, toggledCommand::isScheduled)
+        var armHomeCommand = run(
+                        () -> {
+                            mArm.rotateHome();
+                        },
+                        mArm)
+                .ignoringDisable(false)
+                .withName("StreamDeckArmHomeButton");
+        var shooterUpCommand = run(
+                        () -> {
+                            mShooter.setShooterUp();
+                        },
+                        mShooter)
+                .ignoringDisable(false)
+                .withName("StreamDeckShooterUpCommand");
+        var shooterDownCommand = run(
+                        () -> {
+                            mShooter.setShooterDown();
+                        },
+                        mShooter)
+                .ignoringDisable(false)
+                .withName("StreamDeckShooterDownCommand");
+        var manualShootCommand = run(() -> new ManualShoot(mShooter, mIndexer))
+                .ignoringDisable(false)
+                .withName("StreamDeckShootCommand");
+        var extendWinchCommand = run(
+                        () -> {
+                            mClimb.setPercentOutput(10);
+                        },
+                        mClimb)
+                .ignoringDisable(false)
+                .withName("StreamDeckExtendWinchCommand");
+        var retractWinchCommand = run(
+                        () -> {
+                            mClimb.retractWinch(-10);
+                        },
+                        mClimb)
+                .ignoringDisable(false)
+                .withName("StreamDeckRetractWinchCommand");
+
+        mStreamDeck.configureButton(config -> config.add(
+                        StreamDeckButton.kSpeakerModeButton,
+                        () -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
+                .add(
+                        StreamDeckButton.kAmpModeButton,
+                        () -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
+                .add(
+                        StreamDeckButton.kClimbModeButton,
+                        () -> mRobotState.getScoringMode().equals(ScoringMode.CLIMB))
                 .add(StreamDeckButton.kStopIntakeButton, stopIntakingCommand::isScheduled)
                 .add(StreamDeckButton.kRejectButton, rejectCommand::isScheduled)
                 .add(StreamDeckButton.kForwardButton, forwardCommand::isScheduled)
                 .add(StreamDeckButton.kArmUpButton, armUpCommand::isScheduled)
                 .add(StreamDeckButton.kArmDownButton, armDownCommand::isScheduled)
-                .add(StreamDeckButton.kButtonGroupButton1, buttonGroupButton1Command::isScheduled)
-                .add(StreamDeckButton.kButtonGroupButton2, buttonGroupButton2Command::isScheduled)
-                .add(StreamDeckButton.kButtonGroupButton3, buttonGroupButton3Command::isScheduled));
-
-        mStreamDeck.button(StreamDeckButton.kToggleButton).toggleOnTrue(toggledCommand);
+                .add(StreamDeckButton.kArmHomeButton, armHomeCommand::isScheduled)
+                .add(StreamDeckButton.kShooterUpButton, shooterUpCommand::isScheduled)
+                .add(StreamDeckButton.kShooterDownButton, shooterDownCommand::isScheduled)
+                .add(StreamDeckButton.kShootButton, manualShootCommand::isScheduled)
+                .add(StreamDeckButton.kExtendWinchButton, extendWinchCommand::isScheduled)
+                .add(StreamDeckButton.kRetractWinchButton, retractWinchCommand::isScheduled));
 
         mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(stopIntakingCommand);
 
@@ -448,12 +492,23 @@ public class RobotContainer {
 
         mStreamDeck.button(StreamDeckButton.kArmDownButton).whileTrue(armDownCommand);
 
-        mStreamDeck
-                .buttonGroup()
-                .option(StreamDeckButton.kButtonGroupButton1, trigger -> trigger.whileTrue(buttonGroupButton1Command))
-                .option(StreamDeckButton.kButtonGroupButton2, trigger -> trigger.whileTrue(buttonGroupButton2Command))
-                .option(StreamDeckButton.kButtonGroupButton3, trigger -> trigger.whileTrue(buttonGroupButton3Command))
-                .select(StreamDeckButton.kButtonGroupButton1);
+        mStreamDeck.button(StreamDeckButton.kArmHomeButton).whileTrue(armHomeCommand);
+
+        mStreamDeck.button(StreamDeckButton.kShooterUpButton).whileTrue(shooterUpCommand);
+
+        mStreamDeck.button(StreamDeckButton.kShooterDownButton).whileTrue(shooterDownCommand);
+
+        mStreamDeck.button(StreamDeckButton.kShootButton).whileTrue(new ManualShoot(mShooter, mIndexer));
+
+        mStreamDeck.button(StreamDeckButton.kSpeakerModeButton).onTrue(setSpeakerModeCommand);
+
+        mStreamDeck.button(StreamDeckButton.kAmpModeButton).onTrue(setAmpModeCommand);
+
+        mStreamDeck.button(StreamDeckButton.kClimbModeButton).onTrue(setClimbModeCommand);
+
+        mStreamDeck.button(StreamDeckButton.kExtendWinchButton).whileTrue(extendWinchCommand);
+
+        mStreamDeck.button(StreamDeckButton.kRetractWinchButton).whileTrue(retractWinchCommand);
 
         /* Secondary Xbox Controller TESTING ONLY */
         mSecondaryController.a().onTrue(runOnce(() -> mIntake.stop(), mIntake));
