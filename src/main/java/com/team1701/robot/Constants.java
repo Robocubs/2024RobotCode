@@ -102,16 +102,17 @@ public final class Constants {
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
+                double scalar = 1.5;
                 for (double[] pair : kMeasuredDistanceToXStdDevValues) {
-                    kVisionXStdDevInterpolater.put(pair[0], pair[1]);
+                    kVisionXStdDevInterpolater.put(pair[0], pair[1] * scalar);
                 }
 
                 for (double[] pair : kMeasuredDistanceToYStdDevValues) {
-                    kVisionYStdDevInterpolater.put(pair[0], pair[1]);
+                    kVisionYStdDevInterpolater.put(pair[0], pair[1] * scalar);
                 }
 
                 for (double[] pair : kMeasuredDistanceToAngleStdDevValues) {
-                    kVisionThetaStdDevInterpolater.put(pair[0], pair[1]);
+                    kVisionThetaStdDevInterpolater.put(pair[0], pair[1] * scalar);
                 }
             }
         }
@@ -326,8 +327,8 @@ public final class Constants {
         public static final int kShooterLeftUpperRollerMotorId = 24;
         public static final int kShooterRotationMotorId = 26;
 
-        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(75);
-        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(30);
+        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(65);
+        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(18);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
 
@@ -435,7 +436,7 @@ public final class Constants {
         public static final double kArmUpperLimitRotations = Units.degreesToRotations(135);
         public static final double kArmLowerLimitRotations = Units.degreesToRotations(0);
 
-        public static final double kEncoderToArmReduction = 1; // TODO: get value (prob 1 but check)
+        public static final double kAngleReduction = 1;
 
         // TODO: add IDs
 

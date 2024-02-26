@@ -25,6 +25,8 @@ public class Arm extends SubsystemBase {
 
     private final EncoderIO mAngleEncoderIO;
 
+    private Rotation2d mAngle;
+
     @AutoLogOutput(key = "Arm/LeftArmLigament")
     private Mechanism2d mLeftArmMechanism;
 
@@ -112,9 +114,15 @@ public class Arm extends SubsystemBase {
                     Constants.Arm.kArmRotationKd.get());
         }
 
+        var angle = mAngleEncoderInputs.position.plus(Constants.Arm.kArmAngleEncoderOffset);
+
+        // var angleWithOffset = Rotation2d.fromRadians((mAngleEncoderInputs.position.getRadians()
+        //         + Constants.Shooter.kShooterAngleEncoderOffset.getRadians()));
+        // var angle = GeometryUtil.angleModulus(angleWithOffset).times(Constants.Shooter.kEncoderToShooterReduction);
+        mAngle = GeometryUtil.angleModulus(angle, GeometryUtil.kRotationMinusHalfPi, GeometryUtil.kRotationThreeHalfPi);
+
         if (mRotationMotorOffset.isEmpty() && !Util.epsilonEquals(mAngleEncoderInputs.position.getRadians(), 0)) {
-            mRotationMotorOffset =
-                    Optional.of(mAngleEncoderInputs.position.minus(Constants.Arm.kArmAngleEncoderOffset));
+            mRotationMotorOffset = Optional.of(angle.div(Constants.Arm.kAngleReduction));
 
             zeroArmRotation();
         }
@@ -124,10 +132,7 @@ public class Arm extends SubsystemBase {
     }
 
     public void zeroArmRotation() {
-        mRotationMotorIO.setPosition(mRotationMotorOffset
-                .orElse(GeometryUtil.kRotationIdentity)
-                .minus(Constants.Arm.kArmAngleEncoderOffset)
-                .times(Constants.Arm.kEncoderToArmReduction));
+        mRotationMotorIO.setPosition(mAngle);
     }
 
     public void setRotationAngle(Rotation2d rotation) {

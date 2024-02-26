@@ -12,6 +12,7 @@ import org.littletonrobotics.junction.Logger;
 public class CommandLogger {
     private static CommandLogger mInstance = null;
 
+    private final Map<String, Integer> commandTotalCounts = new HashMap<>(100);
     private final Map<String, Integer> commandCounts = new HashMap<>(100);
     private final List<String> commandEvents = new ArrayList<>(100);
 
@@ -53,11 +54,14 @@ public class CommandLogger {
     private void logCommand(Command command, boolean active, String event) {
         var name = command.getName();
         var count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
+        var totalCount = commandTotalCounts.getOrDefault(name, 0) + (active ? 1 : 0);
         commandCounts.put(name, count);
+        commandTotalCounts.put(name, totalCount);
 
         var hash = Integer.toHexString(command.hashCode());
         Logger.recordOutput("Command/" + name + "/Active/" + hash, active);
         Logger.recordOutput("Command/" + name + "/ActiveCount", count);
+        Logger.recordOutput("Command/" + name + "/TotalCount", totalCount);
 
         commandEvents.add(name + "_" + hash + "_" + event);
     }

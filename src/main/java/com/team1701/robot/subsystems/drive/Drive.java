@@ -28,7 +28,9 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -94,6 +96,17 @@ public class Drive extends SubsystemBase {
 
         updateInputs();
         zeroModules();
+
+        new Trigger(DriverStation::isDisabled)
+                .whileTrue(Commands.sequence(
+                                Commands.waitSeconds(10), runOnce(() -> setDriveBrakeMode(false)), Commands.idle())
+                        .ignoringDisable(true)
+                        .withName("DisabledLoop"));
+
+        new Trigger(DriverStation::isEnabled)
+                .onTrue(runOnce(() -> setDriveBrakeMode(false))
+                        .ignoringDisable(true)
+                        .withName("EnabledStart"));
     }
 
     @Override
@@ -291,6 +304,13 @@ public class Drive extends SubsystemBase {
         mRobotState.addDriveMeasurements(
                 new DriveMeasurement(Timer.getFPGATimestamp(), mGyroInputs.yaw, mMeasuredModulePositions));
         mRobotState.resetPose(mRobotState.getPose2d());
+    }
+
+    public void setDriveBrakeMode(boolean enable) {
+        for (var module : mModules) {
+            module.setSteerBrakeMode(enable);
+            module.setDriveBrakeMode(enable);
+        }
     }
 
     public void stop() {
