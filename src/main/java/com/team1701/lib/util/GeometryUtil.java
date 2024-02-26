@@ -65,4 +65,8 @@ public final class GeometryUtil {
     public static Pose3d toPose3d(Transform3d transform) {
         return new Pose3d(transform.getTranslation(), transform.getRotation());
     }
+
+    public static Rotation3d toRotation3d(Rotation2d rotation) {
+        return new Rotation3d(0, 0, rotation.getRadians());
+    }
 }

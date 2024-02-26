@@ -9,6 +9,7 @@ public final class FieldConstants {
     public static double kCenterLine = kFieldLongLengthMeters / 2.0;
     public static double kWingLength = Units.inchesToMeters(231.2);
     public static double kNoteHeight = Units.inchesToMeters(2);
+    public static double kHalfNoteHeight = kNoteHeight / 2;
 
     public static double kSpeakerHeight = Units.inchesToMeters(80.4375);
     public static Translation3d kBlueSpeakerOpeningCenter =

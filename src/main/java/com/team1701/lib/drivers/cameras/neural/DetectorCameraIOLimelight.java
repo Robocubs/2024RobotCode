@@ -1,8 +1,10 @@
 package com.team1701.lib.drivers.cameras.neural;
 
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
-import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.Timer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -18,7 +20,7 @@ public class DetectorCameraIOLimelight implements DetectorCameraIO {
     public static final double kVPW = 2.0 * Math.tan(Math.toRadians(kHorizontalFOV / 2.0));
     public static final double kVPH = 2.0 * Math.tan(Math.toRadians(kVerticalFOV / 2.0));
 
-    private final NetworkTable mNetworkTable;
+    private final StringSubscriber mJsonSub;
     private final String mName;
     private final JSONParser mParser = new JSONParser();
     private final VisionConfig mConfig;
@@ -26,47 +28,56 @@ public class DetectorCameraIOLimelight implements DetectorCameraIO {
     public DetectorCameraIOLimelight(VisionConfig config) {
         mConfig = config;
         mName = config.cameraName;
-        mNetworkTable = NetworkTableInstance.getDefault().getTable(mName);
+        var table = NetworkTableInstance.getDefault().getTable(mName);
+        mJsonSub = table.getStringTopic("json").subscribe("");
     }
 
     @Override
     public void updateInputs(DetectorCameraInputs inputs) {
-        // Adding capture latency (photons -> beginning of pipeline) to pipeline latency (beginning of pipeline -> data
-        // send)
-        var cl = mNetworkTable.getEntry("cl").getDouble(0.0);
-        var latency = inputs.latency = (mNetworkTable.getEntry("tl").getDouble(0.0) + cl) / 1000.0;
-        inputs.givenPipeline = (long) mNetworkTable.getEntry("pipeline").getInteger(0);
-        inputs.isConnected = cl != 0.0;
-        var seesTarget = inputs.seesTarget = mNetworkTable.getEntry("tv").getDouble(0) == 1.0;
+        var jsonAtomic = mJsonSub.getAtomic();
+        var jsonTimestampSeconds = jsonAtomic.timestamp / 1000000.0;
+        var isConnected = !"".equals(jsonAtomic.value) && Timer.getFPGATimestamp() - jsonTimestampSeconds < 1.0;
+        inputs.isConnected = isConnected;
+        if (!isConnected) {
+            inputs.pipelineResult = new DetectorPipelineResult();
+            return;
+        }
 
-        if (seesTarget) {
-            inputs.captureTimestamp = Timer.getFPGATimestamp() - latency;
-            var multiTargetJSON = mNetworkTable.getEntry("json").getString("");
-            try {
-                var p = (JSONObject) mParser.parse(multiTargetJSON);
-                var results = (JSONObject) p.get("Results");
+        var latency = 0.0;
+        var timestamp = jsonTimestampSeconds;
+        try {
+            var parser = (JSONObject) mParser.parse(jsonAtomic.value);
+            var results = (JSONObject) parser.get("Results");
 
-                var detectorResults = (JSONArray) results.get("Detector");
-                var numberOfDetectedObjects = inputs.numberOfDetectedObjects = detectorResults.size();
-                JSONObject obj;
+            var captureLatency = (long) results.get("cl");
+            var targetingLatency = (long) results.get("tl");
+            latency = (captureLatency + targetingLatency) / 1000.0;
+            timestamp = jsonTimestampSeconds + latency;
 
-                inputs.constructEmptyInputArrays(numberOfDetectedObjects);
-
-                for (int i = 0; i < numberOfDetectedObjects; i++) {
-                    obj = (JSONObject) detectorResults.get(i);
-                    inputs.detectedClasses[i] = (String) obj.get("class");
-                    inputs.detectedClassIDs[i] = (long) obj.get("classID");
-                    inputs.confidences[i] = (double) obj.get("conf");
-                    inputs.areas[i] = (double) obj.get("ta");
-                    inputs.txs[i] = (double) obj.get("tx");
-                    inputs.txps[i] = (double) obj.get("txp");
-                    inputs.tys[i] = (double) obj.get("ty");
-                    inputs.typs[i] = (double) obj.get("typ");
-                }
-
-            } catch (ParseException e) {
-                e.printStackTrace();
+            var seesTarget = (long) results.get("v") != 0;
+            if (!seesTarget) {
+                inputs.pipelineResult = new DetectorPipelineResult(latency, timestamp);
+                return;
             }
+
+            var detectorResults = (JSONArray) results.get("Detector");
+            var detectedObjects = new DetectedObject[detectorResults.size()];
+            for (int i = 0; i < detectedObjects.length; i++) {
+                var obj = (JSONObject) detectorResults.get(i);
+                detectedObjects[i] = new DetectedObject(
+                        (String) obj.get("class"),
+                        (int) obj.get("classID"),
+                        (double) obj.get("conf"),
+                        (double) obj.get("ta"),
+                        Rotation2d.fromDegrees((double) obj.get("ty")),
+                        Rotation2d.fromDegrees((double) obj.get("tx")),
+                        new Translation2d((double) obj.get("txp"), (double) obj.get("typ")));
+            }
+
+            inputs.pipelineResult = new DetectorPipelineResult(latency, timestamp, detectedObjects);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            inputs.pipelineResult = new DetectorPipelineResult(latency, timestamp);
         }
     }
 
