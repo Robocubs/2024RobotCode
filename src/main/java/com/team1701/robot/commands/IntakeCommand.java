@@ -18,8 +18,10 @@ public class IntakeCommand extends Command {
     public void execute() {
         if (mRobotState.hasNote() && !mIntake.hasNote()) {
             mIntake.stop();
-        } else {
+        } else if (mIntake.hasNote() || mRobotState.getDetectedNotePoses2d().length > 0) {
             mIntake.setForward();
+        } else {
+            mIntake.setSlowForward();
         }
     }
 

@@ -18,9 +18,11 @@ import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOPhotonCamera;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOLimelight;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
+import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
+import com.team1701.lib.drivers.encoders.EncoderIORevThroughBore;
 import com.team1701.lib.drivers.gyros.GyroIO;
 import com.team1701.lib.drivers.gyros.GyroIOPigeon2;
 import com.team1701.lib.drivers.gyros.GyroIOSim;
@@ -33,6 +35,7 @@ import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
+import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.StreamDeck;
 import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
@@ -46,10 +49,10 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.vision.Vision;
+import com.team1701.robot.util.SparkMotorFactory;
 import com.team1701.robot.util.TalonFxMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -73,6 +76,7 @@ public class RobotContainer {
     private final Climb mClimb;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
+    private final CommandXboxController mSecondaryController = new CommandXboxController(1);
     private final StreamDeck mStreamDeck = new StreamDeck();
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
     private final Map<String, Pose2d[]> mAutonomousPaths = new HashMap<>();
@@ -127,30 +131,44 @@ public class RobotContainer {
                             new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
 
                     // TODO: update IDs
-                    // shooter = Optional.of(new Shooter(
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterRightUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterRightLowerRollerMotorId, ShooterMotorUsage.ROLLER),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterLeftUpperRollerMotorId, ShooterMotorUsage.ROLLER),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterLeftLowerRollerMotorId, ShooterMotorUsage.ROLLER),
-                    //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                    //                 Constants.Shooter.kShooterRotationMotorId, ShooterMotorUsage.ROTATION),
-                    //         new EncoderIOAnalog(Constants.Shooter.kShooterThroughBoreEncoderId)));
-                    // indexer = Optional.of(new Indexer(
-                    //         SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
-                    //         new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId),
-                    //         new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId)));
-                    // intake = Optional.of(new Intake(
-                    //         SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
-                    //         new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId),
-                    //         new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId)));
+                    shooter = Optional.of(new Shooter(
+                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                            //                 Constants.Shooter.kShooterRightUpperRollerMotorId,
+                            // MotorUsage.SHOOTER_ROLLER,
+                            // true),
+                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                            //                 Constants.Shooter.kShooterRightLowerRollerMotorId,
+                            //                 MotorUsage.SHOOTER_ROLLER,
+                            //                 false),
+                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                            //                 Constants.Shooter.kShooterLeftUpperRollerMotorId,
+                            // MotorUsage.SHOOTER_ROLLER,
+                            // true),
+                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                            //                 Constants.Shooter.kShooterLeftLowerRollerMotorId,
+                            // MotorUsage.SHOOTER_ROLLER,
+                            // false),
+                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
+                            //                 Constants.Shooter.kShooterRotationMotorId, MotorUsage.ROTATION, true),
+                            new MotorIO() {},
+                            new MotorIO() {},
+                            new MotorIO() {},
+                            new MotorIO() {},
+                            new MotorIO() {},
+                            new EncoderIORevThroughBore(Constants.Shooter.kShooterThroughBoreEncoderId, true)));
+
+                    indexer = Optional.of(new Indexer(
+                            SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
+                            new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId, false),
+                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, true)));
+                    intake = Optional.of(new Intake(
+                            SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
+                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
+                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
                     // arm = Optional.of(new Arm(
                     //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                     //                 Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
-                    //         new EncoderIOAnalog(Constants.Arm.kEncoderId)));
+                    //         new EncoderIORevThroughBore(Constants.Arm.kEncoderId)));
                     // climb = Optional.of(new Climb(
                     //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                     //                 Constants.Winch.kLeftWinchId, MotorUsage.WINCH, true),
@@ -224,7 +242,9 @@ public class RobotContainer {
                                 new AprilTagCameraIOCubVision(Constants.Vision.kBackRightCameraConfig),
                                 new AprilTagCameraIOCubVision(Constants.Vision.kSniperCameraConfig)
                             },
-                            new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
+                            new DetectorCameraIO[] {() -> Constants.Vision.kLimelightConfig}));
+
+                    // new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
                     break;
                 default:
                     break;
@@ -283,7 +303,7 @@ public class RobotContainer {
 
         mDrive.setDefaultCommand(driveWithJoysticks(
                 mDrive,
-                mRobotState::getHeading,
+                mDrive::getFieldRelativeHeading,
                 () -> -mDriverController.getLeftY(),
                 () -> -mDriverController.getLeftX(),
                 () -> -mDriverController.getRightX(),
@@ -291,8 +311,12 @@ public class RobotContainer {
                         ? Constants.Drive.kSlowKinematicLimits
                         : Constants.Drive.kFastKinematicLimits));
 
+        // mShooter.setDefaultCommand(
+        //         Commands.run(() -> mShooter.setRotationPercentOutput(-mSecondaryController.getLeftY() * .3),
+        // mShooter));
+
         // TODO: update should load when intake is completed
-        mIndexer.setDefaultCommand(new IndexCommand(mIndexer, mRobotState::hasNote));
+        mIndexer.setDefaultCommand(new IndexCommand(mIndexer, () -> true));
 
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
@@ -303,6 +327,15 @@ public class RobotContainer {
         mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb));
 
         // TODO: add Triggers for updating mScoringMode
+
+        mDriverController
+                .a()
+                .whileTrue(DriveCommands.slowlyDriveToSpeaker(
+                        mDrive,
+                        mRobotState::getSpeakerHeading,
+                        mRobotState::getHeading,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX()));
 
         mDriverController
                 .x()
@@ -321,24 +354,31 @@ public class RobotContainer {
         mDriverController
                 .leftTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-                .onTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
+                .whileTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
 
         // Amp Shot
         mDriverController
                 .leftTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
-                .onTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
+                .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
+
+        // mDriverController
+        //         .b()
+        //         .whileTrue((DriveCommands.driveToPose(
+        //                 mDrive,
+        //                 () -> new Pose2d(
+        //                         new Translation2d(0.9079903960227966, 4.299035549163818),
+        //                         Rotation2d.fromRadians(2.079867230915455)),
+        //                 mRobotState::getPose2d,
+        //                 Constants.Drive.kSlowKinematicLimits,
+        //                 false)));
+
+        mDriverController.b().whileTrue(IntakeCommands.reverse(mIntake, mIndexer));
 
         mDriverController
-                .b()
-                .whileTrue((DriveCommands.driveToPose(
-                        mDrive,
-                        () -> new Pose2d(
-                                new Translation2d(0.9079903960227966, 4.299035549163818),
-                                Rotation2d.fromRadians(2.079867230915455)),
-                        mRobotState::getPose2d,
-                        Constants.Drive.kSlowKinematicLimits,
-                        false)));
+                .y()
+                .whileTrue(DriveCommands.driveToPiece(
+                        mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits));
 
         // mDriverController
         //         .b()
@@ -348,17 +388,30 @@ public class RobotContainer {
         //                 .ignoringDisable(true));
 
         var toggledCommand = idle().ignoringDisable(true).withName("StreamDeckToggleButton");
+        var stopIntakingCommand = runOnce(() -> IntakeCommands.stopIntake(mIntake, mIndexer), mIntake, mIndexer)
+                .ignoringDisable(false)
+                .withName("StreamDeckStopIntakingButton");
+        var setSpeakerModeCommand =
+                runOnce(() -> mRobotState.setScoringMode(ScoringMode.SPEAKER)).withName("SetSpeakerScoringMode");
+        var setAmpModeCommand =
+                runOnce(() -> mRobotState.setScoringMode(ScoringMode.AMP)).withName("SetAmpScoringMode");
+        var setClimbModeCommand =
+                runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB)).withName("SetClimbScoringMode");
         var buttonGroupButton1Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton1");
         var buttonGroupButton2Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton2");
         var buttonGroupButton3Command = idle().ignoringDisable(true).withName("SteamDeckButtonGroupButton3");
 
         mStreamDeck.configureButton(config -> config.addDefault(StreamDeckButton.kButton)
                 .add(StreamDeckButton.kToggleButton, toggledCommand::isScheduled)
+                .add(StreamDeckButton.kStopIntakeButton, stopIntakingCommand::isScheduled)
                 .add(StreamDeckButton.kButtonGroupButton1, buttonGroupButton1Command::isScheduled)
                 .add(StreamDeckButton.kButtonGroupButton2, buttonGroupButton2Command::isScheduled)
                 .add(StreamDeckButton.kButtonGroupButton3, buttonGroupButton3Command::isScheduled));
 
         mStreamDeck.button(StreamDeckButton.kToggleButton).toggleOnTrue(toggledCommand);
+
+        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(stopIntakingCommand);
+        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(setSpeakerModeCommand);
 
         mStreamDeck
                 .buttonGroup()
@@ -367,6 +420,13 @@ public class RobotContainer {
                 .option(StreamDeckButton.kButtonGroupButton3, trigger -> trigger.whileTrue(buttonGroupButton3Command))
                 .select(StreamDeckButton.kButtonGroupButton1);
 
+        /* Secondary Xbox Controller TESTING ONLY */
+        mSecondaryController.a().onTrue(runOnce(() -> mIntake.stop(), mIntake));
+        mSecondaryController.b().onTrue(runOnce(() -> mIndexer.stop(), mIndexer));
+        mSecondaryController.x().onTrue(runOnce(() -> mShooter.stopRollers(), mShooter));
+        mSecondaryController.y().onTrue(runOnce(() -> mShooter.stopRotation(), mShooter));
+
+        /* */
         DriverStation.silenceJoystickConnectionWarning(true);
     }
 

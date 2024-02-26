@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
+import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.states.NoteState;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -28,6 +29,8 @@ public class DetectorCamera {
     private final VisionConfig mConfig;
     private final Alert mDisconnectedAlert;
     private final List<Consumer<List<NoteState>>> mNoteStateConsumers = new ArrayList<>();
+
+    private final LoggedTunableNumber kScalarOffset = new LoggedTunableNumber("DetectorCamera/ScalarOffset", 1.2);
 
     /*
      * Big TODO:
@@ -51,10 +54,11 @@ public class DetectorCamera {
     private Pose3d getDetectedObjectPosition(Pose2d robotPose, double tx, double ty, double ta) {
         var robotToCamPose = mConfig.robotToCamera;
         double x = PhotonUtils.calculateDistanceToTargetMeters(
-                robotToCamPose.getZ(),
-                FieldConstants.kNoteHeight,
-                robotToCamPose.getRotation().getY(),
-                Math.toRadians(ty));
+                        robotToCamPose.getZ(),
+                        FieldConstants.kNoteHeight,
+                        robotToCamPose.getRotation().getY(),
+                        Math.toRadians(ty))
+                * kScalarOffset.get();
         double y = x * Math.tan(Math.toRadians(tx));
 
         var translationToObject = new Translation2d(x, -y);

@@ -43,13 +43,14 @@ public class IdleShooterCommand extends Command {
         switch (mRobotState.getScoringMode()) {
             case SPEAKER:
                 // TODO: ramp up speeds on approach
-                desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
+                desiredShooterAngle =
+                        mRobotState.calculateShooterAngleTowardsSpeaker().plus(Rotation2d.fromDegrees(2.5));
                 if (mDrive.getKinematicLimits().equals(Constants.Drive.kSlowKinematicLimits)) {
                     shooterSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 } else {
                     shooterSpeed = mRobotState.hasNote()
                             ? speedRegression(
-                                    kExpectedShootingDistance.get(), mRobotState.getDistanceToSpeaker(), 120.0)
+                                    kExpectedShootingDistance.get(), mRobotState.getDistanceToSpeaker(), 100.0)
                             : Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                 }
                 break;
@@ -64,7 +65,7 @@ public class IdleShooterCommand extends Command {
                 }
                 break;
             case CLIMB:
-                desiredShooterAngle = Rotation2d.fromDegrees(0);
+                desiredShooterAngle = Rotation2d.fromDegrees(Constants.Shooter.kShooterUpperLimitRotations);
                 shooterSpeed = 0;
                 break;
             default:
@@ -93,7 +94,7 @@ public class IdleShooterCommand extends Command {
 
     // 5 * max is top idle speed
     private double speedRegression(double reference, double current, double factor) {
-        var scale = current - reference > 0.2 ? 4 / (1 + Math.abs(reference - current)) : 400 / 120;
+        var scale = current - reference > 0.2 ? 4 / (1 + Math.abs(reference - current)) : 400 / 100;
         return factor * scale;
     }
 }
