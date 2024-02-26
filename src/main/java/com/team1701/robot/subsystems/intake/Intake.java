@@ -55,6 +55,10 @@ public class Intake extends SubsystemBase {
         mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed);
     }
 
+    public void setSlowForward() {
+        mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed / 2);
+    }
+
     public void setReverse() {
         mIntakeMotor.setPercentOutput(Constants.Intake.kOuttakeSpeed);
     }
