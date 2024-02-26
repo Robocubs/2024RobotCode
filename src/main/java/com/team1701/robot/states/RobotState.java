@@ -199,6 +199,10 @@ public class RobotState {
         return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
     }
 
+    public void setScoringMode(ScoringMode scoringMode) {
+        this.mScoringMode = scoringMode;
+    }
+
     public ScoringMode getScoringMode() {
         return mScoringMode;
     }

@@ -8,6 +8,7 @@ import com.team1701.lib.drivers.encoders.EncoderInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
+import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,6 +24,8 @@ public class Arm extends SubsystemBase {
     private final MotorIO mRotationMotorIO;
 
     private final EncoderIO mAngleEncoderIO;
+
+    private Rotation2d mAngle;
 
     @AutoLogOutput(key = "Arm/LeftArmLigament")
     private Mechanism2d mLeftArmMechanism;
@@ -111,9 +114,12 @@ public class Arm extends SubsystemBase {
                     Constants.Arm.kArmRotationKd.get());
         }
 
+        var angle = mAngleEncoderInputs.position.plus(Constants.Arm.kArmAngleEncoderOffset);
+
+        mAngle = GeometryUtil.angleModulus(angle, GeometryUtil.kRotationMinusHalfPi, GeometryUtil.kRotationThreeHalfPi);
+
         if (mRotationMotorOffset.isEmpty() && !Util.epsilonEquals(mAngleEncoderInputs.position.getRadians(), 0)) {
-            mRotationMotorOffset =
-                    Optional.of(mAngleEncoderInputs.position.minus(Constants.Arm.kArmAngleEncoderOffset));
+            mRotationMotorOffset = Optional.of(angle.div(Constants.Arm.kAngleReduction));
 
             zeroArmRotation();
         }
@@ -123,10 +129,7 @@ public class Arm extends SubsystemBase {
     }
 
     public void zeroArmRotation() {
-        mRotationMotorIO.setPosition(mRotationMotorOffset
-                .get()
-                .minus(Constants.Arm.kArmAngleEncoderOffset)
-                .times(Constants.Arm.kEncoderToArmReduction));
+        mRotationMotorIO.setPosition(mAngle);
     }
 
     public void setRotationAngle(Rotation2d rotation) {

@@ -10,6 +10,7 @@ import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO.DetectorCameraInputs;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.FieldConstants;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -25,6 +26,8 @@ public class DetectorCamera {
     private final VisionConfig mConfig;
     private final Alert mDisconnectedAlert;
     private final List<Consumer<List<DetectedObjectState>>> mNoteStateConsumers = new ArrayList<>();
+
+    private final LoggedTunableNumber kScalarOffset = new LoggedTunableNumber("DetectorCamera/ScalarOffset", 1.2);
 
     public static record DetectedObjectState(double timestamp, Pose3d pose) {
         public boolean isSame(DetectedObjectState other, double distanceThreshold) {
@@ -45,8 +48,9 @@ public class DetectorCamera {
         var robotToCamPose = mConfig.robotToCamera;
 
         // (TargetHeight - CameraHeight) / tan(CameraPitch + TargetPitch)
-        var x = (FieldConstants.kNoteHeight - robotToCamPose.getZ())
-                / Math.tan(robotToCamPose.getRotation().getY() + detectedObject.pitch.getRadians());
+        var x = ((FieldConstants.kNoteHeight - robotToCamPose.getZ())
+                        / Math.tan(robotToCamPose.getRotation().getY() + detectedObject.pitch.getRadians()))
+                * kScalarOffset.get();
         var y = x * Math.tan(detectedObject.yaw.getRadians());
 
         var cameraToObject = new Transform2d(x, -y, GeometryUtil.kRotationIdentity);

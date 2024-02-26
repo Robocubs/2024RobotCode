@@ -80,8 +80,10 @@ public class MotorIOSparkFlex implements MotorIO {
             Rotation2d position, double maxVelocityRadiansPerSecond, double maxAccelerationRadiansPerSecond) {
         mController.setReference(position.getRotations() / mReduction, CANSparkFlex.ControlType.kSmartMotion);
         mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kSCurve, 0);
-        mController.setSmartMotionMaxVelocity(maxVelocityRadiansPerSecond, 0);
-        mController.setSmartMotionMaxAccel(maxAccelerationRadiansPerSecond, 0);
+        mController.setSmartMotionMaxVelocity(
+                Units.radiansPerSecondToRotationsPerMinute(maxVelocityRadiansPerSecond), 0);
+        mController.setSmartMotionMaxAccel(
+                Units.radiansPerSecondToRotationsPerMinute(maxAccelerationRadiansPerSecond), 0);
     }
 
     @Override
@@ -144,6 +146,6 @@ public class MotorIOSparkFlex implements MotorIO {
 
     @Override
     public void setPosition(Rotation2d position) {
-        mEncoder.setPosition(position.getRotations());
+        mEncoder.setPosition(position.getRotations() / mReduction);
     }
 }
