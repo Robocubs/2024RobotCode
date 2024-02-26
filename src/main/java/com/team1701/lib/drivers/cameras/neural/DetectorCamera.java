@@ -85,12 +85,8 @@ public class DetectorCamera {
 
         Logger.recordOutput(mLoggingPrefix + "ObjectPosesNoFilter", detectedObjects.toArray(Pose3d[]::new));
 
-        detectedObjects.forEach(pose -> {
-            if (mPoseFilters.stream().allMatch(filter -> filter.test(pose))) {
-                detectedObjectStates.add(new DetectedObjectState(pipelineResult.timestamp, pose));
-            }
-        });
-
+        detectedObjects.forEach(
+                pose -> detectedObjectStates.add(new DetectedObjectState(pipelineResult.timestamp, pose)));
         mNoteStateConsumers.forEach(consumer -> consumer.accept(detectedObjectStates));
     }
 

@@ -151,7 +151,6 @@ public class RobotState {
         return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;
     }
 
-    @AutoLogOutput
     public Pose2d[] getDetectedNotePoses2d() {
         return mDetectedNotes.stream().map(note -> note.pose().toPose2d()).toArray(Pose2d[]::new);
     }

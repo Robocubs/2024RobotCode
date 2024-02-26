@@ -49,12 +49,12 @@ public class DetectorCameraIOLimelight implements DetectorCameraIO {
             var parser = (JSONObject) mParser.parse(jsonAtomic.value);
             var results = (JSONObject) parser.get("Results");
 
-            var captureLatency = (long) results.get("cl");
-            var targetingLatency = (long) results.get("tl");
+            var captureLatency = (double) results.get("cl");
+            var targetingLatency = (double) results.get("tl");
             latency = (captureLatency + targetingLatency) / 1000.0;
             timestamp = jsonTimestampSeconds + latency;
 
-            var seesTarget = (long) results.get("v") != 0;
+            var seesTarget = ((long) results.get("v")) != 0;
             if (!seesTarget) {
                 inputs.pipelineResult = new DetectorPipelineResult(latency, timestamp);
                 return;
@@ -66,7 +66,7 @@ public class DetectorCameraIOLimelight implements DetectorCameraIO {
                 var obj = (JSONObject) detectorResults.get(i);
                 detectedObjects[i] = new DetectedObject(
                         (String) obj.get("class"),
-                        (int) obj.get("classID"),
+                        0, // (int) obj.get("classID"),
                         (double) obj.get("conf"),
                         (double) obj.get("ta"),
                         Rotation2d.fromDegrees((double) obj.get("ty")),
