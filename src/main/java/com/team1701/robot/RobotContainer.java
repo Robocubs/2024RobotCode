@@ -323,15 +323,6 @@ public class RobotContainer {
 
         /* DRIVER CONTROLLER BINDINGS */
 
-        // mDriverController
-        //         .a()
-        //         .whileTrue(DriveCommands.slowlyDriveToSpeaker(
-        //                 mDrive,
-        //                 mRobotState::getSpeakerHeading,
-        //                 mRobotState::getHeading,
-        //                 () -> -mDriverController.getLeftY(),
-        //                 () -> -mDriverController.getLeftX()));
-
         mDriverController
                 .b()
                 .whileTrue(IntakeCommands.rejectAndDrive(mIntake, mIndexer, mDrive, () -> mRobotState.getHeading()));
@@ -349,7 +340,7 @@ public class RobotContainer {
                 .whileTrue(DriveCommands.driveToPiece(
                         mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits));
 
-        // Slowly Rotate to Speaker
+        // Drive and Rotate to Speaker
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
@@ -378,7 +369,9 @@ public class RobotContainer {
         // Shoot while Slowly Rotating
         // mDriverController
         //         .rightTrigger()
-        //         .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER)).and(null)
+        //         .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
+        //         .and(() -> mDrive.getKinematicLimits().equals(Constants.Drive.kSlowKinematicLimits))
+        //         .whileTrue(ShootCommands.shoot(mShooter, mIndexer, mRobotState));
 
         // Amp Shot
         mDriverController
