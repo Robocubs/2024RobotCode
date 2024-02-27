@@ -1,10 +1,12 @@
 package com.team1701.robot.commands;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
@@ -43,6 +45,11 @@ public class RotateToFieldHeading extends Command {
     private TrapezoidProfile.State mRotationState = new TrapezoidProfile.State();
     private boolean mAtTargetRotation = false;
 
+    private DoubleSupplier mXSupplier;
+    private DoubleSupplier mYSupplier;
+
+    private boolean mJoystickInputEnabled;
+
     RotateToFieldHeading(
             Drive drive,
             Supplier<Rotation2d> targetHeadingSupplier,
@@ -61,7 +68,25 @@ public class RotateToFieldHeading extends Command {
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
 
+        mXSupplier = () -> 0;
+        mYSupplier = () -> 0;
+        mJoystickInputEnabled = false;
+
         addRequirements(drive);
+    }
+
+    RotateToFieldHeading(
+            Drive drive,
+            Supplier<Rotation2d> targetHeadingSupplier,
+            Supplier<Rotation2d> robotHeadingSupplier,
+            KinematicLimits kinematicLimits,
+            DoubleSupplier xSupplier,
+            DoubleSupplier ySupplier) {
+        this(drive, targetHeadingSupplier, robotHeadingSupplier, kinematicLimits, false);
+
+        mXSupplier = xSupplier;
+        mYSupplier = ySupplier;
+        mJoystickInputEnabled = true;
     }
 
     @Override
@@ -100,7 +125,9 @@ public class RotateToFieldHeading extends Command {
         Rotation2d setpoint;
         mAtTargetRotation = GeometryUtil.isNear(
                 targetHeading, currentHeading, Rotation2d.fromRadians(kRotationToleranceRadians.get()));
-        if (mAtTargetRotation) {
+        if (mAtTargetRotation
+                && Util.epsilonEquals(mXSupplier.getAsDouble(), 0.0)
+                && Util.epsilonEquals(mYSupplier.getAsDouble(), 0.0)) {
             mDrive.stop();
             setpoint = currentHeading;
         } else {
@@ -113,7 +140,8 @@ public class RotateToFieldHeading extends Command {
             var rotationalVelocity = mRotationState.velocity + rotationPidOutput;
 
             // Set drive outputs
-            mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, rotationalVelocity, currentHeading));
+            mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                    mXSupplier.getAsDouble(), mYSupplier.getAsDouble(), rotationalVelocity, currentHeading));
             setpoint = Rotation2d.fromRadians(mRotationState.position);
         }
 

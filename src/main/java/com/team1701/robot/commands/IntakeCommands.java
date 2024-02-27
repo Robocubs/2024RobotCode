@@ -23,8 +23,16 @@ public class IntakeCommands {
                 .withName("ReverseIntakeAndIndexer");
     }
 
-    public static Command stop(Intake intake) {
-        return Commands.startEnd(() -> intake.stop(), () -> {}, intake).withName("StopIntake");
+    public static Command stopIntake(Intake intake, Indexer indexer) {
+        return Commands.startEnd(
+                        () -> {
+                            intake.stop();
+                            indexer.stop();
+                        },
+                        () -> {},
+                        intake,
+                        indexer)
+                .withName("StopIntaking");
     }
 
     public static Command defaultCommand(Intake intake, RobotState mRobotState) {

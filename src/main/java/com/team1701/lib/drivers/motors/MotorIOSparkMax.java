@@ -142,4 +142,9 @@ public class MotorIOSparkMax implements MotorIO {
         var queue = samplingThread.addSignal(mEncoder::getVelocity);
         mVelocitySamples = Optional.of(queue);
     }
+
+    @Override
+    public void setPosition(Rotation2d position) {
+        mEncoder.setPosition(position.getRotations() / mReduction);
+    }
 }

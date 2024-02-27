@@ -1,9 +1,14 @@
 package com.team1701.robot.commands;
 
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+import com.team1701.lib.commands.LoggedCommands;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
+import com.team1701.lib.util.GeometryUtil;
+import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -51,5 +56,51 @@ public class DriveCommands {
         return Commands.runOnce(drive::engageSwerveLock, drive)
                 .andThen(Commands.idle(drive))
                 .withName("SwerveLock");
+    }
+
+    public static Command slowlyDriveToSpeaker(
+            Drive drive,
+            Supplier<Rotation2d> targetHeadingSupplier,
+            Supplier<Rotation2d> robotHeadingSupplier,
+            DoubleSupplier throttle,
+            DoubleSupplier strafe) {
+        return new RotateToFieldHeading(
+                drive,
+                targetHeadingSupplier,
+                robotHeadingSupplier,
+                Constants.Drive.kSlowKinematicLimits,
+                throttle,
+                strafe);
+    }
+
+    public static Command driveToPiece(Drive drive, RobotState robotState, KinematicLimits kinematicLimits) {
+        return Commands.defer(
+                () -> {
+                    var robotPose = robotState.getPose2d();
+                    var robotTranslation = robotPose.getTranslation();
+                    var robotRotationReverse = robotPose.getRotation().plus(GeometryUtil.kRotationPi);
+                    return Stream.of(robotState.getDetectedNotePoses2d())
+                            .filter(notePose -> GeometryUtil.isNear(
+                                    robotRotationReverse,
+                                    notePose.getTranslation()
+                                            .minus(robotTranslation)
+                                            .getAngle(),
+                                    Rotation2d.fromDegrees(45)))
+                            .min((notePose1, notePose2) -> Double.compare(
+                                    robotTranslation.getDistance(notePose1.getTranslation()),
+                                    robotTranslation.getDistance(notePose2.getTranslation())))
+                            .map(pose -> LoggedCommands.logged(DriveCommands.driveToPose(
+                                            drive,
+                                            () -> new Pose2d(
+                                                    pose.getTranslation(),
+                                                    pose.getRotation().plus(GeometryUtil.kRotationPi)),
+                                            () -> robotState.getPose2d(),
+                                            kinematicLimits,
+                                            true)
+                                    .withName("DriveToPiecePose")))
+                            .orElse(LoggedCommands.logged(Commands.none().withName("NoneCommand")))
+                            .withName("DriveToPiece");
+                },
+                Set.of(drive));
     }
 }

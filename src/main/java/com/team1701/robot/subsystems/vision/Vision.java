@@ -83,7 +83,7 @@ public class Vision extends SubsystemBase {
 
         for (DetectorCameraIO cameraIO : detectorCameraIOs) {
             var cam = new DetectorCamera(cameraIO, mRobotState::getPose3d);
-            cam.addNoteStateConsumer(mRobotState::addDetectedNotes);
+            cam.addDetectedObjectConsumer(mRobotState::addDetectedNotes);
             mDetectorCameras.add(cam);
         }
     }
