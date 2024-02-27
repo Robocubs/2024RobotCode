@@ -84,7 +84,7 @@ public class StreamDeck {
         kAmpModeButton(1, 4, "Controls/AmpModeButton", "AmpModeIcon", "Amp Mode"),
         kClimbModeButton(2, 4, "Controls/ClimbModeButton", "ClimbModeIcon", "Climb Mode"),
         kExtendWinchButton(0, 2, "Controls/ExtendWinchButton", "ExtendWinchIcon", "Extend Winch"),
-        kRetractWinchButton(2, 2, "Controls/RetractWinchButton", "RetractWinchIcon", "Retract Winch");
+        kRetractWinchButton(2, 2, "Controls /RetractWinchButton", "RetractWinchIcon", "Retract Winch");
 
         private final int index;
         private final String key;
