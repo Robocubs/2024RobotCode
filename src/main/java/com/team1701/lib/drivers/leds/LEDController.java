@@ -34,22 +34,27 @@ public class LEDController {
 
     public void update() {
         var time = Timer.getFPGATimestamp();
-        for (var i = 0; i < mLEDBuffer.getLength(); i++) {
-            switch (mLEDState.pattern) {
-                case BLINK:
-                    if (time - mLastTimestamp > 1) {
+
+        switch (mLEDState.pattern) {
+            case BLINK:
+                if (time - mLastTimestamp > 1) {
+                    for (var i = 0; i < mLEDBuffer.getLength(); i++) {
                         mLEDBuffer.setLED(i, Color.kBlack);
-                        mLastTimestamp = time;
-                    } else {
+                    }
+                    mLastTimestamp = time;
+                } else {
+                    for (var i = 0; i < mLEDBuffer.getLength(); i++) {
                         setRBGfromRGBGradient(i, mLEDState.color.red, mLEDState.color.blue, mLEDState.color.green);
                     }
-                    break;
-                case STATIC:
+                }
+                break;
+            case STATIC:
+                for (var i = 0; i < mLEDBuffer.getLength(); i++) {
                     setRBGfromRGBGradient(i, mLEDState.color.red, mLEDState.color.blue, mLEDState.color.green);
-                    break;
-                default:
-                    break;
-            }
+                }
+                break;
+            default:
+                break;
         }
 
         mLED.setData(mLEDBuffer);
