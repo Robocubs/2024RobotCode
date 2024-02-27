@@ -21,7 +21,7 @@ public class Shoot extends Command {
     private static final LoggedTunableNumber kSpeedToleranceRadiansPerSecond =
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 50.0);
     private static final LoggedTunableNumber kHeadingToleranceRadians =
-            new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceRadians", 0.01);
+            new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceDegrees", 2);
 
     private final Shooter mShooter;
     private final Indexer mIndexer;
@@ -77,17 +77,20 @@ public class Shoot extends Command {
                 return;
         }
 
+        desiredShooterAngle = Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get());
         mShooter.setRotationAngle(desiredShooterAngle);
         mShooter.setUnifiedRollerSpeed(leftTargetSpeed);
 
         var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(),
+                Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get()) /*desiredShootingAngle */,
+                Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
         var atHeading = !mWaitForHeading
                 || GeometryUtil.isNear(
                         targetHeading,
                         mRobotState.getHeading(),
-                        Rotation2d.fromRadians(kHeadingToleranceRadians.get()));
+                        Rotation2d.fromDegrees(kHeadingToleranceRadians.get()));
 
         // TODO: Determine if time-locked boolean is needed
         // Or alternatively use a speed range based on distance

@@ -440,14 +440,14 @@ public final class Constants {
         public static final double kRotationReduction = 1.0 / 20.0;
 
         public static final double kArmUpperLimitRotations = Units.degreesToRotations(135);
-        public static final double kArmLowerLimitRotations = Units.degreesToRotations(0);
+        public static final double kArmLowerLimitRotations = Units.degreesToRotations(20);
 
         public static final double kAngleReduction = 1;
 
         // TODO: add IDs
 
         public static final int kRotationMotorId = 42;
-        public static final int kEncoderId = 43;
+        public static final int kEncoderId = 5;
 
         public static final LoggedTunableNumber kArmRotationKff = new LoggedTunableNumber("Arm/RotationMotor/Kff");
         public static final LoggedTunableNumber kArmRotationKp = new LoggedTunableNumber("Arm/RotationMotor/Kp");

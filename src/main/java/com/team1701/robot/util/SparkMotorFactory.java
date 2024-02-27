@@ -63,10 +63,11 @@ public class SparkMotorFactory {
                 break;
         }
 
+        invertWithRetry(motor, inverted);
+
         configureWithRetry(() -> motor.burnFlash(), errorAlert);
 
         motor.setCANTimeout(0);
-        motor.setInverted(inverted);
 
         return new MotorIOSparkFlex(motor, reduction);
     }
@@ -167,6 +168,8 @@ public class SparkMotorFactory {
                 break;
         }
 
+        invertWithRetry(motor, inverted);
+
         configureWithRetry(() -> motor.burnFlash(), errorAlert);
 
         motor.setCANTimeout(0);
@@ -246,6 +249,15 @@ public class SparkMotorFactory {
         }
 
         failureAlert.enable(error);
+    }
+
+    private static void invertWithRetry(CANSparkFlex motor, boolean inverted) {
+        for (int i = 0; i < 4; i++) {
+            motor.setInverted(inverted);
+            if (motor.getInverted() == inverted) {
+                break;
+            }
+        }
     }
 
     public enum MotorUsage {

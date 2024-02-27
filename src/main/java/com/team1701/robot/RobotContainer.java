@@ -159,10 +159,10 @@ public class RobotContainer {
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                             new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
                             new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
-                    // arm = Optional.of(new Arm(
-                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                    //                 Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
-                    //         new EncoderIORevThroughBore(Constants.Arm.kEncoderId)));
+                    arm = Optional.of(new Arm(
+                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                                    Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
+                            new EncoderIORevThroughBore(Constants.Arm.kEncoderId, false)));
                     // climb = Optional.of(new Climb(
                     //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                     //                 Constants.Winch.kLeftWinchId, MotorUsage.WINCH, true),
@@ -311,11 +311,11 @@ public class RobotContainer {
 
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
-        // mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
-        mShooter.setDefaultCommand(Commands.run(
-                () -> mShooter.setRotationAngle(
-                        Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get())),
-                mShooter));
+        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
+        // mShooter.setDefaultCommand(Commands.run(
+        //         () -> mShooter.setRotationAngle(
+        //                 Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get())),
+        //         mShooter));
 
         mArm.setDefaultCommand(ArmCommands.idleArmCommand(mArm, mRobotState));
 
@@ -340,7 +340,7 @@ public class RobotContainer {
                 .whileTrue(DriveCommands.driveToPiece(
                         mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits));
 
-        // Drive and Rotate to Speaker
+        // Drive while Rotating to Speaker
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
