@@ -41,7 +41,7 @@ public class SparkMotorFactory {
                 reduction = Constants.Shooter.kRollerReduction;
                 break;
             case ROTATION:
-                configureWithRetry(() -> motor.setSmartCurrentLimit(20), errorAlert);
+                configureWithRetry(() -> motor.setSmartCurrentLimit(40), errorAlert);
                 configureWithRetry(() -> motor.setClosedLoopRampRate(0.2), errorAlert);
                 configureWithRetry(() -> controller.setP(Constants.Shooter.kRotationKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Shooter.kRotationKd.get()), errorAlert);
@@ -81,7 +81,7 @@ public class SparkMotorFactory {
 
         configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
 
-        configureWithRetry(() -> motor.setSmartCurrentLimit(20), errorAlert);
+        configureWithRetry(() -> motor.setSmartCurrentLimit(40), errorAlert);
         configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);
 
         configureWithRetry(() -> encoder.setPosition(0), errorAlert);
