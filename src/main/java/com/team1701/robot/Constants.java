@@ -496,7 +496,7 @@ public final class Constants {
         public static final int kIndexerExitSensorId = 2;
 
         public static final double kIndexerPercent = 1;
-        public static final double kReduction = 1.0 / 1.0;
+        public static final double kReduction = 1.0 / 9.0;
 
         public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
