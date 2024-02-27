@@ -1,6 +1,5 @@
 package com.team1701.lib.drivers.leds;
 
-import com.team1701.lib.drivers.leds.RobotLEDStates.LEDPattern;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.Timer;
@@ -11,6 +10,8 @@ public class LEDController {
     private final AddressableLEDBuffer mLEDBuffer;
 
     private LEDState mLEDState;
+
+    private double mLastTimestamp = 0.0;
 
     public LEDController() {
         mLED = new AddressableLED(0);
@@ -32,16 +33,22 @@ public class LEDController {
     }
 
     public void update() {
-        int timestamp = (int) Timer.getFPGATimestamp();
+        var time = Timer.getFPGATimestamp();
         for (var i = 0; i < mLEDBuffer.getLength(); i++) {
-            if (mLEDState.pattern == LEDPattern.BLINK) {
-                if (timestamp % 2 == 0) {
-                    mLEDBuffer.setLED(i, Color.kBlack);
-                } else {
+            switch (mLEDState.pattern) {
+                case BLINK:
+                    if (time - mLastTimestamp > 1) {
+                        mLEDBuffer.setLED(i, Color.kBlack);
+                        mLastTimestamp = time;
+                    } else {
+                        setRBGfromRGBGradient(i, mLEDState.color.red, mLEDState.color.blue, mLEDState.color.green);
+                    }
+                    break;
+                case STATIC:
                     setRBGfromRGBGradient(i, mLEDState.color.red, mLEDState.color.blue, mLEDState.color.green);
-                }
-            } else if (mLEDState.pattern == LEDPattern.STATIC) {
-                setRBGfromRGBGradient(i, mLEDState.color.red, mLEDState.color.blue, mLEDState.color.green);
+                    break;
+                default:
+                    break;
             }
         }
 
