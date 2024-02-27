@@ -72,19 +72,19 @@ public class StreamDeck {
     public static enum StreamDeckButton {
         // kButton(0, 0, "Controls/TestButton", "ArrowUpward", "Button"),
         kStopIntakeButton(1, 0, "Controls/StopIntakingButton", "StopIntakingIcon", "Stop Intake"),
-        kRejectButton(2, 0, "Controls/RejectButton", "RejectIntakeIcon", "Reject Intake"),
-        kForwardButton(0, 0, "Controls/ForwardButton", "ForceIntakeIcon", "Forward Intake"),
+        kRejectButton(2, 0, "Controls/RejectButton", "RejectIntakeIcon", "Reject"),
+        kForwardButton(0, 0, "Controls/ForwardButton", "ForceIntakeIcon", "Intake"),
         kArmUpButton(0, 1, "Controls/ArmUpButton", "RaiseArmIcon", "Arm Up"),
         kArmDownButton(2, 1, "Controls/ArmDownButton", "LowerArmIcon", "Arm Down"),
         kArmHomeButton(1, 1, "Controls/ArmHomeButton", "Circle", "Arm Home"),
-        kShooterUpButton(0, 3, "Controls/ShooterUpButton", "RaiseShooterIcon", "Shooter Up"),
-        kShooterDownButton(2, 3, "Controls/ShooterDownButton", "LowerShooterIcon", "Shooter Down"),
+        kShooterUpButton(0, 3, "Controls/ShooterUpButton", "RaiseShooterIcon", "Shoot Up"),
+        kShooterDownButton(2, 3, "Controls/ShooterDownButton", "LowerShooterIcon", "Shoot Down"),
         kShootButton(1, 3, "Controls/ShootButton", "ShootIcon", "Shoot"),
-        kSpeakerModeButton(0, 4, "Controls/SpeakerModeButton", "SpeakerModeIcon", "Speaker Mode"),
-        kAmpModeButton(1, 4, "Controls/AmpModeButton", "AmpModeIcon", "Amp Mode"),
-        kClimbModeButton(2, 4, "Controls/ClimbModeButton", "ClimbModeIcon", "Climb Mode"),
-        kExtendWinchButton(0, 2, "Controls/ExtendWinchButton", "ExtendWinchIcon", "Extend Winch"),
-        kRetractWinchButton(2, 2, "Controls /RetractWinchButton", "RetractWinchIcon", "Retract Winch");
+        kSpeakerModeButton(0, 4, "Controls/SpeakerModeButton", "SpeakerModeIcon", "Speaker"),
+        kAmpModeButton(1, 4, "Controls/AmpModeButton", "AmpModeIcon", "Amp"),
+        kClimbModeButton(2, 4, "Controls/ClimbModeButton", "ClimbModeIcon", "Climb"),
+        kExtendWinchButton(0, 2, "Controls/ExtendWinchButton", "ExtendWinchIcon", "Extend"),
+        kRetractWinchButton(2, 2, "Controls/RetractWinchButton", "RetractWinchIcon", "Retract");
 
         private final int index;
         private final String key;
