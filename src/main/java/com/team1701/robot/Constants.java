@@ -490,13 +490,13 @@ public final class Constants {
     public static final class Indexer {
         // TODO: Update values and set names
         public static final int kIndexerMotorId = 21;
-        public static final double kIndexerReduction = 1;
+        public static final double kIndexerReduction = 1.0 / 9.0;
 
         public static final int kIndexerEntranceSensorId = 0;
         public static final int kIndexerExitSensorId = 2;
 
-        public static final double kIndexerPercent = 1;
-        public static final double kReduction = 1.0 / 9.0;
+        public static final double kIndexerShootPercent = 1;
+        public static final double kIndexerLoadPercent = .25;
 
         public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");

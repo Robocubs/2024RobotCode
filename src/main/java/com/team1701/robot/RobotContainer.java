@@ -207,7 +207,7 @@ public class RobotContainer {
                     indexer = Optional.of(new Indexer(
                             new MotorIOSim(
                                     DCMotor.getNeoVortex(1),
-                                    Constants.Indexer.kReduction,
+                                    Constants.Indexer.kIndexerReduction,
                                     0.001,
                                     Constants.kLoopPeriodSeconds),
                             new DigitalIOSim(() -> false),

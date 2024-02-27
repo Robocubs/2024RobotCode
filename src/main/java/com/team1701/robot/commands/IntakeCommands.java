@@ -34,8 +34,7 @@ public class IntakeCommands {
                         () -> {
                             intake.setReverse();
                             indexer.setReverse();
-                            drive.setVelocity(
-                                    new ChassisSpeeds(0.75, 0, 0));
+                            drive.setVelocity(new ChassisSpeeds(0.75, 0, 0));
                         },
                         () -> {
                             intake.stop();
