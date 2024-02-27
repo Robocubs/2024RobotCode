@@ -321,10 +321,12 @@ public final class Constants {
         public static final double kRollerReduction = 1.0; // 32.0 /18.0
         public static final double kEncoderToShooterReduction = 30.0 / 50.0;
         public static final double kAngleReduction = (1.0 / 4.0) * (1.0 / 5.0) * (20.0 / 93.0);
-        public static final int kShooterRightUpperRollerMotorId = 23;
-        public static final int kShooterRightLowerRollerMotorId = 25;
+
+        public static final int kShooterRightUpperRollerMotorId = 25;
+        public static final int kShooterRightLowerRollerMotorId = 23;
         public static final int kShooterLeftLowerRollerMotorId = 22;
         public static final int kShooterLeftUpperRollerMotorId = 24;
+
         public static final int kShooterRotationMotorId = 26;
 
         public static final double kShooterUpperLimitRotations = Units.degreesToRotations(65);
@@ -375,7 +377,8 @@ public final class Constants {
 
                     kTargetShootSpeedRadiansPerSecond.initDefault(450);
 
-                    kShooterAngleEncoderOffset = Rotation2d.fromRadians(0.135); // final calculated value .488
+                    kShooterAngleEncoderOffset =
+                            Rotation2d.fromRadians(3.347).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
 
                     kMaxRotationVelocityRadiansPerSecond.initDefault(0);
                     kMaxRotationAccelerationRadiansPerSecondSquared.initDefault(0);
@@ -523,7 +526,7 @@ public final class Constants {
         public static final int kIntakeExitSensorId = 1;
 
         public static final double kIntakeSpeed = 0.8;
-        public static final double kOuttakeSpeed = -0.5;
+        public static final double kOuttakeSpeed = -1.0;
         public static final double kReduction = 1.0 / 9.0;
     }
 }

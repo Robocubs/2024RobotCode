@@ -61,7 +61,7 @@ public class Shoot extends Command {
             case SPEAKER:
                 // TODO: Linear reg of speeds
                 desiredShooterAngle =
-                        mRobotState.calculateShooterAngleTowardsSpeaker().plus(Rotation2d.fromDegrees(2.5));
+                        mRobotState.calculateShooterAngleTowardsSpeaker().minus(Rotation2d.fromDegrees(1));
                 leftTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 rightTargetSpeed = leftTargetSpeed;
                 targetHeading = mRobotState.getSpeakerHeading();

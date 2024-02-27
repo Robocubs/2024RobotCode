@@ -8,7 +8,9 @@ import java.util.stream.Stream;
 import com.team1701.lib.commands.LoggedCommands;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
+import com.team1701.robot.FieldConstants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -71,6 +73,17 @@ public class DriveCommands {
                 Constants.Drive.kSlowKinematicLimits,
                 throttle,
                 strafe);
+    }
+
+    public static Command driveToAmp(Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits) {
+        return new DriveToPose(
+                drive,
+                Configuration.isBlueAlliance()
+                        ? () -> FieldConstants.kBlueAmpDrivePose
+                        : () -> FieldConstants.kRedAmpDrivePose,
+                poseSupplier,
+                kinematicLimits,
+                true);
     }
 
     public static Command driveToPiece(Drive drive, RobotState robotState, KinematicLimits kinematicLimits) {

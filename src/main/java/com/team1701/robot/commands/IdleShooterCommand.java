@@ -7,6 +7,7 @@ import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
+import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,11 +25,13 @@ public class IdleShooterCommand extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "ExpectedShootingDistance", 6.0);
 
     private final Shooter mShooter;
+    private final Indexer mIndexer;
     private final RobotState mRobotState;
     private final Drive mDrive;
 
-    public IdleShooterCommand(Shooter shooter, Drive drive, RobotState robotState) {
+    public IdleShooterCommand(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
         mShooter = shooter;
+        mIndexer = indexer;
         mRobotState = robotState;
         mDrive = drive;
 
@@ -72,6 +75,10 @@ public class IdleShooterCommand extends Command {
                 desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
                 shooterSpeed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                 break;
+        }
+
+        if (!mIndexer.hasNoteAtExit()) {
+            desiredShooterAngle = Rotation2d.fromDegrees(18);
         }
 
         mShooter.setRotationAngle(desiredShooterAngle);

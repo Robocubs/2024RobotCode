@@ -1,5 +1,8 @@
 package com.team1701.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
@@ -27,4 +30,7 @@ public final class FieldConstants {
             new Translation3d(Units.inchesToMeters(72.5), Units.inchesToMeters(323), Units.inchesToMeters(53.38));
     public static Translation3d kRedAmpPosition =
             new Translation3d(Units.inchesToMeters(578.77), Units.inchesToMeters(323), Units.inchesToMeters(53.38));
+
+    public static Pose2d kBlueAmpDrivePose = new Pose2d(new Translation2d(1.793, 7.763), Rotation2d.fromRadians(1.571));
+    public static Pose2d kRedAmpDrivePose = new Pose2d(new Translation2d(14.688, 7.763), Rotation2d.fromRadians(1.571));
 }
