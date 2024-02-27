@@ -334,7 +334,6 @@ public final class Constants {
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
 
-
         public static final Rotation2d kShooterAngleEncoderOffset;
 
         public static int kShooterEntranceSensorId;
@@ -363,12 +362,11 @@ public final class Constants {
         public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/TargetShootSpeedRadiansPerSecond", 450);
 
-
-        public static final LoggedTunableNumber kTunableShooterAngleRadians = new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
+        public static final LoggedTunableNumber kTunableShooterAngleRadians =
+                new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
 
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
-
 
         static {
             switch (Configuration.getRobot()) {
