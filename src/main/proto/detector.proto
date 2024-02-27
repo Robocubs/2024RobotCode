@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package team1701.proto;
+
+import "geometry2d.proto";
+
+option java_package = "com.team1701.proto";
+
+message ProtobufDetectedObject {
+  string detected_class = 1;
+  int32 detected_class_id = 2;
+  double confidence = 3;
+  double area = 4;
+  wpi.proto.ProtobufRotation2d pitch = 5;
+  wpi.proto.ProtobufRotation2d yaw = 6;
+  wpi.proto.ProtobufTranslation2d position_pixels = 7;
+}
+
+message ProtobufDetectorPipelineResult {
+  double latency = 1;
+  double timestamp = 2;
+  repeated ProtobufDetectedObject detected_objects = 3;
+}

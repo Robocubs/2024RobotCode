@@ -1,40 +1,24 @@
 package com.team1701.lib.drivers.cameras.neural;
 
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
-import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.LogTable;
+import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 public interface DetectorCameraIO {
-    @AutoLog
-    public class DetectorCameraInputs {
-        public int numberOfDetectedObjects;
-        public String detectedClasses[];
-        public long detectedClassIDs[];
-        public double confidences[];
-        public double areas[];
-        public double txs[];
-        public double tys[];
-        public double txps[];
-        public double typs[];
-        public double latency;
-        // Is this supposed to be here?
-        public double captureTimestamp;
-        public long givenPipeline;
-        public boolean seesTarget;
+    public class DetectorCameraInputs implements LoggableInputs {
         public boolean isConnected;
+        public DetectorPipelineResult pipelineResult = new DetectorPipelineResult();
 
-        public DetectorCameraInputs() {
-            constructEmptyInputArrays(0);
+        @Override
+        public void toLog(LogTable table) {
+            table.put("IsConnected", isConnected);
+            table.put("PipelineResult", pipelineResult);
         }
 
-        public void constructEmptyInputArrays(int n) {
-            detectedClasses = new String[n];
-            detectedClassIDs = new long[n];
-            confidences = new double[n];
-            areas = new double[n];
-            txs = new double[n];
-            tys = new double[n];
-            txps = new double[n];
-            typs = new double[n];
+        @Override
+        public void fromLog(LogTable table) {
+            this.isConnected = table.get("IsConnected", false);
+            this.pipelineResult = table.get("PipelineResult", new DetectorPipelineResult());
         }
     }
 
