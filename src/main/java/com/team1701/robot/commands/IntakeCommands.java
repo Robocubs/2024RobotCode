@@ -35,7 +35,7 @@ public class IntakeCommands {
                             intake.setReverse();
                             indexer.setReverse();
                             drive.setVelocity(
-                                    ChassisSpeeds.fromRobotRelativeSpeeds(-.75, 0, 0, robotHeadingSupplier.get()));
+                                    new ChassisSpeeds(0.75, 0, 0));
                         },
                         () -> {
                             intake.stop();

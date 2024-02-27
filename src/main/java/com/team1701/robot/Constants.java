@@ -318,7 +318,7 @@ public final class Constants {
 
     public static final class Shooter {
         // TODO: Update values
-        public static final double kRollerReduction = 18.0 / 30.0; // 32.0 /18.0
+        public static final double kRollerReduction = 30.0 / 18.0; // 32.0 /18.0
         public static final double kEncoderToShooterReduction = 30.0 / 50.0;
         public static final double kAngleReduction = (1.0 / 4.0) * (1.0 / 5.0) * (20.0 / 93.0);
 
