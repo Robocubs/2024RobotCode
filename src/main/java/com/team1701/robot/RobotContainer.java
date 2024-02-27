@@ -311,7 +311,11 @@ public class RobotContainer {
 
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
-        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
+        // mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
+        mShooter.setDefaultCommand(Commands.run(
+                () -> mShooter.setRotationAngle(
+                        Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get())),
+                mShooter));
 
         mArm.setDefaultCommand(ArmCommands.idleArmCommand(mArm, mRobotState));
 

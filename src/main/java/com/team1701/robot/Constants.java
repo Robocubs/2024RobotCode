@@ -334,11 +334,19 @@ public final class Constants {
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
 
+
+        public static final Rotation2d kShooterAngleEncoderOffset;
+
+        public static int kShooterEntranceSensorId;
+        public static int kShooterExitSensorId;
+        public static int kShooterThroughBoreEncoderId = 4;
+
+        public static double kThroughBoreEncoderDistancePerRotation;
+
         public static final LoggedTunableNumber kRollerKff = new LoggedTunableNumber("Shooter/Motor/Roller/Kff");
         public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");
         public static final LoggedTunableNumber kRollerKd = new LoggedTunableNumber("Shooter/Motor/Roller/Kd");
 
-        public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity", 1.0);
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
@@ -355,15 +363,12 @@ public final class Constants {
         public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/TargetShootSpeedRadiansPerSecond", 450);
 
+
+        public static final LoggedTunableNumber kTunableShooterAngleRadians = new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
+
+        public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
-        public static final Rotation2d kShooterAngleEncoderOffset;
-
-        public static int kShooterEntranceSensorId;
-        public static int kShooterExitSensorId;
-        public static int kShooterThroughBoreEncoderId = 4;
-
-        public static double kThroughBoreEncoderDistancePerRotation;
 
         static {
             switch (Configuration.getRobot()) {
