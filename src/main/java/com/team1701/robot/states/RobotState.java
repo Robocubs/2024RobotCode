@@ -38,7 +38,6 @@ public class RobotState {
     private Optional<Intake> mIntake = Optional.empty();
     private Optional<Shooter> mShooter = Optional.empty();
 
-    @AutoLogOutput
     private ScoringMode mScoringMode = ScoringMode.SPEAKER;
 
     private final PoseEstimator mPoseEstimator =
@@ -203,6 +202,7 @@ public class RobotState {
         this.mScoringMode = scoringMode;
     }
 
+    @AutoLogOutput
     public ScoringMode getScoringMode() {
         return mScoringMode;
     }

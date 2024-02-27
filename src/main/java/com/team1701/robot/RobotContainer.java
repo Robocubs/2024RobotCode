@@ -463,14 +463,9 @@ public class RobotContainer {
                 .withName("StreamDeckRetractWinchCommand");
 
         mStreamDeck.configureButton(config -> config.add(
-                        StreamDeckButton.kSpeakerModeButton,
-                        () -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-                .add(
-                        StreamDeckButton.kAmpModeButton,
-                        () -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
-                .add(
-                        StreamDeckButton.kClimbModeButton,
-                        () -> mRobotState.getScoringMode().equals(ScoringMode.CLIMB))
+                        StreamDeckButton.kSpeakerModeButton, () -> mRobotState.getScoringMode() == ScoringMode.SPEAKER)
+                .add(StreamDeckButton.kAmpModeButton, () -> mRobotState.getScoringMode() == ScoringMode.AMP)
+                .add(StreamDeckButton.kClimbModeButton, () -> mRobotState.getScoringMode() == ScoringMode.CLIMB)
                 .add(StreamDeckButton.kStopIntakeButton, stopIntakingCommand::isScheduled)
                 .add(StreamDeckButton.kRejectButton, rejectCommand::isScheduled)
                 .add(StreamDeckButton.kForwardButton, forwardCommand::isScheduled)
