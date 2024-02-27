@@ -33,7 +33,7 @@ public class LED extends SubsystemBase {
                     mLEDController.setCurrLEDState(RobotLEDStates.mRobotIdleHasNote);
                 }
             } else {
-                if (mRobotState.getDetectedNotePoses2d().length > 0) {
+                if (mRobotState.getDetectedNotePoses3d().length > 0) {
                     mLEDController.setCurrLEDState(RobotLEDStates.mRobotSeesNote);
                 } else {
                     mLEDController.setCurrLEDState(RobotLEDStates.mRobotIdleNoNote);

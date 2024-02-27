@@ -11,4 +11,8 @@ public class LEDState {
         this.color = color;
         this.pattern = pattern;
     }
+
+    public String toString() {
+        return "Color: " + color.toString() + " LEDPattern: " + pattern.toString();
+    }
 }
