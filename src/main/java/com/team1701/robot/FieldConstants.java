@@ -28,9 +28,9 @@ public final class FieldConstants {
             new Translation3d(kFieldLongLengthMeters - kBlueSource.getX(), kBlueSource.getY(), kBlueSource.getZ());
 
     public static Translation3d kBlueAmpPosition =
-            new Translation3d(Units.inchesToMeters(72.5), Units.inchesToMeters(323), Units.inchesToMeters(53.38));
+            new Translation3d(1.8, 7.89, Units.inchesToMeters(53.38));
     public static Translation3d kRedAmpPosition =
-            new Translation3d(Units.inchesToMeters(578.77), Units.inchesToMeters(323), Units.inchesToMeters(53.38));
+            new Translation3d(Units.inchesToMeters(578.77), 7.89, Units.inchesToMeters(53.38));
 
     public static Pose2d kBlueAmpDrivePose = new Pose2d(new Translation2d(1.793, 7.763), Rotation2d.fromRadians(1.571));
     public static Pose2d kRedAmpDrivePose = new Pose2d(new Translation2d(14.688, 7.763), Rotation2d.fromRadians(1.571));

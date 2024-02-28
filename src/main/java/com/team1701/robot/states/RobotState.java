@@ -40,7 +40,7 @@ public class RobotState {
     private Optional<Shooter> mShooter = Optional.empty();
 
     @AutoLogOutput
-    private ScoringMode mScoringMode = ScoringMode.SPEAKER;
+    private ScoringMode mScoringMode = ScoringMode.AMP; // TODO: reset to speaker
 
     private final PoseEstimator mPoseEstimator =
             new TwistPoseEstimator(Constants.Drive.kKinematics, VecBuilder.fill(0.005, 0.005, 0.0005));

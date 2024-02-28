@@ -57,6 +57,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -341,7 +343,7 @@ public class RobotContainer {
         mDriverController
                 .y()
                 .whileTrue(DriveCommands.driveToPiece(
-                        mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits));
+                        mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits, mDriverController));
 
         // Drive while Rotating to Speaker - note, this Trigger is also used for the shoot while moving command
         mDriverController
@@ -435,7 +437,14 @@ public class RobotContainer {
                 .option(StreamDeckButton.kButtonGroupButton3, trigger -> trigger.whileTrue(buttonGroupButton3Command))
                 .select(StreamDeckButton.kButtonGroupButton1);
 
-        /* */
+        /* Timer Triggers*/
+
+        new Trigger(() -> Timer.getMatchTime() == 31)
+                .onTrue(Commands.runOnce(() -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 1)));
+
+        new Trigger(() -> Timer.getMatchTime() == 29)
+                .onTrue(Commands.runOnce(() -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0)));
+
         DriverStation.silenceJoystickConnectionWarning(true);
     }
 

@@ -1,5 +1,6 @@
 package com.team1701.robot.commands;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
@@ -14,7 +15,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveToPose extends Command {
@@ -58,6 +62,8 @@ public class DriveToPose extends Command {
     private TrapezoidProfile.State mRotationState = new TrapezoidProfile.State();
     private boolean mAtTargetPose = false;
 
+    private Optional<XboxController> mDriverController;
+
     DriveToPose(
             Drive drive,
             Supplier<Pose2d> poseSupplier,
@@ -81,7 +87,22 @@ public class DriveToPose extends Command {
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
 
+        mDriverController = Optional.empty();
+
         addRequirements(drive);
+    }
+
+    public DriveToPose(
+            Drive drive,
+            Supplier<Pose2d> poseSupplier,
+            Supplier<Pose2d> robotPoseSupplier,
+            KinematicLimits kinematicLimits,
+            boolean finishAtPose,
+            CommandXboxController driverController) {
+
+        this(drive, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose);
+
+        mDriverController = Optional.of(driverController.getHID());
     }
 
     @Override
@@ -106,6 +127,10 @@ public class DriveToPose extends Command {
                         targetPose.getRotation().getRadians() - Math.PI,
                         targetPose.getRotation().getRadians() + Math.PI),
                 fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
+
+        if (!mDriverController.isEmpty()) {
+            mDriverController.get().setRumble(RumbleType.kRightRumble, .2);
+        }
     }
 
     @Override
@@ -181,6 +206,9 @@ public class DriveToPose extends Command {
     @Override
     public void end(boolean interrupted) {
         mDrive.stop();
+        if (!mDriverController.isEmpty()) {
+            mDriverController.get().setRumble(RumbleType.kRightRumble, 0);
+        }
     }
 
     @Override
