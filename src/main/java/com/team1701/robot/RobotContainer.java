@@ -36,6 +36,7 @@ import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.commands.IntakeCommands;
+import com.team1701.robot.commands.RotateToFieldHeading;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.StreamDeck;
 import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
@@ -343,7 +344,7 @@ public class RobotContainer {
                 .whileTrue(DriveCommands.driveToPiece(
                         mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits));
 
-        // Drive while Rotating to Speaker
+        // Drive while Rotating to Speaker - note, this Trigger is also used for the shoot while moving command
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
@@ -370,11 +371,11 @@ public class RobotContainer {
                 .whileTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
 
         // Shoot while Slowly Rotating
-        // mDriverController
-        //         .rightTrigger()
-        //         .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-        //         .and(() -> mDrive.getKinematicLimits().equals(Constants.Drive.kSlowKinematicLimits))
-        //         .whileTrue(ShootCommands.shoot(mShooter, mIndexer, mRobotState));
+        mDriverController
+                .rightTrigger()
+                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
+                .and(mDriverController.leftBumper())
+                .whileTrue(ShootCommands.shoot(mShooter, mIndexer, mRobotState));
 
         // Amp Shot
         mDriverController
