@@ -104,7 +104,7 @@ public class Drive extends SubsystemBase {
                         .withName("DisabledLoop"));
 
         new Trigger(DriverStation::isEnabled)
-                .onTrue(runOnce(() -> setDriveBrakeMode(false))
+                .onTrue(Commands.runOnce(() -> setDriveBrakeMode(false))
                         .ignoringDisable(true)
                         .withName("EnabledStart"));
     }
