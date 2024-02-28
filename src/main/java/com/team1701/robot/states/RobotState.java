@@ -122,6 +122,14 @@ public class RobotState {
                 : poseX < FieldConstants.kWingLength;
     }
 
+    @AutoLogOutput
+    public boolean inNearHalf() {
+        var poseX = getPose2d().getX();
+        return Configuration.isBlueAlliance()
+                ? poseX < FieldConstants.kFieldLongLengthMeters / 2.0
+                : poseX > FieldConstants.kFieldLongLengthMeters / 2.0;
+    }
+
     public double getDistanceToAmp() {
         return getPose3d()
                 .getTranslation()

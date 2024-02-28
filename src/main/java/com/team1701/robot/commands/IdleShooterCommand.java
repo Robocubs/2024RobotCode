@@ -51,10 +51,20 @@ public class IdleShooterCommand extends Command {
                 if (mDrive.getKinematicLimits().equals(Constants.Drive.kSlowKinematicLimits)) {
                     shooterSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 } else {
-                    shooterSpeed = mRobotState.hasNote()
-                            ? speedRegression(
-                                    kExpectedShootingDistance.get(), mRobotState.getDistanceToSpeaker(), 100.0)
-                            : Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
+                    if (mRobotState.hasNote()) {
+                        if (mRobotState.inNearHalf()) {
+                            shooterSpeed =
+                                    Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker())
+                                            - 50;
+                        } else {
+                            shooterSpeed = mRobotState.inOpponentWing()
+                                    ? 0
+                                    : Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
+                        }
+                    } else {
+                        shooterSpeed =
+                                mRobotState.inNearHalf() ? Constants.Shooter.kIdleSpeedRadiansPerSecond.get() : 0;
+                    }
                 }
                 break;
             case AMP:
