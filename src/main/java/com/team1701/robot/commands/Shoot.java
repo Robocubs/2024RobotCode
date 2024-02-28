@@ -64,6 +64,8 @@ public class Shoot extends Command {
         double leftTargetSpeed;
         double rightTargetSpeed; // if we want to induce spin
 
+        mRobotState.setScoring(true);
+
         switch (mScoringMode) {
             case SPEAKER:
                 // TODO: Linear reg of speeds
@@ -133,6 +135,7 @@ public class Shoot extends Command {
 
     @Override
     public void end(boolean interrupted) {
+        mRobotState.setScoring(false);
         mShooter.stopRollers();
         mShooter.stopRotation();
         mIndexer.stop();

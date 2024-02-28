@@ -30,6 +30,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 
 public class RobotState {
     private static final double kDetectedNoteTimeout = 1.0;
+    private boolean mIsScoring = false;
     private static final double kDuplicateNoteDistanceThreshold = Units.inchesToMeters(10.0);
 
     private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
@@ -198,6 +199,14 @@ public class RobotState {
 
         return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(getDistanceToSpeaker()));
         // return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
+    }
+
+    public void setScoring(boolean isScoring) {
+        mIsScoring = isScoring;
+    }
+
+    public boolean isScoring() {
+        return mIsScoring;
     }
 
     public void setScoringMode(ScoringMode scoringMode) {
