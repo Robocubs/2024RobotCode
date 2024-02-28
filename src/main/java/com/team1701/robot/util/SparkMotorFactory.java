@@ -164,6 +164,8 @@ public class SparkMotorFactory {
                         errorAlert);
                 configureWithRetry(() -> motor.enableSoftLimit(SoftLimitDirection.kForward, true), errorAlert);
                 configureWithRetry(() -> motor.enableSoftLimit(SoftLimitDirection.kReverse, true), errorAlert);
+                configureWithRetry(() -> controller.setOutputRange(-.5, .5), errorAlert);
+
                 reduction = Constants.Arm.kRotationReduction;
                 break;
             default:

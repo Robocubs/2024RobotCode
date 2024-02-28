@@ -488,25 +488,25 @@ public final class Constants {
 
         // TODO: update values
         public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity");
+                new LoggedTunableNumber("Arm/Motor/Rotation/MaxVelocity", Math.PI);
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
-                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration");
+                new LoggedTunableNumber("Arm/Motor/Rotation/MaxAcceleration", Math.PI);
 
         public static final Rotation2d kArmAngleEncoderOffset;
 
         public static final LoggedTunableNumber kArmAmpRotationDegrees =
-                new LoggedTunableNumber("Arm/AmpRotationDegrees", -80.0994997593);
+                new LoggedTunableNumber("Arm/AmpRotationDegrees", 95);
         ; // TODO: update
 
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
                     kArmRotationKff.initDefault(0.0);
-                    kArmRotationKp.initDefault(0.0);
+                    kArmRotationKp.initDefault(0.2);
                     kArmRotationKd.initDefault(0.0);
 
                     kArmAngleEncoderOffset =
-                            Rotation2d.fromRadians(-3.652).plus(GeometryUtil.kRotationHalfPi); // TODO: Update value
+                            Rotation2d.fromRadians(-0.6).plus(GeometryUtil.kRotationHalfPi); // TODO: Update value
                     break;
                 case SIMULATION_BOT:
                     kArmRotationKff.initDefault(0.0);
