@@ -163,9 +163,9 @@ public class Arm extends SubsystemBase {
 
     public enum ArmPosition {
         // TODO: update values
-        HOME(0),
+        HOME(20),
         LOW(45),
-        LOW_CLIMB(75),
+        LOW_CLIMB(60),
         HIGH_CLIMB(90),
         AMP(Constants.Arm.kArmAmpRotationDegrees.get());
 

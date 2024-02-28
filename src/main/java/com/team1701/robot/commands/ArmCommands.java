@@ -18,10 +18,12 @@ public class ArmCommands {
         return Commands.run(
                         () -> {
                             Rotation2d targetRotation =
-                                    robotState.getScoringMode().equals(ScoringMode.AMP)
-                                                    && (robotState.getDistanceToAmp() <= 1)
-                                            ? ArmPosition.AMP.armRotation
-                                            : ArmPosition.HOME.armRotation;
+                                switch (robotState.getScoringMode()) {
+                                    case SPEAKER -> ArmPosition.HOME.armRotation;
+                                    case AMP -> robotState.getDistanceToAmp() <= 1 ? ArmPosition.AMP.armRotation : ArmPosition.HOME.armRotation;
+                                    case CLIMB -> ArmPosition.LOW_CLIMB.armRotation;
+                                    default -> ArmPosition.HOME.armRotation;
+                                };
                             arm.setRotationAngle(targetRotation);
                         },
                         arm)
