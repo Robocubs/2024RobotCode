@@ -47,6 +47,7 @@ import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.drive.SwerveModule.SwerveModuleIO;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
+import com.team1701.robot.subsystems.leds.LED;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.SparkMotorFactory;
@@ -74,6 +75,7 @@ public class RobotContainer {
     private final Intake mIntake;
     private final Arm mArm;
     private final Climb mClimb;
+    private LED mLED;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final CommandXboxController mSecondaryController = new CommandXboxController(1);
@@ -176,6 +178,7 @@ public class RobotContainer {
                     //                 Constants.Winch.kRightWinchId, MotorUsage.WINCH, false))); //TODO: determine
                     // inversion
 
+                    mLED = new LED(mRobotState);
                     break;
                 case SIMULATION_BOT:
                     var gyroIO = new GyroIOSim(mRobotState::getHeading);
