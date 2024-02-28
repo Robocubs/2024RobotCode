@@ -57,7 +57,7 @@ public class Shoot extends Command {
         double leftTargetSpeed;
         double rightTargetSpeed; // if we want to induce spin
 
-        mRobotState.setIsScoring(true);
+        mRobotState.setScoring(true);
 
         switch (mScoringMode) {
             case SPEAKER:
@@ -121,7 +121,7 @@ public class Shoot extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        mRobotState.setIsScoring(false);
+        mRobotState.setScoring(false);
         mShooter.stopRollers();
         mShooter.stopRotation();
         mIndexer.stop();

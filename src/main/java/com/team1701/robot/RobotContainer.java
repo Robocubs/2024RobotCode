@@ -68,14 +68,14 @@ import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 public class RobotContainer {
     private final RobotState mRobotState = new RobotState();
-    public final Drive mDrive;
-    public final Vision mVision;
-    public final Shooter mShooter;
-    private final Indexer mIndexer;
-    private final Intake mIntake;
-    private final Arm mArm;
-    private final Climb mClimb;
-    private LED mLED;
+    protected final Drive mDrive;
+    protected final Vision mVision;
+    protected final Shooter mShooter;
+    protected final Indexer mIndexer;
+    protected final Intake mIntake;
+    protected final Arm mArm;
+    protected final Climb mClimb;
+    protected final LED mLED;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
     private final CommandXboxController mSecondaryController = new CommandXboxController(1);
@@ -177,8 +177,6 @@ public class RobotContainer {
                     //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                     //                 Constants.Winch.kRightWinchId, MotorUsage.WINCH, false))); //TODO: determine
                     // inversion
-
-                    mLED = new LED(mRobotState);
                     break;
                 case SIMULATION_BOT:
                     var gyroIO = new GyroIOSim(mRobotState::getHeading);
@@ -254,7 +252,7 @@ public class RobotContainer {
             }
         }
 
-        this.mDrive = drive.orElseGet(() -> new Drive(
+        mDrive = drive.orElseGet(() -> new Drive(
                 new GyroIO() {},
                 Stream.generate(() -> new SwerveModuleIO(
                                 new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}, new Rotation2d() {}))
@@ -262,7 +260,7 @@ public class RobotContainer {
                         .toArray(SwerveModuleIO[]::new),
                 mRobotState));
 
-        this.mVision = vision.orElseGet(() -> new Vision(
+        mVision = vision.orElseGet(() -> new Vision(
                 mRobotState,
                 new AprilTagCameraIO[] {
                     () -> Constants.Vision.kFrontLeftCameraConfig,
@@ -273,7 +271,7 @@ public class RobotContainer {
                 },
                 new DetectorCameraIO[] {() -> Constants.Vision.kLimelightConfig}));
 
-        this.mShooter = shooter.orElseGet(() -> new Shooter(
+        mShooter = shooter.orElseGet(() -> new Shooter(
                 new MotorIO() {},
                 new MotorIO() {},
                 new MotorIO() {},
@@ -281,13 +279,15 @@ public class RobotContainer {
                 new MotorIO() {},
                 new EncoderIO() {}));
 
-        this.mIndexer = indexer.orElseGet(() -> new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
+        mIndexer = indexer.orElseGet(() -> new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
-        this.mIntake = intake.orElseGet(() -> new Intake(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
+        mIntake = intake.orElseGet(() -> new Intake(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
-        this.mArm = arm.orElseGet(() -> new Arm(new MotorIO() {}, new EncoderIO() {}));
+        mArm = arm.orElseGet(() -> new Arm(new MotorIO() {}, new EncoderIO() {}));
 
-        this.mClimb = climb.orElseGet(() -> new Climb(new MotorIO() {}, new MotorIO() {}));
+        mClimb = climb.orElseGet(() -> new Climb(new MotorIO() {}, new MotorIO() {}));
+
+        mLED = new LED(mRobotState);
 
         mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
 

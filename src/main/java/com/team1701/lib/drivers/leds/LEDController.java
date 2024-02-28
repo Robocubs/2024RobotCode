@@ -14,9 +14,20 @@ public class LEDController {
 
     private double mLastTimestamp = 0.0;
 
-    public LEDController() {
-        mLED = new AddressableLED(0);
-        mLEDBuffer = new AddressableLEDBuffer(27);
+    public static record LEDState(Color color, LEDPattern pattern) {
+        public LEDState(Color color) {
+            this(color, LEDPattern.STATIC);
+        }
+    }
+
+    public static enum LEDPattern {
+        STATIC,
+        BLINK
+    }
+
+    public LEDController(int port, int length) {
+        mLED = new AddressableLED(port);
+        mLEDBuffer = new AddressableLEDBuffer(length);
         mLED.setLength(mLEDBuffer.getLength());
         mLED.start();
     }
