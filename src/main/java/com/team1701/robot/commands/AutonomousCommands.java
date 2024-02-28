@@ -157,4 +157,16 @@ public class AutonomousCommands {
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
+
+    public AutonomousCommand threePieceCenter() {
+        var command = loggedSequence(
+                print("Started three piece center auto"),
+                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
+                followChoreoPath("ThreePieceCenter.1", true),
+                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
+                followChoreoPath("ThreePieceCenter.2"),
+                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
+
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
 }
