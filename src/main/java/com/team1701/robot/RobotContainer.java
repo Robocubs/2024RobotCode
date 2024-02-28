@@ -484,17 +484,13 @@ public class RobotContainer {
         mStreamDeck.button(StreamDeckButton.kStopIntakeButton).onTrue(stopIntakingCommand);
         // mStreamDeck.button(StreamDeckButton.kStopIntakeButton).onFalse(run(() -> stopIntakingCommand.cancel()));
 
-        mStreamDeck
-                .button(StreamDeckButton.kRejectButton)
-                .whileTrue(rejectCommand)
-                // .onFalse(stopIntakingCommand)
-                ;
+        mStreamDeck.button(StreamDeckButton.kRejectButton).whileTrue(rejectCommand)
+        // .onFalse(stopIntakingCommand)
+        ;
 
-        mStreamDeck
-                .button(StreamDeckButton.kForwardButton)
-                .whileTrue(forwardCommand)
-                // .onFalse(stopIntakingCommand)
-                ;
+        mStreamDeck.button(StreamDeckButton.kForwardButton).whileTrue(forwardCommand)
+        // .onFalse(stopIntakingCommand)
+        ;
 
         mStreamDeck.button(StreamDeckButton.kArmUpButton).whileTrue(armUpCommand);
 
