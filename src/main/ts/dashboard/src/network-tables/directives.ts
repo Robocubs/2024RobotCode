@@ -31,7 +31,7 @@ export class SourceDoubleArray extends AsyncDirective {
     if (!source?.hasValue()) {
       return defaultValue;
     }
-    //return source?.hasValue() ? new Uint8Array(source.getValue() as Uint8Array) : defaultValue;
+
     const view = new DataView(new Uint8Array(source.getValue() as Uint8Array).buffer);
     const doubles = [];
     for (let i = 0; i < view.byteLength / 8; i++) {
@@ -56,3 +56,24 @@ export class SourceDoubleArray extends AsyncDirective {
 export const sourceDoubleArray = directive(SourceDoubleArray);
 export const ntDoubleArrayDirective = (store: Store) => (key: string, defaultValue: number[]) =>
   sourceDoubleArray(store, 'NetworkTables', key, defaultValue);
+
+export class SourceAllianceColor extends AsyncDirective {
+  static getSourceValue(store: Store, provider: string, key: string, defaultValue: string): string {
+    const source = store.getSource(provider, key);
+    return source?.hasValue() ? (source.getValue() ? 'red' : 'blue') : defaultValue;
+  }
+
+  render(store: Store, provider: string, key: string, defaultValue: string) {
+    store.subscribe(
+      provider,
+      key,
+      () => {
+        this.setValue(SourceAllianceColor.getSourceValue(store, provider, key, defaultValue));
+      },
+      false
+    );
+    return SourceAllianceColor.getSourceValue(store, provider, key, defaultValue);
+  }
+}
+export const sourceAllianceColor = directive(SourceAllianceColor);
+export const ntAllianceColorDirective = (store: Store) => () => sourceAllianceColor(store, 'NetworkTables', '/FMSInfo/IsRedAlliance', 'blue');

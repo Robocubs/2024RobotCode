@@ -12,15 +12,17 @@ export class MatchTimer extends LitElement {
   render() {
     const roundedTimer = Math.floor(this.timer);
     return html`<div class="flex flex-column align-center justify-center">
-      <div class="text-white text-6xl border-4 border-solid rounded-lg box-border p-4 ${classMap(this.backgroundColor())}">${roundedTimer}</div>
+      <div class="text-white text-center text-6xl border-4 border-solid rounded-lg w-44 box-border p-4 ${classMap(this.backgroundColor())}">
+        ${roundedTimer}
+      </div>
     </div>`;
   }
 
   backgroundColor(): ClassInfo {
-    if (this.timer > 60) {
-      return { 'bg-green-400': true };
-    } else if (this.timer > 30) {
-      return { 'bg-yellow-400': true };
+    if (this.timer > 45) {
+      return { 'bg-blue-700': true };
+    } else if (this.timer > 20) {
+      return { 'bg-yellow-500': true };
     } else {
       return { 'bg-red-900': true };
     }

@@ -18,8 +18,8 @@ interface StreamDeckButton {
   Selected: boolean;
 }
 
-@customElement('team1701-operator-buttons')
-export class OperatorButtons extends LitElement {
+@customElement('team1701-operator-view')
+export class OperatorView extends LitElement {
   @consume({ context: nt4Context })
   private nt!: NetworkTables;
 
@@ -42,18 +42,13 @@ export class OperatorButtons extends LitElement {
   }
 
   render(): TemplateResult {
-    return html`<div id="operator-buttons-root" class="grid grid-cols-5 gap-4">
+    return html`<div id="operator-buttons-root" class="grid h-full grid-rows-3 grid-cols-5 gap-4">
       ${map(this.buttons, (button) => {
         if (!button) {
           return html`<div class="h-28"></div>`;
         }
 
-        return html`<team1701-operator-button
-          class="h-28"
-          label="${button.Label}"
-          key="${button.Key}"
-          ?selected="${button.Selected}"
-        ></team1701-operator-button>`;
+        return html`<team1701-operator-button label="${button.Label}" key="${button.Key}" ?selected="${button.Selected}"></team1701-operator-button>`;
       })}
     </div>`;
   }
@@ -63,6 +58,6 @@ export class OperatorButtons extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'team1701-operator-buttons': OperatorButtons;
+    'team1701-operator-view': OperatorView;
   }
 }

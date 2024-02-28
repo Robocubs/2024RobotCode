@@ -4,7 +4,6 @@ import { customElement, property } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
 import { ToggleOperatorDetail } from './components';
 import { NetworkTables, nt4Context } from './network-tables/network-tables';
-import { ensureSendableChooserInitialized } from './network-tables/util';
 import { globalStylesCss } from './styles/styles';
 
 @customElement('team1701-dashboard')
@@ -16,23 +15,28 @@ export class Dashboard extends LitElement {
 
   protected firstUpdated(): void {
     this.nt.bindConnection(this.renderRoot.querySelector('#dashboard-root')!);
-    ensureSendableChooserInitialized(this.nt, '/SmartDashboard/Auto Mode');
   }
 
   toggleOperator(event: CustomEvent<ToggleOperatorDetail>) {
-    this.page = event.detail.toggled ? 'Operator' : 'Main';
+    this.page = event.detail.toggled ? 'Operator' : 'Field';
     window.history.pushState({}, '', `?page=${this.page}`);
   }
 
   render(): TemplateResult {
     return html`
-      <div id="dashboard-root" class="flex flex-col gap-4 h-full">
-        <team1701-top-bar ?operatorToggled="${this.page === 'Operator'}" @toggleOperator="${this.toggleOperator}"></team1701-top-bar>
-        ${choose(
-          this.page,
-          [['Operator', () => html`<team1701-operator-buttons class="h-full"></team1701-operator-buttons>`]],
-          () => html`<team1701-main-view class="h-full"></team1701-main-view>`
-        )}
+      <div id="dashboard-root" class="flex flex-row gap-4 h-full">
+        <team1701-side-bar
+          class="flex w-72"
+          ?operatorToggled="${this.page === 'Operator'}"
+          @toggleOperator="${this.toggleOperator}"
+        ></team1701-side-bar>
+        <div class="w-1 grow h-full">
+          ${choose(
+            this.page,
+            [['Operator', () => html`<team1701-operator-view></team1701-operator-view>`]],
+            () => html`<team1701-field-view></team1701-field-view>`
+          )}
+        </div>
       </div>
     `;
   }
