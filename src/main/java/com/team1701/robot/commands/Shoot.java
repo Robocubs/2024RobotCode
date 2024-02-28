@@ -12,7 +12,6 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
@@ -54,6 +53,7 @@ public class Shoot extends Command {
     @Override
     public void initialize() {
         mShooting = false;
+        mLockedReadyToShoot.update(false, Timer.getFPGATimestamp());
     }
 
     @Override
@@ -70,6 +70,7 @@ public class Shoot extends Command {
                 desiredShooterAngle =
                         mRobotState.calculateShooterAngleTowardsSpeaker().minus(Rotation2d.fromDegrees(1));
 
+                // leftTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 leftTargetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker());
                 Logger.recordOutput(kLoggingPrefix + "InterpolatedShooterSpeed", leftTargetSpeed);
 
@@ -108,9 +109,7 @@ public class Shoot extends Command {
                 && DoubleStream.of(mShooter.getRightRollerSpeedsRadiansPerSecond())
                         .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 50.0));
 
-        if (atAngle && atHeading && atSpeed) {
-            mLockedReadyToShoot.update(true, Timer.getFPGATimestamp());
-        }
+        mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp());
 
         if (mLockedReadyToShoot.getValue()) {
             mIndexer.setForwardShoot();
