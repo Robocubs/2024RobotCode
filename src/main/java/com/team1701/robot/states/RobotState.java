@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.team1701.lib.drivers.cameras.neural.DetectorCamera.DetectedObjectState;
 import com.team1701.lib.estimation.PoseEstimator;
 import com.team1701.lib.estimation.PoseEstimator.DriveMeasurement;
 import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
+import com.team1701.lib.estimation.TwistPoseEstimator;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Configuration;
@@ -21,12 +23,14 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class RobotState {
     private static final double kDetectedNoteTimeout = 1.0;
+    private static final double kDuplicateNoteDistanceThreshold = Units.inchesToMeters(10.0);
 
     private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
 
@@ -38,8 +42,8 @@ public class RobotState {
     private ScoringMode mScoringMode = ScoringMode.SPEAKER;
 
     private final PoseEstimator mPoseEstimator =
-            new PoseEstimator(Constants.Drive.kKinematics, VecBuilder.fill(0.005, 0.005, 0.0005));
-    private final List<NoteState> mDetectedNotes = new ArrayList<>();
+            new TwistPoseEstimator(Constants.Drive.kKinematics, VecBuilder.fill(0.005, 0.005, 0.0005));
+    private final List<DetectedObjectState> mDetectedNotes = new ArrayList<>();
 
     public void addSubsystems(Shooter shooter, Indexer indexer, Intake intake) {
         mIndexer = Optional.of(indexer);
@@ -49,7 +53,7 @@ public class RobotState {
 
     public void periodic() {
         var timeout = Timer.getFPGATimestamp() - kDetectedNoteTimeout;
-        mDetectedNotes.removeIf(note -> note.lastDetectedTimestamp < timeout);
+        mDetectedNotes.removeIf(note -> note.timestamp() < timeout);
     }
 
     @AutoLogOutput
@@ -62,9 +66,17 @@ public class RobotState {
         return mPoseEstimator.getEstimatedPose();
     }
 
+    public Pose2d getPose2d(double timestampSeconds) {
+        return mPoseEstimator.getEstimatedPose(timestampSeconds);
+    }
+
     @AutoLogOutput
     public Pose3d getPose3d() {
         return new Pose3d(mPoseEstimator.getEstimatedPose());
+    }
+
+    public Pose3d getPose3d(double timestampSeconds) {
+        return new Pose3d(mPoseEstimator.getEstimatedPose(timestampSeconds));
     }
 
     @AutoLogOutput
@@ -139,21 +151,18 @@ public class RobotState {
         return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;
     }
 
-    // @AutoLogOutput
     public Pose2d[] getDetectedNotePoses2d() {
-        return mDetectedNotes.stream().map(note -> note.pose.toPose2d()).toArray(Pose2d[]::new);
-        // return new Pose2d[] {};
+        return mDetectedNotes.stream().map(note -> note.pose().toPose2d()).toArray(Pose2d[]::new);
     }
 
-    // @AutoLogOutput
+    @AutoLogOutput
     public Pose3d[] getDetectedNotePoses3d() {
-        return mDetectedNotes.stream().map(note -> note.pose).toArray(Pose3d[]::new);
-        // return new Pose3d[] {};
+        return mDetectedNotes.stream().map(note -> note.pose()).toArray(Pose3d[]::new);
     }
 
-    public void addDetectedNotes(List<NoteState> notes) {
+    public void addDetectedNotes(List<DetectedObjectState> notes) {
         for (var newNote : notes) {
-            mDetectedNotes.removeIf(existingNote -> existingNote.isSame(newNote));
+            mDetectedNotes.removeIf(existingNote -> existingNote.isSame(newNote, kDuplicateNoteDistanceThreshold));
         }
 
         mDetectedNotes.addAll(notes);
