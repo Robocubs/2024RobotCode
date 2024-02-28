@@ -418,17 +418,19 @@ public class RobotContainer {
                         mIndexer)
                 .ignoringDisable(false)
                 .withName("StreamDeckForwardButton");
-        var armUpCommand = run(
+        var armUpCommand = startEnd(
                         () -> {
                             mArm.setArmUp();
                         },
+                        () -> mArm.stop(),
                         mArm)
                 .ignoringDisable(false)
                 .withName("StreamDeckArmUpButton");
-        var armDownCommand = run(
+        var armDownCommand = startEnd(
                         () -> {
                             mArm.setArmDown();
                         },
+                        () -> mArm.stop(),
                         mArm)
                 .ignoringDisable(false)
                 .withName("StreamDeckAmDownButton");
@@ -508,22 +510,13 @@ public class RobotContainer {
         ;
 
         mStreamDeck.button(StreamDeckButton.kArmUpButton).whileTrue(armUpCommand);
-
         mStreamDeck.button(StreamDeckButton.kArmDownButton).whileTrue(armDownCommand);
-
         mStreamDeck.button(StreamDeckButton.kArmHomeButton).whileTrue(armHomeCommand);
 
         mStreamDeck
                 .button(StreamDeckButton.kShooterUpButton)
                 .whileTrue(shooterUpCommand)
                 .onFalse(stopShooterCommand);
-
-        mStreamDeck
-                .buttonGroup()
-                .option(StreamDeckButton.kButtonGroupButton1, trigger -> trigger.whileTrue(buttonGroupButton1Command))
-                .option(StreamDeckButton.kButtonGroupButton2, trigger -> trigger.whileTrue(buttonGroupButton2Command))
-                .option(StreamDeckButton.kButtonGroupButton3, trigger -> trigger.whileTrue(buttonGroupButton3Command))
-                .select(StreamDeckButton.kButtonGroupButton1);
 
         /* */
         DriverStation.silenceJoystickConnectionWarning(true);

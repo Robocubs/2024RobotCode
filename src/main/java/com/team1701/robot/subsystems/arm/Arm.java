@@ -139,10 +139,7 @@ public class Arm extends SubsystemBase {
         if (mRotationMotorOffset.isEmpty()) {
             mRotationMotorIO.setPercentOutput(0);
         } else {
-            mRotationMotorIO.setSmoothPositionControl(
-                    rotation,
-                    Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-                    Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
+            mRotationMotorIO.setPositionControl(rotation);
 
             // mLeftArmLigament.setAngle(rotation.getDegrees());
             Logger.recordOutput("Arm/Rotation/Demand", rotation);
@@ -150,11 +147,11 @@ public class Arm extends SubsystemBase {
     }
 
     public void setArmUp() {
-        mRotationMotorIO.setPercentOutput(10);
+        mRotationMotorIO.setPercentOutput(.1);
     }
 
     public void setArmDown() {
-        mRotationMotorIO.setPercentOutput(-10);
+        mRotationMotorIO.setPercentOutput(-.1);
     }
 
     public void rotateToAmpPosition() {
@@ -171,7 +168,7 @@ public class Arm extends SubsystemBase {
 
     public enum ArmPosition {
         // TODO: update values
-        HOME(0),
+        HOME(20),
         LOW(45),
         LOW_CLIMB(75),
         HIGH_CLIMB(90),

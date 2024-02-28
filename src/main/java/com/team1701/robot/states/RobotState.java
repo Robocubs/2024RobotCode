@@ -39,7 +39,7 @@ public class RobotState {
     private Optional<Intake> mIntake = Optional.empty();
     private Optional<Shooter> mShooter = Optional.empty();
 
-    private ScoringMode mScoringMode = ScoringMode.SPEAKER;
+    private ScoringMode mScoringMode = ScoringMode.AMP;
 
     private final PoseEstimator mPoseEstimator =
             new TwistPoseEstimator(Constants.Drive.kKinematics, VecBuilder.fill(0.005, 0.005, 0.0005));
