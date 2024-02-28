@@ -10,6 +10,7 @@ import com.revrobotics.SparkPIDController;
 import com.team1701.lib.util.SignalSamplingThread;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import org.littletonrobotics.junction.Logger;
 
 public class MotorIOSparkFlex implements MotorIO {
     private final CANSparkFlex mMotor;
@@ -104,6 +105,7 @@ public class MotorIOSparkFlex implements MotorIO {
     @Override
     public void setPercentOutput(double percentage) {
         mController.setReference(percentage, CANSparkFlex.ControlType.kDutyCycle);
+        Logger.recordOutput("MotorIO/PercentOutputDemand", percentage);
     }
 
     @Override

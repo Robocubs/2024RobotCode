@@ -336,11 +336,7 @@ public final class Constants {
 
         public static final Rotation2d kShooterAngleEncoderOffset;
 
-        public static int kShooterEntranceSensorId;
-        public static int kShooterExitSensorId;
-        public static int kShooterThroughBoreEncoderId = 4;
-
-        public static double kThroughBoreEncoderDistancePerRotation;
+        public static final int kShooterThroughBoreEncoderId = 4;
 
         public static final LoggedTunableNumber kRollerKff = new LoggedTunableNumber("Shooter/Motor/Roller/Kff");
         public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");
@@ -368,9 +364,9 @@ public final class Constants {
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
-        public static InterpolatingDoubleTreeMap kShooterAngleInterpolator =
+        public static final InterpolatingDoubleTreeMap kShooterAngleInterpolator =
                 new InterpolatingDoubleTreeMap(); // Radians
-        public static InterpolatingDoubleTreeMap kShooterSpeedInterpolator =
+        public static final InterpolatingDoubleTreeMap kShooterSpeedInterpolator =
                 new InterpolatingDoubleTreeMap(); // Radians/sec
 
         public static final double[][] kShooterDistanceToAngleValues = {

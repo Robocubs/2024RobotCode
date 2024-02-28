@@ -3,7 +3,6 @@ package com.team1701.lib.drivers.motors;
 import com.team1701.lib.util.SignalSamplingThread;
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
-import org.littletonrobotics.junction.AutoLogOutput;
 
 public interface MotorIO {
     @AutoLog
@@ -26,7 +25,6 @@ public interface MotorIO {
     public default void setSmoothVelocityControl(
             double velocityRadiansPerSecond, double maxAccelerationRadiansPerSecondSquared) {}
 
-    @AutoLogOutput(key = "PercentOutput")
     public default void setPercentOutput(double percentage) {}
 
     public default void setVoltageOutput(double volts) {}
