@@ -2,15 +2,17 @@ import { dashboardElementConfigs } from '@frc-web-components/fwc/components';
 import { Nt4Provider } from '@frc-web-components/fwc/source-providers';
 import { createContext } from '@lit/context';
 import { Store } from '@webbitjs/store';
-import { WebbitConfig, WebbitConnector } from '@webbitjs/webbit';
+import { WebbitConnector } from '@webbitjs/webbit';
 import { DirectiveResult } from 'lit/directive.js';
-import { SourceDoubleArray, SourceValue, ntDoubleArrayDirective, ntValueDirective } from './directives';
+import { componentElementConfigs } from '../components/component-configs';
+import { SourceDoubleArray, SourceValue, ntAllianceColorDirective, ntDoubleArrayDirective, ntValueDirective } from './directives';
 
 export class NetworkTables {
   private readonly store: Store;
   private readonly provider: Nt4Provider;
   private readonly nt4ValueDirective;
   private readonly nt4DoubleArrayDirective;
+  private readonly nt4AllianceColorDirective;
 
   constructor(address: string) {
     this.provider = new Nt4Provider();
@@ -21,10 +23,11 @@ export class NetworkTables {
 
     this.nt4ValueDirective = ntValueDirective(this.store);
     this.nt4DoubleArrayDirective = ntDoubleArrayDirective(this.store);
+    this.nt4AllianceColorDirective = ntAllianceColorDirective(this.store);
   }
 
   bindConnection(rootElement: HTMLElement) {
-    new WebbitConnector(rootElement, this.store).addElementConfigs(dashboardElementConfigs as Record<string, Partial<WebbitConfig>>, 'FRC');
+    new WebbitConnector(rootElement, this.store).addElementConfigs({ ...dashboardElementConfigs, ...componentElementConfigs }, 'FRC');
   }
 
   getValue<T>(key: string, defaultValue: T): T {
@@ -63,12 +66,16 @@ export class NetworkTables {
     return this.store;
   }
 
-  $value(key: string, value: unknown): DirectiveResult<typeof SourceValue> {
-    return this.nt4ValueDirective(key, value);
+  $value(key: string, defaultValue: unknown): DirectiveResult<typeof SourceValue> {
+    return this.nt4ValueDirective(key, defaultValue);
   }
 
-  $doubleArray(key: string, value: number[]): DirectiveResult<typeof SourceDoubleArray> {
-    return this.nt4DoubleArrayDirective(key, value);
+  $doubleArray(key: string, defaultValue: number[]): DirectiveResult<typeof SourceDoubleArray> {
+    return this.nt4DoubleArrayDirective(key, defaultValue);
+  }
+
+  $allianceColor(): DirectiveResult<typeof SourceDoubleArray> {
+    return this.nt4AllianceColorDirective();
   }
 }
 
