@@ -461,6 +461,8 @@ public class RobotContainer {
                         mClimb)
                 .ignoringDisable(false)
                 .withName("StreamDeckRetractWinchCommand");
+        var stopShooterCommand =
+                run(() -> Commands.idle(mShooter)).ignoringDisable(false).withName("StreamDeckStopShootCommand");
 
         mStreamDeck.configureButton(config -> config.add(
                         StreamDeckButton.kSpeakerModeButton, () -> mRobotState.getScoringMode() == ScoringMode.SPEAKER)
@@ -476,13 +478,23 @@ public class RobotContainer {
                 .add(StreamDeckButton.kShooterDownButton, shooterDownCommand::isScheduled)
                 .add(StreamDeckButton.kShootButton, manualShootCommand::isScheduled)
                 .add(StreamDeckButton.kExtendWinchButton, extendWinchCommand::isScheduled)
-                .add(StreamDeckButton.kRetractWinchButton, retractWinchCommand::isScheduled));
+                .add(StreamDeckButton.kRetractWinchButton, retractWinchCommand::isScheduled)
+                .add(StreamDeckButton.kStopShootButton, stopShooterCommand::isScheduled));
 
-        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(stopIntakingCommand);
+        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).onTrue(stopIntakingCommand);
+        // mStreamDeck.button(StreamDeckButton.kStopIntakeButton).onFalse(run(() -> stopIntakingCommand.cancel()));
 
-        mStreamDeck.button(StreamDeckButton.kRejectButton).whileTrue(rejectCommand);
+        mStreamDeck
+                .button(StreamDeckButton.kRejectButton)
+                .whileTrue(rejectCommand)
+                // .onFalse(stopIntakingCommand)
+                ;
 
-        mStreamDeck.button(StreamDeckButton.kForwardButton).whileTrue(forwardCommand);
+        mStreamDeck
+                .button(StreamDeckButton.kForwardButton)
+                .whileTrue(forwardCommand)
+                // .onFalse(stopIntakingCommand)
+                ;
 
         mStreamDeck.button(StreamDeckButton.kArmUpButton).whileTrue(armUpCommand);
 
@@ -490,9 +502,15 @@ public class RobotContainer {
 
         mStreamDeck.button(StreamDeckButton.kArmHomeButton).whileTrue(armHomeCommand);
 
-        mStreamDeck.button(StreamDeckButton.kShooterUpButton).whileTrue(shooterUpCommand);
+        mStreamDeck
+                .button(StreamDeckButton.kShooterUpButton)
+                .whileTrue(shooterUpCommand)
+                .onFalse(stopShooterCommand);
 
-        mStreamDeck.button(StreamDeckButton.kShooterDownButton).whileTrue(shooterDownCommand);
+        mStreamDeck
+                .button(StreamDeckButton.kShooterDownButton)
+                .whileTrue(shooterDownCommand)
+                .onFalse(stopShooterCommand);
 
         mStreamDeck.button(StreamDeckButton.kShootButton).whileTrue(new ManualShoot(mShooter, mIndexer));
 
@@ -505,6 +523,8 @@ public class RobotContainer {
         mStreamDeck.button(StreamDeckButton.kExtendWinchButton).whileTrue(extendWinchCommand);
 
         mStreamDeck.button(StreamDeckButton.kRetractWinchButton).whileTrue(retractWinchCommand);
+
+        mStreamDeck.button(StreamDeckButton.kStopShootButton).onTrue(stopShooterCommand);
 
         /* Secondary Xbox Controller TESTING ONLY */
         mSecondaryController.a().onTrue(runOnce(() -> mIntake.stop(), mIntake));
