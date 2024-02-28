@@ -70,13 +70,22 @@ public class StreamDeck {
     }
 
     public static enum StreamDeckButton {
-        kButton(0, 0, "Controls/TestButton", "ArrowUpward", "Button"),
-        kStopIntakeButton(0, 2, "Controls/StopIntakingButton", "Circle", "Stop Intaking"),
-        kSpeakerModeButton(0, 4, "Controls/SetSpeakerMode", "ArrowUpward", "Speaker Mode"),
-        kToggleButton(2, 0, "Controls/TestToggleButton", "Circle", "Toggle"),
-        kButtonGroupButton1(0, 3, "Controls/TestButtonGroupButton1", "ArrowUpward", "BG Up"),
-        kButtonGroupButton2(1, 3, "Controls/TestButtonGroupButton2", "Circle", "BG Mid"),
-        kButtonGroupButton3(2, 3, "Controls/TestButtonGroupButton3", "ArrowDownward", "BG Down");
+        // kButton(0, 0, "Controls/TestButton", "ArrowUpward", "Button"),
+        kStopIntakeButton(1, 0, "Controls/StopIntakingButton", "StopIntakingIcon", "Stop Intake"),
+        kRejectButton(2, 0, "Controls/RejectButton", "RejectIntakeIcon", "Reject"),
+        kForwardButton(0, 0, "Controls/ForwardButton", "ForceIntakeIcon", "Intake"),
+        kArmUpButton(0, 1, "Controls/ArmUpButton", "RaiseArmIcon", "Arm Up"),
+        kArmDownButton(2, 1, "Controls/ArmDownButton", "LowerArmIcon", "Arm Down"),
+        kArmHomeButton(1, 1, "Controls/ArmHomeButton", "HomeArmIcon", "Arm Home"),
+        kShooterUpButton(0, 3, "Controls/ShooterUpButton", "RaiseShooterIcon", "Shoot Up"),
+        kShooterDownButton(2, 3, "Controls/ShooterDownButton", "LowerShooterIcon", "Shoot Down"),
+        kShootButton(1, 2, "Controls/ShootButton", "ShootIcon", "Shoot"),
+        kStopShootButton(1, 3, "Controls/StopShootButton", "StopShooterIcon", "Stop"),
+        kSpeakerModeButton(0, 4, "Controls/SpeakerModeButton", "SpeakerModeIcon", "Speaker"),
+        kAmpModeButton(1, 4, "Controls/AmpModeButton", "AmpModeIcon", "Amp"),
+        kClimbModeButton(2, 4, "Controls/ClimbModeButton", "ClimbModeIcon", "Climb"),
+        kExtendWinchButton(0, 2, "Controls/ExtendWinchButton", "ExtendWinchIcon", "Extend"),
+        kRetractWinchButton(2, 2, "Controls/RetractWinchButton", "RetractWinchIcon", "Retract");
 
         private final int index;
         private final String key;

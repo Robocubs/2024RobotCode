@@ -156,12 +156,14 @@ public class SparkMotorFactory {
                 configureWithRetry(() -> controller.setFF(Constants.Arm.kArmRotationKff.get()), errorAlert);
                 configureWithRetry(
                         () -> motor.setSoftLimit(
-                                SoftLimitDirection.kForward, (float) Constants.Arm.kArmUpperLimitRotations),
+                                SoftLimitDirection.kForward, (float) (Constants.Arm.kArmUpperLimitRotations)),
                         errorAlert);
                 configureWithRetry(
                         () -> motor.setSoftLimit(
-                                SoftLimitDirection.kReverse, (float) Constants.Arm.kArmLowerLimitRotations),
+                                SoftLimitDirection.kReverse, (float) (Constants.Arm.kArmLowerLimitRotations)),
                         errorAlert);
+                configureWithRetry(() -> motor.enableSoftLimit(SoftLimitDirection.kForward, true), errorAlert);
+                configureWithRetry(() -> motor.enableSoftLimit(SoftLimitDirection.kReverse, true), errorAlert);
                 reduction = Constants.Arm.kRotationReduction;
                 break;
             default:

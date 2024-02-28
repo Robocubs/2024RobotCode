@@ -20,8 +20,9 @@ public class IntakeCommand extends Command {
             mIntake.stop();
         } else if (mIntake.hasNote()) {
             mIntake.setForward();
-        } else if (mRobotState.getDetectedNotePoses2d().length > 0) mIntake.setMediumForward();
-        else {
+        } else if (mRobotState.getDetectedNotePoses2d().length > 0) {
+            mIntake.setMediumForward();
+        } else {
             mIntake.setSlowForward();
         }
     }

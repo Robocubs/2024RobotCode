@@ -221,6 +221,7 @@ public class RobotState {
         this.mScoringMode = scoringMode;
     }
 
+    @AutoLogOutput
     public ScoringMode getScoringMode() {
         return mScoringMode;
     }

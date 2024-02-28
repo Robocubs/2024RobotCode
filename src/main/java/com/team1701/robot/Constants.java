@@ -472,8 +472,8 @@ public final class Constants {
         // TODO: Update values
         public static final double kRotationReduction = 1.0 / 20.0;
 
-        public static final double kArmUpperLimitRotations = Units.degreesToRotations(135);
-        public static final double kArmLowerLimitRotations = Units.degreesToRotations(20);
+        public static final double kArmUpperLimitRotations = Units.degreesToRotations(95) / kRotationReduction;
+        public static final double kArmLowerLimitRotations = Units.degreesToRotations(20) / kRotationReduction;
 
         public static final double kAngleReduction = 1;
 
@@ -506,7 +506,7 @@ public final class Constants {
                     kArmRotationKd.initDefault(0.0);
 
                     kArmAngleEncoderOffset =
-                            Rotation2d.fromRadians(-3.652).minus(GeometryUtil.kRotationHalfPi); // TODO: Update value
+                            Rotation2d.fromRadians(-3.652).plus(GeometryUtil.kRotationHalfPi); // TODO: Update value
                     break;
                 case SIMULATION_BOT:
                     kArmRotationKff.initDefault(0.0);
