@@ -4,6 +4,7 @@ import java.util.stream.DoubleStream;
 
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.states.RobotState.ScoringMode;
@@ -11,6 +12,8 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
 
@@ -28,6 +31,8 @@ public class Shoot extends Command {
     private final RobotState mRobotState;
     private final boolean mWaitForHeading;
 
+    private TimeLockedBoolean mLockedReadyToShoot;
+
     private boolean mShooting;
 
     private ScoringMode mScoringMode;
@@ -40,6 +45,8 @@ public class Shoot extends Command {
         mWaitForHeading = waitForHeading;
 
         mScoringMode = scoringMode;
+
+        mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp(), false, false);
 
         addRequirements(shooter, indexer);
     }
@@ -62,7 +69,10 @@ public class Shoot extends Command {
                 // TODO: Linear reg of speeds
                 desiredShooterAngle =
                         mRobotState.calculateShooterAngleTowardsSpeaker().minus(Rotation2d.fromDegrees(1));
-                leftTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
+
+                leftTargetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker());
+                Logger.recordOutput(kLoggingPrefix + "InterpolatedShooterSpeed", leftTargetSpeed);
+
                 rightTargetSpeed = leftTargetSpeed;
                 targetHeading = mRobotState.getSpeakerHeading();
                 break;
@@ -77,14 +87,12 @@ public class Shoot extends Command {
                 return;
         }
 
-        desiredShooterAngle = Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get());
+        // desiredShooterAngle = Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get());
         mShooter.setRotationAngle(desiredShooterAngle);
         mShooter.setUnifiedRollerSpeed(leftTargetSpeed);
 
         var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(),
-                Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get()) /*desiredShootingAngle */,
-                Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
         var atHeading = !mWaitForHeading
                 || GeometryUtil.isNear(
@@ -101,6 +109,10 @@ public class Shoot extends Command {
                         .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 50.0));
 
         if (atAngle && atHeading && atSpeed) {
+            mLockedReadyToShoot.update(true, Timer.getFPGATimestamp());
+        }
+
+        if (mLockedReadyToShoot.getValue()) {
             mIndexer.setForwardShoot();
             mShooting = true;
         }

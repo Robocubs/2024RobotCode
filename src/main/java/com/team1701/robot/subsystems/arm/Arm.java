@@ -124,6 +124,9 @@ public class Arm extends SubsystemBase {
             zeroArmRotation();
         }
 
+        Logger.recordOutput("Arm/calculatedAngle", angle);
+        Logger.recordOutput("Arm/calculatedAngleModulus", mAngle);
+
         Logger.recordOutput("Arm/Mechanism/Left", mLeftArmMechanism);
         Logger.recordOutput("Arm/Mechanism/Right", mRightArmMechanism);
     }

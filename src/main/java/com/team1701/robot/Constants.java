@@ -368,6 +368,41 @@ public final class Constants {
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
+        public static InterpolatingDoubleTreeMap kShooterAngleInterpolator =
+                new InterpolatingDoubleTreeMap(); // Radians
+        public static InterpolatingDoubleTreeMap kShooterSpeedInterpolator =
+                new InterpolatingDoubleTreeMap(); // Radians/sec
+
+        public static final double[][] kShooterDistanceToAngleValues = {
+            {3.5, 0.55},
+            {3.78, 0.535},
+            {2.75, 0.7},
+            {2.298, 0.9},
+            {4.25, 0.49},
+            {4.75, 0.442},
+            {5.5, 0.385},
+        };
+
+        public static final double[][] kShooterDistanceToSpeedValues = {
+            {3.5, 400},
+            {3.78, 400},
+            {2.75, 300},
+            {2.298, 300},
+            {4.25, 410},
+            {4.75, 410},
+            {5.5, 480},
+        };
+
+        static {
+            for (double[] pair : kShooterDistanceToAngleValues) {
+                kShooterAngleInterpolator.put(pair[0], pair[1]);
+            }
+
+            for (double[] pair : kShooterDistanceToSpeedValues) {
+                kShooterSpeedInterpolator.put(pair[0], pair[1]);
+            }
+        }
+
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
@@ -472,7 +507,8 @@ public final class Constants {
                     kArmRotationKp.initDefault(0.0);
                     kArmRotationKd.initDefault(0.0);
 
-                    kArmAngleEncoderOffset = Rotation2d.fromRotations(0); // TODO: Update value
+                    kArmAngleEncoderOffset =
+                            Rotation2d.fromRadians(-3.652).minus(GeometryUtil.kRotationHalfPi); // TODO: Update value
                     break;
                 case SIMULATION_BOT:
                     kArmRotationKff.initDefault(0.0);

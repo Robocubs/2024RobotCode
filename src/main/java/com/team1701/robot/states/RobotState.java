@@ -182,12 +182,13 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d calculateShooterAngleTowardsSpeaker() {
-        var translationToSpeaker = getSpeakerPose()
-                .minus(getPose3d()
-                        .transformBy(Constants.Robot.kRobotToShooterHinge)
-                        .getTranslation());
+        // var translationToSpeaker = getSpeakerPose()
+        //         .minus(getPose3d()
+        //                 .transformBy(Constants.Robot.kRobotToShooterHinge)
+        //                 .getTranslation());
 
-        return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
+        return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(getDistanceToSpeaker()));
+        // return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
     }
 
     public void setScoringMode(ScoringMode scoringMode) {
