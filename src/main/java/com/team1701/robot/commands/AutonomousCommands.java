@@ -146,14 +146,15 @@ public class AutonomousCommands {
 
     public AutonomousCommand fourPiece() {
         var command = loggedSequence(
-                print("Started four piece auto"),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
-                followChoreoPath("FourPiece.1", true),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
-                followChoreoPath("FourPiece.2"),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
-                followChoreoPath("FourPiece.3"),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
+                        // print("Started four piece auto"),
+                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
+                        followChoreoPath("FourPiece.1", true),
+                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
+                        followChoreoPath("FourPiece.2"),
+                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
+                        followChoreoPath("FourPiece.3"),
+                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState))
+                .withName("FourPieceAuton");
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
