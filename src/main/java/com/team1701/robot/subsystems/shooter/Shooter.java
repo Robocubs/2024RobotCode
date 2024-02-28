@@ -260,6 +260,14 @@ public class Shooter extends SubsystemBase {
         Logger.recordOutput("Shooter/Motors/Rotation/Demand", rotation);
     }
 
+    public void setShooterUp() {
+        mRotationMotorIO.setPercentOutput(10);
+    }
+
+    public void setShooterDown() {
+        mRotationMotorIO.setPercentOutput(-10);
+    }
+
     public void stopRollers() {
         mRightUpperRollerMotorIO.setPercentOutput(0);
         mRightLowerRollerMotorIO.setPercentOutput(0);
