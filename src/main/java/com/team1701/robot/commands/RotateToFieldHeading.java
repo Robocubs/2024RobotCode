@@ -48,8 +48,6 @@ public class RotateToFieldHeading extends Command {
     private DoubleSupplier mXSupplier;
     private DoubleSupplier mYSupplier;
 
-    private boolean mJoystickInputEnabled;
-
     RotateToFieldHeading(
             Drive drive,
             Supplier<Rotation2d> targetHeadingSupplier,
@@ -70,7 +68,6 @@ public class RotateToFieldHeading extends Command {
 
         mXSupplier = () -> 0;
         mYSupplier = () -> 0;
-        mJoystickInputEnabled = false;
 
         addRequirements(drive);
     }
@@ -86,7 +83,6 @@ public class RotateToFieldHeading extends Command {
 
         mXSupplier = xSupplier;
         mYSupplier = ySupplier;
-        mJoystickInputEnabled = true;
     }
 
     @Override

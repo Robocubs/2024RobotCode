@@ -200,11 +200,11 @@ public class RobotState {
         return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
     }
 
-    public void setIsScoring(boolean isScoring) {
+    public void setScoring(boolean isScoring) {
         mIsScoring = isScoring;
     }
 
-    public boolean getIsScoring() {
+    public boolean isScoring() {
         return mIsScoring;
     }
 
