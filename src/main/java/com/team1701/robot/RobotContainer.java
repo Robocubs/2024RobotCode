@@ -457,11 +457,15 @@ public class RobotContainer {
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         var demoCommand = commands.demo();
         var fourPieceCommand = commands.fourPiece();
+        var shootAndBackupCommand = commands.shootAndBackup();
         mAutonomousPaths.put("Demo", demoCommand.path());
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
+        mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
 
         autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
+        autonomousModeChooser.addOption("Shoot and Backup", shootAndBackupCommand.command());
+
         autonomousModeChooser.getSendableChooser().onChange(this::logAutonomousPath);
 
         var logAutonomousPathCommand =

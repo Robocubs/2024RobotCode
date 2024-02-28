@@ -635,25 +635,29 @@
                     "scope": [
                         "first"
                     ],
-                    "type": "StopPoint"
+                    "type": "StopPoint",
+                    "direction": 0
                 },
                 {
                     "scope": [
                         "last"
                     ],
-                    "type": "StopPoint"
+                    "type": "StopPoint",
+                    "direction": 0
                 },
                 {
                     "scope": [
                         2
                     ],
-                    "type": "StopPoint"
+                    "type": "StopPoint",
+                    "direction": 0
                 },
                 {
                     "scope": [
                         5
                     ],
-                    "type": "StopPoint"
+                    "type": "StopPoint",
+                    "direction": 0
                 }
             ],
             "usesControlIntervalGuessing": true,

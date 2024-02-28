@@ -133,15 +133,27 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
+    public AutonomousCommand shootAndBackup() {
+        /*
+         * TODO: Robot-relative drive command so we can remove dependency on odometry for this command
+         */
+        var command = loggedSequence(
+                print("Started shoot and backup"),
+                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
+
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
     public AutonomousCommand fourPiece() {
         var command = loggedSequence(
                 print("Started four piece auto"),
-                waitSeconds(.5),
+                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
                 followChoreoPath("FourPiece.1", true),
-                waitSeconds(.5),
+                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
                 followChoreoPath("FourPiece.2"),
-                waitSeconds(.5),
-                followChoreoPath("FourPiece.3"));
+                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
+                followChoreoPath("FourPiece.3"),
+                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
