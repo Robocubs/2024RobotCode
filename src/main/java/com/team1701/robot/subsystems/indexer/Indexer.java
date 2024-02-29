@@ -28,6 +28,8 @@ public class Indexer extends SubsystemBase {
         mIndexerEntranceSensor = indexerEntranceSensor;
         mIndexerExitSensor = indexerExitSensor;
         mIndexerMotorIO = motor;
+
+        mIndexerMotorIO.setBrakeMode(true);
     }
 
     public static MotorIOSim createSim(DCMotor IndexerMotor) {

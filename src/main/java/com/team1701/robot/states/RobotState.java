@@ -34,6 +34,7 @@ public class RobotState {
     private static final double kDuplicateNoteDistanceThreshold = Units.inchesToMeters(10.0);
 
     private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
+    private final TimeLockedBoolean mOutOfAmpRange = new TimeLockedBoolean(0.25, Timer.getFPGATimestamp(), true, true);
 
     private Optional<Indexer> mIndexer = Optional.empty();
     private Optional<Intake> mIntake = Optional.empty();
@@ -55,6 +56,7 @@ public class RobotState {
     public void periodic() {
         var timeout = Timer.getFPGATimestamp() - kDetectedNoteTimeout;
         mDetectedNotes.removeIf(note -> note.timestamp() < timeout);
+        mOutOfAmpRange.update(getDistanceToAmp() > 1, Timer.getFPGATimestamp());
     }
 
     @AutoLogOutput
@@ -138,6 +140,11 @@ public class RobotState {
                         Configuration.isBlueAlliance()
                                 ? FieldConstants.kBlueAmpPosition.toTranslation2d()
                                 : FieldConstants.kRedAmpPosition.toTranslation2d());
+    }
+
+    @AutoLogOutput
+    public boolean outOfAmpRange() {
+        return mOutOfAmpRange.getValue();
     }
 
     public Translation3d getSpeakerPose() {

@@ -30,6 +30,7 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
+import com.team1701.robot.Configuration.RobotType;
 import com.team1701.robot.commands.ArmCommands;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
@@ -570,7 +571,9 @@ public class RobotContainer {
         var demoCommand = commands.demo();
         var fourPieceCommand = commands.fourPiece();
         var shootAndBackupCommand = commands.shootAndBackup();
-        mAutonomousPaths.put("Demo", demoCommand.path());
+        if (Configuration.getRobot() != RobotType.SIMULATION_BOT) {
+            mAutonomousPaths.put("Demo", demoCommand.path());
+        }
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
 

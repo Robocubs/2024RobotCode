@@ -147,26 +147,25 @@ public class AutonomousCommands {
     public AutonomousCommand fourPiece() {
         var command = loggedSequence(
                         print("Started four piece auto"),
-                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
                         followChoreoPath("FourPiece.1", true),
-                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
+                        aimAndShoot(),
                         followChoreoPath("FourPiece.2"),
-                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
+                        aimAndShoot(),
                         followChoreoPath("FourPiece.3"),
-                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState))
-                .withName("FourPieceAuton");
+                        aimAndShoot(),
+                        followChoreoPath("FourPiece.4"),
+                        aimAndShoot())
+                .withName("FourPieceAuto");
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
     public AutonomousCommand threePieceCenter() {
         var command = loggedSequence(
-                print("Started three piece center auto"),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
-                followChoreoPath("ThreePieceCenter.1", true),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
-                followChoreoPath("ThreePieceCenter.2"),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
+                        print("Started three piece center auto"), aimAndShoot(),
+                        followChoreoPath("ThreePieceCenter.1", true), aimAndShoot(),
+                        followChoreoPath("ThreePieceCenter.2"), aimAndShoot())
+                .withName("ThreePieceAuto");
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }

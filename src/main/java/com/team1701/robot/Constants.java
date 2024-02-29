@@ -350,9 +350,9 @@ public final class Constants {
         public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 100);
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =
-                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 85);
+                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 43);
         public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 175);
+                new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 250);
         public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/TrapRollerSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
@@ -472,7 +472,7 @@ public final class Constants {
         // TODO: Update values
         public static final double kRotationReduction = 1.0 / 20.0;
 
-        public static final double kArmUpperLimitRotations = Units.degreesToRotations(95) / kRotationReduction;
+        public static final double kArmUpperLimitRotations = Units.degreesToRotations(100) / kRotationReduction;
         public static final double kArmLowerLimitRotations = Units.degreesToRotations(20) / kRotationReduction;
 
         public static final double kAngleReduction = 1;

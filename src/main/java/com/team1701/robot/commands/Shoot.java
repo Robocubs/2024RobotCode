@@ -91,7 +91,12 @@ public class Shoot extends Command {
         }
 
         // desiredShooterAngle = Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get());
-        mShooter.setRotationAngle(desiredShooterAngle);
+        var clampedDesiredRotations = MathUtil.clamp(
+                desiredShooterAngle.getRotations(),
+                Constants.Shooter.kShooterLowerLimitRotations,
+                Constants.Shooter.kShooterUpperLimitRotations);
+
+        mShooter.setRotationAngle(Rotation2d.fromRotations(clampedDesiredRotations));
         mShooter.setUnifiedRollerSpeed(leftTargetSpeed);
 
         var atAngle = GeometryUtil.isNear(

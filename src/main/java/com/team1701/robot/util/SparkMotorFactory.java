@@ -155,7 +155,7 @@ public class SparkMotorFactory {
                 configureWithRetry(() -> controller.setP(Constants.Arm.kArmRotationKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Arm.kArmRotationKd.get()), errorAlert);
                 configureWithRetry(() -> controller.setFF(Constants.Arm.kArmRotationKff.get()), errorAlert);
-                configureWithRetry(() -> controller.setOutputRange(-.3, .3), errorAlert);
+                configureWithRetry(() -> controller.setOutputRange(-.15, .15), errorAlert);
                 configureWithRetry(
                         () -> motor.setSoftLimit(
                                 SoftLimitDirection.kForward, (float) (Constants.Arm.kArmUpperLimitRotations)),

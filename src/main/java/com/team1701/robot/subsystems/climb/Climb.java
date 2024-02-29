@@ -4,7 +4,6 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.robot.Constants;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -50,27 +49,29 @@ public class Climb extends SubsystemBase {
     }
 
     public void retractWinch(double distanceMeters) {
-        var rotations = distanceMeters / Constants.Climb.kWinchCircumference;
-        mLeftWinchIO.setSmoothPositionControl(
-                Rotation2d.fromRotations(rotations),
-                Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-                Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
-        mRightWinchIO.setSmoothPositionControl(
-                Rotation2d.fromRotations(rotations),
-                Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-                Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
+        setPercentOutput(-.1);
+        // var rotations = distanceMeters / Constants.Climb.kWinchCircumference;
+        // mLeftWinchIO.setSmoothPositionControl(
+        //         Rotation2d.fromRotations(rotations),
+        //         Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
+        //         Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
+        // mRightWinchIO.setSmoothPositionControl(
+        //         Rotation2d.fromRotations(rotations),
+        //         Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
+        //         Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
     }
 
     public void extendWinch(double distanceMeters) {
-        var rotations = -distanceMeters / Constants.Climb.kWinchCircumference;
-        mLeftWinchIO.setSmoothPositionControl(
-                Rotation2d.fromRotations(rotations),
-                Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-                Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
-        mRightWinchIO.setSmoothPositionControl(
-                Rotation2d.fromRotations(rotations),
-                Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-                Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
+        setPercentOutput(.1);
+        // var rotations = -distanceMeters / Constants.Climb.kWinchCircumference;
+        // mLeftWinchIO.setSmoothPositionControl(
+        //         Rotation2d.fromRotations(rotations),
+        //         Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
+        //         Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
+        // mRightWinchIO.setSmoothPositionControl(
+        //         Rotation2d.fromRotations(rotations),
+        //         Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
+        //         Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
     }
 
     public void setPercentOutput(double percent) {

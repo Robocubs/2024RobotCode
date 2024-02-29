@@ -19,9 +19,9 @@ public class ArmCommands {
                             Rotation2d targetRotation =
                                     switch (robotState.getScoringMode()) {
                                         case SPEAKER -> ArmPosition.HOME.armRotation;
-                                        case AMP -> robotState.getDistanceToAmp() <= 1
-                                                ? ArmPosition.AMP.armRotation
-                                                : ArmPosition.HOME.armRotation; // TODO add time locked boolean
+                                        case AMP -> robotState.outOfAmpRange()
+                                                ? ArmPosition.HOME.armRotation
+                                                : ArmPosition.AMP.armRotation;
                                         case CLIMB -> ArmPosition.HOME.armRotation;
                                         default -> ArmPosition.HOME.armRotation;
                                     };
