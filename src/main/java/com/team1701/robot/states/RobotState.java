@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class RobotState {
-    private static final double kDetectedNoteTimeout = 1.0;
+    private static final double kDetectedNoteTimeout = 3.0;
     private boolean mIsScoring = false;
     private static final double kDuplicateNoteDistanceThreshold = Units.inchesToMeters(10.0);
 
@@ -39,6 +39,7 @@ public class RobotState {
     private Optional<Intake> mIntake = Optional.empty();
     private Optional<Shooter> mShooter = Optional.empty();
 
+    @AutoLogOutput
     private ScoringMode mScoringMode = ScoringMode.SPEAKER;
 
     private final PoseEstimator mPoseEstimator =
@@ -121,13 +122,22 @@ public class RobotState {
                 : poseX < FieldConstants.kWingLength;
     }
 
+    @AutoLogOutput
+    public boolean inNearHalf() {
+        var poseX = getPose2d().getX();
+        return Configuration.isBlueAlliance()
+                ? poseX < FieldConstants.kFieldLongLengthMeters / 2.0
+                : poseX > FieldConstants.kFieldLongLengthMeters / 2.0;
+    }
+
+    @AutoLogOutput
     public double getDistanceToAmp() {
-        return getPose3d()
+        return getPose2d()
                 .getTranslation()
                 .getDistance(
                         Configuration.isBlueAlliance()
-                                ? FieldConstants.kBlueAmpPosition
-                                : FieldConstants.kRedAmpPosition);
+                                ? FieldConstants.kBlueAmpPosition.toTranslation2d()
+                                : FieldConstants.kRedAmpPosition.toTranslation2d());
     }
 
     public Translation3d getSpeakerPose() {
@@ -191,12 +201,13 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d calculateShooterAngleTowardsSpeaker() {
-        var translationToSpeaker = getSpeakerPose()
-                .minus(getPose3d()
-                        .transformBy(Constants.Robot.kRobotToShooterHinge)
-                        .getTranslation());
+        // var translationToSpeaker = getSpeakerPose()
+        //         .minus(getPose3d()
+        //                 .transformBy(Constants.Robot.kRobotToShooterHinge)
+        //                 .getTranslation());
 
-        return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
+        return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(getDistanceToSpeaker()));
+        // return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
     }
 
     public void setScoring(boolean isScoring) {

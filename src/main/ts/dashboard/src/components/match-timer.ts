@@ -1,4 +1,3 @@
-//liam is the greatest most bestest president - sorryen
 import { LitElement, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';

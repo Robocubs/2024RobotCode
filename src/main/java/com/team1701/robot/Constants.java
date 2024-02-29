@@ -318,25 +318,30 @@ public final class Constants {
 
     public static final class Shooter {
         // TODO: Update values
-        public static final double kRollerReduction = 1.0; // 32.0 /18.0
+        public static final double kRollerReduction = 30.0 / 18.0; // 32.0 /18.0
         public static final double kEncoderToShooterReduction = 30.0 / 50.0;
         public static final double kAngleReduction = (1.0 / 4.0) * (1.0 / 5.0) * (20.0 / 93.0);
-        public static final int kShooterRightUpperRollerMotorId = 23;
-        public static final int kShooterRightLowerRollerMotorId = 25;
+
+        public static final int kShooterRightUpperRollerMotorId = 25;
+        public static final int kShooterRightLowerRollerMotorId = 23;
         public static final int kShooterLeftLowerRollerMotorId = 22;
         public static final int kShooterLeftUpperRollerMotorId = 24;
+
         public static final int kShooterRotationMotorId = 26;
 
-        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(65);
+        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(58);
         public static final double kShooterLowerLimitRotations = Units.degreesToRotations(18);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
+
+        public static final Rotation2d kShooterAngleEncoderOffset;
+
+        public static final int kShooterThroughBoreEncoderId = 4;
 
         public static final LoggedTunableNumber kRollerKff = new LoggedTunableNumber("Shooter/Motor/Roller/Kff");
         public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");
         public static final LoggedTunableNumber kRollerKd = new LoggedTunableNumber("Shooter/Motor/Roller/Kd");
 
-        public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity", 1.0);
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
@@ -347,21 +352,54 @@ public final class Constants {
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =
                 new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 85);
         public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 400);
+                new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 175);
         public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/TrapRollerSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/TargetShootSpeedRadiansPerSecond", 450);
 
+        public static final LoggedTunableNumber kTunableShooterAngleRadians =
+                new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
+
+        public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
-        public static final Rotation2d kShooterAngleEncoderOffset;
+        public static final InterpolatingDoubleTreeMap kShooterAngleInterpolator =
+                new InterpolatingDoubleTreeMap(); // Radians
+        public static final InterpolatingDoubleTreeMap kShooterSpeedInterpolator =
+                new InterpolatingDoubleTreeMap(); // Radians/sec
 
-        public static int kShooterEntranceSensorId;
-        public static int kShooterExitSensorId;
-        public static int kShooterThroughBoreEncoderId = 4;
+        public static final double[][] kShooterDistanceToAngleValues = {
+            {3.5, 0.55},
+            {3.78, 0.535},
+            {2.75, 0.7},
+            {2.298, 0.9},
+            {4.25, 0.49},
+            {4.75, 0.442},
+            {5.5, 0.385},
+            {6.46, .3785}
+        };
 
-        public static double kThroughBoreEncoderDistancePerRotation;
+        public static final double[][] kShooterDistanceToSpeedValues = {
+            {3.5, 400},
+            {3.78, 400},
+            {2.75, 300},
+            {2.298, 300},
+            {4.25, 410},
+            {4.75, 410},
+            {5.5, 480},
+            {6.46, 520}
+        };
+
+        static {
+            for (double[] pair : kShooterDistanceToAngleValues) {
+                kShooterAngleInterpolator.put(pair[0], pair[1]);
+            }
+
+            for (double[] pair : kShooterDistanceToSpeedValues) {
+                kShooterSpeedInterpolator.put(pair[0], pair[1]);
+            }
+        }
 
         static {
             switch (Configuration.getRobot()) {
@@ -375,7 +413,8 @@ public final class Constants {
 
                     kTargetShootSpeedRadiansPerSecond.initDefault(450);
 
-                    kShooterAngleEncoderOffset = Rotation2d.fromRadians(0.135); // final calculated value .488
+                    kShooterAngleEncoderOffset =
+                            Rotation2d.fromRadians(3.347).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
 
                     kMaxRotationVelocityRadiansPerSecond.initDefault(0);
                     kMaxRotationAccelerationRadiansPerSecondSquared.initDefault(0);
@@ -433,15 +472,15 @@ public final class Constants {
         // TODO: Update values
         public static final double kRotationReduction = 1.0 / 20.0;
 
-        public static final double kArmUpperLimitRotations = Units.degreesToRotations(135);
-        public static final double kArmLowerLimitRotations = Units.degreesToRotations(0);
+        public static final double kArmUpperLimitRotations = Units.degreesToRotations(95) / kRotationReduction;
+        public static final double kArmLowerLimitRotations = Units.degreesToRotations(20) / kRotationReduction;
 
         public static final double kAngleReduction = 1;
 
         // TODO: add IDs
 
         public static final int kRotationMotorId = 42;
-        public static final int kEncoderId = 43;
+        public static final int kEncoderId = 5;
 
         public static final LoggedTunableNumber kArmRotationKff = new LoggedTunableNumber("Arm/RotationMotor/Kff");
         public static final LoggedTunableNumber kArmRotationKp = new LoggedTunableNumber("Arm/RotationMotor/Kp");
@@ -449,24 +488,25 @@ public final class Constants {
 
         // TODO: update values
         public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity");
+                new LoggedTunableNumber("Arm/Motor/Rotation/MaxVelocity", Math.PI);
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
-                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration");
+                new LoggedTunableNumber("Arm/Motor/Rotation/MaxAcceleration", Math.PI);
 
         public static final Rotation2d kArmAngleEncoderOffset;
 
         public static final LoggedTunableNumber kArmAmpRotationDegrees =
-                new LoggedTunableNumber("Arm/AmpRotationDegrees");
+                new LoggedTunableNumber("Arm/AmpRotationDegrees", 95);
         ; // TODO: update
 
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
                     kArmRotationKff.initDefault(0.0);
-                    kArmRotationKp.initDefault(0.0);
+                    kArmRotationKp.initDefault(0.2);
                     kArmRotationKd.initDefault(0.0);
 
-                    kArmAngleEncoderOffset = Rotation2d.fromRotations(0); // TODO: Update value
+                    kArmAngleEncoderOffset =
+                            Rotation2d.fromRadians(-0.6).plus(GeometryUtil.kRotationHalfPi); // TODO: Update value
                     break;
                 case SIMULATION_BOT:
                     kArmRotationKff.initDefault(0.0);
@@ -484,13 +524,13 @@ public final class Constants {
     public static final class Indexer {
         // TODO: Update values and set names
         public static final int kIndexerMotorId = 21;
-        public static final double kIndexerReduction = 1;
+        public static final double kIndexerReduction = 1.0 / 9.0;
 
         public static final int kIndexerEntranceSensorId = 0;
         public static final int kIndexerExitSensorId = 2;
 
-        public static final double kIndexerPercent = 1;
-        public static final double kReduction = 1.0 / 1.0;
+        public static final double kIndexerShootPercent = 1;
+        public static final double kIndexerLoadPercent = .25;
 
         public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
@@ -523,7 +563,7 @@ public final class Constants {
         public static final int kIntakeExitSensorId = 1;
 
         public static final double kIntakeSpeed = 0.8;
-        public static final double kOuttakeSpeed = -0.5;
+        public static final double kOuttakeSpeed = -1.0;
         public static final double kReduction = 1.0 / 9.0;
     }
 }

@@ -4,6 +4,7 @@ import java.util.stream.DoubleStream;
 
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.states.RobotState.ScoringMode;
@@ -11,6 +12,7 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
 
@@ -21,12 +23,14 @@ public class Shoot extends Command {
     private static final LoggedTunableNumber kSpeedToleranceRadiansPerSecond =
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 50.0);
     private static final LoggedTunableNumber kHeadingToleranceRadians =
-            new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceRadians", 0.01);
+            new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceDegrees", 2);
 
     private final Shooter mShooter;
     private final Indexer mIndexer;
     private final RobotState mRobotState;
     private final boolean mWaitForHeading;
+
+    private TimeLockedBoolean mLockedReadyToShoot;
 
     private boolean mShooting;
 
@@ -41,12 +45,15 @@ public class Shoot extends Command {
 
         mScoringMode = scoringMode;
 
+        mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp(), false, false);
+
         addRequirements(shooter, indexer);
     }
 
     @Override
     public void initialize() {
         mShooting = false;
+        mLockedReadyToShoot.update(false, Timer.getFPGATimestamp());
     }
 
     @Override
@@ -63,8 +70,12 @@ public class Shoot extends Command {
             case SPEAKER:
                 // TODO: Linear reg of speeds
                 desiredShooterAngle =
-                        mRobotState.calculateShooterAngleTowardsSpeaker().plus(Rotation2d.fromDegrees(2.5));
-                leftTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
+                        mRobotState.calculateShooterAngleTowardsSpeaker().minus(Rotation2d.fromDegrees(1));
+
+                // leftTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
+                leftTargetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker());
+                Logger.recordOutput(kLoggingPrefix + "InterpolatedShooterSpeed", leftTargetSpeed);
+
                 rightTargetSpeed = leftTargetSpeed;
                 targetHeading = mRobotState.getSpeakerHeading();
                 break;
@@ -79,6 +90,7 @@ public class Shoot extends Command {
                 return;
         }
 
+        // desiredShooterAngle = Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get());
         mShooter.setRotationAngle(desiredShooterAngle);
         mShooter.setUnifiedRollerSpeed(leftTargetSpeed);
 
@@ -89,7 +101,7 @@ public class Shoot extends Command {
                 || GeometryUtil.isNear(
                         targetHeading,
                         mRobotState.getHeading(),
-                        Rotation2d.fromRadians(kHeadingToleranceRadians.get()));
+                        Rotation2d.fromDegrees(kHeadingToleranceRadians.get()));
 
         // TODO: Determine if time-locked boolean is needed
         // Or alternatively use a speed range based on distance
@@ -99,7 +111,9 @@ public class Shoot extends Command {
                 && DoubleStream.of(mShooter.getRightRollerSpeedsRadiansPerSecond())
                         .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 50.0));
 
-        if (atAngle && atHeading && atSpeed) {
+        mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp());
+
+        if (mLockedReadyToShoot.getValue()) {
             mIndexer.setForwardShoot();
             mShooting = true;
         }

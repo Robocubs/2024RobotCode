@@ -52,7 +52,7 @@ public class DetectorCameraIOLimelight implements DetectorCameraIO {
             var captureLatency = (double) results.get("cl");
             var targetingLatency = (double) results.get("tl");
             latency = (captureLatency + targetingLatency) / 1000.0;
-            timestamp = jsonTimestampSeconds + latency;
+            timestamp = jsonTimestampSeconds - latency;
 
             var seesTarget = ((long) results.get("v")) != 0;
             if (!seesTarget) {

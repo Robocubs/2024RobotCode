@@ -20,7 +20,7 @@ import org.littletonrobotics.junction.Logger;
 /* Note: positive rotations are counterclockwise (turning left) */
 
 public class RotateToFieldHeading extends Command {
-    private static final String kLoggingPrefix = "Command/RotateRelativeToRobot/";
+    private static final String kLoggingPrefix = "Command/RotateToFieldHeading/";
     private static final double kModuleRadius = Constants.Drive.kModuleRadius;
     private static final KinematicLimits kMaxKinematicLimits = Constants.Drive.kFastTrapezoidalKinematicLimits;
     private static final LoggedTunableNumber kMaxAngularVelocity = new LoggedTunableNumber(
@@ -32,7 +32,7 @@ public class RotateToFieldHeading extends Command {
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
     private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
     private static final LoggedTunableNumber kRotationToleranceRadians =
-            new LoggedTunableNumber(kLoggingPrefix + "RotationToleranceRadians", 0.01);
+            new LoggedTunableNumber(kLoggingPrefix + "RotationToleranceRadians", 0.009);
 
     private final Drive mDrive;
     private final Supplier<Rotation2d> mTargetHeadingSupplier;
@@ -90,6 +90,7 @@ public class RotateToFieldHeading extends Command {
         mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits);
 
         mRotationController.reset();
+        mRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mAtTargetRotation = false;
 
         var currentHeading = mRobotHeadingSupplier.get();

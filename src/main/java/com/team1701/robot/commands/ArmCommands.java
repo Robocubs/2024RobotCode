@@ -3,7 +3,6 @@ package com.team1701.robot.commands;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.states.RobotState;
-import com.team1701.robot.states.RobotState.ScoringMode;
 import com.team1701.robot.subsystems.arm.Arm;
 import com.team1701.robot.subsystems.arm.Arm.ArmPosition;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,10 +17,14 @@ public class ArmCommands {
         return Commands.run(
                         () -> {
                             Rotation2d targetRotation =
-                                    robotState.getScoringMode().equals(ScoringMode.AMP)
-                                                    && (robotState.getDistanceToAmp() <= 1)
-                                            ? ArmPosition.AMP.armRotation
-                                            : ArmPosition.HOME.armRotation;
+                                    switch (robotState.getScoringMode()) {
+                                        case SPEAKER -> ArmPosition.HOME.armRotation;
+                                        case AMP -> robotState.getDistanceToAmp() <= 1
+                                                ? ArmPosition.AMP.armRotation
+                                                : ArmPosition.HOME.armRotation; // TODO add time locked boolean
+                                        case CLIMB -> ArmPosition.HOME.armRotation;
+                                        default -> ArmPosition.HOME.armRotation;
+                                    };
                             arm.setRotationAngle(targetRotation);
                         },
                         arm)

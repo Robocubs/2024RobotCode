@@ -8,13 +8,16 @@ import java.util.stream.Stream;
 import com.team1701.lib.commands.LoggedCommands;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
+import com.team1701.robot.FieldConstants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class DriveCommands {
     public static Command driveWithJoysticks(
@@ -34,6 +37,16 @@ public class DriveCommands {
             KinematicLimits kinematicLimits,
             boolean finishAtPose) {
         return new DriveToPose(drive, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose);
+    }
+
+    public static Command driveToPose(
+            Drive drive,
+            Supplier<Pose2d> poseSupplier,
+            Supplier<Pose2d> robotPoseSupplier,
+            KinematicLimits kinematicLimits,
+            boolean finishAtPose,
+            CommandXboxController driverController) {
+        return new DriveToPose(drive, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose, driverController);
     }
 
     public static Command rotateToSpeaker(
@@ -73,7 +86,22 @@ public class DriveCommands {
                 strafe);
     }
 
-    public static Command driveToPiece(Drive drive, RobotState robotState, KinematicLimits kinematicLimits) {
+    public static Command driveToAmp(Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits) {
+        return new DriveToPose(
+                drive,
+                Configuration.isBlueAlliance()
+                        ? () -> FieldConstants.kBlueAmpDrivePose
+                        : () -> FieldConstants.kRedAmpDrivePose,
+                poseSupplier,
+                kinematicLimits,
+                true);
+    }
+
+    public static Command driveToPiece(
+            Drive drive,
+            RobotState robotState,
+            KinematicLimits kinematicLimits,
+            CommandXboxController driverController) {
         return Commands.defer(
                 () -> {
                     var robotPose = robotState.getPose2d();
@@ -96,7 +124,8 @@ public class DriveCommands {
                                                     pose.getRotation().plus(GeometryUtil.kRotationPi)),
                                             () -> robotState.getPose2d(),
                                             kinematicLimits,
-                                            true)
+                                            true,
+                                            driverController)
                                     .withName("DriveToPiecePose")))
                             .orElse(LoggedCommands.logged(Commands.none().withName("NoneCommand")))
                             .withName("DriveToPiece");

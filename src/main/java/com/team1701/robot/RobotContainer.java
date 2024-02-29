@@ -52,11 +52,14 @@ import com.team1701.robot.subsystems.leds.LED;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.SparkMotorFactory;
+import com.team1701.robot.util.SparkMotorFactory.MotorUsage;
 import com.team1701.robot.util.TalonFxMotorFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -79,7 +82,6 @@ public class RobotContainer {
     protected final LED mLED;
 
     private final CommandXboxController mDriverController = new CommandXboxController(0);
-    private final CommandXboxController mSecondaryController = new CommandXboxController(1);
     private final StreamDeck mStreamDeck = new StreamDeck();
     private final LoggedDashboardChooser<Command> autonomousModeChooser = new LoggedDashboardChooser<>("Auto Mode");
     private final Map<String, Pose2d[]> mAutonomousPaths = new HashMap<>();
@@ -135,29 +137,23 @@ public class RobotContainer {
 
                     // TODO: update IDs
                     shooter = Optional.of(new Shooter(
-                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                            //                 Constants.Shooter.kShooterRightUpperRollerMotorId,
-                            // MotorUsage.SHOOTER_ROLLER,
-                            // true),
-                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                            //                 Constants.Shooter.kShooterRightLowerRollerMotorId,
-                            //                 MotorUsage.SHOOTER_ROLLER,
-                            //                 false),
-                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                            //                 Constants.Shooter.kShooterLeftUpperRollerMotorId,
-                            // MotorUsage.SHOOTER_ROLLER,
-                            // true),
-                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                            //                 Constants.Shooter.kShooterLeftLowerRollerMotorId,
-                            // MotorUsage.SHOOTER_ROLLER,
-                            // false),
-                            //         SparkMotorFactory.createShooterMotorIOSparkFlex(
-                            //                 Constants.Shooter.kShooterRotationMotorId, MotorUsage.ROTATION, true),
-                            new MotorIO() {},
-                            new MotorIO() {},
-                            new MotorIO() {},
-                            new MotorIO() {},
-                            new MotorIO() {},
+                            SparkMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterRightUpperRollerMotorId,
+                                    MotorUsage.SHOOTER_ROLLER,
+                                    false),
+                            SparkMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterRightLowerRollerMotorId, MotorUsage.SHOOTER_ROLLER, true),
+                            SparkMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterLeftUpperRollerMotorId, MotorUsage.SHOOTER_ROLLER, true),
+                            SparkMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterLeftLowerRollerMotorId, MotorUsage.SHOOTER_ROLLER, false),
+                            SparkMotorFactory.createShooterMotorIOSparkFlex(
+                                    Constants.Shooter.kShooterRotationMotorId, MotorUsage.ROTATION, false),
+                            // new MotorIO() {},
+                            // new MotorIO() {},
+                            // new MotorIO() {},
+                            // new MotorIO() {},
+                            // new MotorIO() {},
                             new EncoderIORevThroughBore(Constants.Shooter.kShooterThroughBoreEncoderId, true)));
 
                     indexer = Optional.of(new Indexer(
@@ -168,10 +164,10 @@ public class RobotContainer {
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                             new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
                             new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
-                    // arm = Optional.of(new Arm(
-                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                    //                 Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
-                    //         new EncoderIORevThroughBore(Constants.Arm.kEncoderId)));
+                    arm = Optional.of(new Arm(
+                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                                    Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
+                            new EncoderIORevThroughBore(Constants.Arm.kEncoderId, false)));
                     // climb = Optional.of(new Climb(
                     //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                     //                 Constants.Winch.kLeftWinchId, MotorUsage.WINCH, true),
@@ -215,7 +211,7 @@ public class RobotContainer {
                     indexer = Optional.of(new Indexer(
                             new MotorIOSim(
                                     DCMotor.getNeoVortex(1),
-                                    Constants.Indexer.kReduction,
+                                    Constants.Indexer.kIndexerReduction,
                                     0.001,
                                     Constants.kLoopPeriodSeconds),
                             new DigitalIOSim(() -> false),
@@ -305,41 +301,37 @@ public class RobotContainer {
                         || !DriverStation.getJoystickIsXbox(
                                 mDriverController.getHID().getPort()));
 
+        /* DEFAULT COMMANDS */
+
         mDrive.setDefaultCommand(driveWithJoysticks(
                 mDrive,
                 mDrive::getFieldRelativeHeading,
                 () -> -mDriverController.getLeftY(),
                 () -> -mDriverController.getLeftX(),
                 () -> -mDriverController.getRightX(),
-                () -> mDriverController.rightTrigger().getAsBoolean()
+                () -> mDriverController.rightBumper().getAsBoolean()
                         ? Constants.Drive.kSlowKinematicLimits
                         : Constants.Drive.kFastKinematicLimits));
 
-        // mShooter.setDefaultCommand(
-        //         Commands.run(() -> mShooter.setRotationPercentOutput(-mSecondaryController.getLeftY() * .3),
-        // mShooter));
-
-        // TODO: update should load when intake is completed
         mIndexer.setDefaultCommand(new IndexCommand(mIndexer, () -> true));
 
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
 
-        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mDrive, mRobotState));
+        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
+        // mShooter.setDefaultCommand(Commands.run(
+        //         () -> mShooter.setRotationAngle(
+        //                 Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get())),
+        //         mShooter));
 
         mArm.setDefaultCommand(ArmCommands.idleArmCommand(mArm, mRobotState));
 
         mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb));
 
-        // TODO: add Triggers for updating mScoringMode
+        /* DRIVER CONTROLLER BINDINGS */
 
         mDriverController
-                .a()
-                .whileTrue(DriveCommands.slowlyDriveToSpeaker(
-                        mDrive,
-                        mRobotState::getSpeakerHeading,
-                        mRobotState::getHeading,
-                        () -> -mDriverController.getLeftY(),
-                        () -> -mDriverController.getLeftX()));
+                .b()
+                .whileTrue(IntakeCommands.rejectAndDrive(mIntake, mIndexer, mDrive, () -> mRobotState.getHeading()));
 
         mDriverController
                 .x()
@@ -348,26 +340,53 @@ public class RobotContainer {
                                         ? GeometryUtil.kRotationIdentity
                                         : GeometryUtil.kRotationPi))
                         .withName("ZeroGyroscopeToHeading"));
-        mDriverController
-                .rightBumper()
-                .whileTrue(
-                        DriveCommands.rotateToSpeaker(mDrive, mRobotState, Constants.Drive.kFastKinematicLimits, true));
-        mDriverController.leftBumper().whileTrue(swerveLock(mDrive));
 
-        // Speaker Shot
         mDriverController
-                .leftTrigger()
+                .y()
+                .whileTrue(DriveCommands.driveToPiece(
+                        mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits, mDriverController));
+
+        // Drive while Rotating to Speaker - note, this Trigger is also used for the shoot while moving command
+        mDriverController
+                .leftBumper()
+                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
+                .whileTrue(DriveCommands.slowlyDriveToSpeaker(
+                        mDrive,
+                        mRobotState::getSpeakerHeading,
+                        mRobotState::getHeading,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX()));
+
+        // Drive to Amp
+        mDriverController
+                .leftBumper()
+                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
+                .whileTrue(DriveCommands.driveToAmp(
+                        mDrive, mRobotState::getPose2d, Constants.Drive.kFastTrapezoidalKinematicLimits));
+
+        mDriverController.leftTrigger().whileTrue(swerveLock(mDrive));
+
+        // Aim and Shoot
+        mDriverController
+                .rightTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
                 .whileTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
 
+        // Shoot while Slowly Rotating
+        mDriverController
+                .rightTrigger()
+                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
+                .and(mDriverController.leftBumper())
+                .whileTrue(ShootCommands.shoot(mShooter, mIndexer, mRobotState));
+
         // Amp Shot
         mDriverController
-                .leftTrigger()
+                .rightTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
 
         // mDriverController
-        //         .b()
+        //         .a()
         //         .whileTrue((DriveCommands.driveToPose(
         //                 mDrive,
         //                 () -> new Pose2d(
@@ -377,13 +396,6 @@ public class RobotContainer {
         //                 Constants.Drive.kSlowKinematicLimits,
         //                 false)));
 
-        mDriverController.b().whileTrue(IntakeCommands.reverse(mIntake, mIndexer));
-
-        mDriverController
-                .y()
-                .whileTrue(DriveCommands.driveToPiece(
-                        mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits));
-
         // mDriverController
         //         .b()
         //         .whileTrue(startEnd(
@@ -391,81 +403,83 @@ public class RobotContainer {
         //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0))
         //                 .ignoringDisable(true));
 
-        var stopIntakingCommand = runOnce(() -> IntakeCommands.stopIntake(mIntake, mIndexer), mIntake, mIndexer)
-                .ignoringDisable(false)
-                .withName("StreamDeckStopIntakingButton");
-        var rejectCommand = run(() -> IntakeCommands.reverse(mIntake, mIndexer), mIndexer, mIntake)
-                .ignoringDisable(false)
-                .withName("StreamDeckRejectButton");
-        var forwardCommand = run(
+        /* STREAMDECK BUTTONS */
+
+        var stopIntakingCommand = IntakeCommands.stopIntake(mIntake, mIndexer).withName("StreamDeckStopIntakeButton");
+
+        var rejectCommand = IntakeCommands.reverse(mIntake, mIndexer).withName("StreamDeckRejectButton");
+
+        var forwardCommand = startEnd(
                         () -> {
                             mIntake.setForward();
                             mIndexer.setForwardLoad();
                         },
+                        () -> {
+                            mIndexer.stop();
+                            mIntake.stop();
+                        },
                         mIntake,
                         mIndexer)
-                .ignoringDisable(false)
                 .withName("StreamDeckForwardButton");
-        var armUpCommand = run(
+        var armUpCommand = startEnd(
                         () -> {
                             mArm.setArmUp();
                         },
+                        () -> mArm.stop(),
                         mArm)
-                .ignoringDisable(false)
                 .withName("StreamDeckArmUpButton");
-        var armDownCommand = run(
+        var armDownCommand = startEnd(
                         () -> {
                             mArm.setArmDown();
                         },
+                        () -> mArm.stop(),
                         mArm)
-                .ignoringDisable(false)
                 .withName("StreamDeckAmDownButton");
-        var setSpeakerModeCommand =
-                runOnce(() -> mRobotState.setScoringMode(ScoringMode.SPEAKER)).withName("SetSpeakerScoringMode");
-        var setAmpModeCommand =
-                runOnce(() -> mRobotState.setScoringMode(ScoringMode.AMP)).withName("SetAmpScoringMode");
-        var setClimbModeCommand =
-                runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB)).withName("SetClimbScoringMode");
-        var armHomeCommand = run(
-                        () -> {
-                            mArm.rotateHome();
-                        },
-                        mArm)
-                .ignoringDisable(false)
-                .withName("StreamDeckArmHomeButton");
+        var setSpeakerModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.SPEAKER))
+                .ignoringDisable(true)
+                .withName("SetSpeakerScoringMode");
+        var setAmpModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.AMP))
+                .ignoringDisable(true)
+                .withName("SetAmpScoringMode");
+        var setClimbModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB))
+                .ignoringDisable(true)
+                .withName("SetClimbScoringMode");
+        var stopArmCommand = Commands.run(() -> mArm.stop(), mArm).withName("StreamDeckArmHomeButton");
         var shooterUpCommand = run(
                         () -> {
                             mShooter.setShooterUp();
                         },
                         mShooter)
-                .ignoringDisable(false)
                 .withName("StreamDeckShooterUpCommand");
-        var shooterDownCommand = run(
+        var shooterDownCommand = startEnd(
                         () -> {
                             mShooter.setShooterDown();
                         },
+                        () -> {
+                            mShooter.stopRotation();
+                        },
                         mShooter)
-                .ignoringDisable(false)
                 .withName("StreamDeckShooterDownCommand");
-        var manualShootCommand = run(() -> new ManualShoot(mShooter, mIndexer))
-                .ignoringDisable(false)
-                .withName("StreamDeckShootCommand");
+        var manualShootCommand = new ManualShoot(mShooter, mIndexer).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
                         () -> {
-                            mClimb.setPercentOutput(10);
+                            mClimb.setPercentOutput(.1);
                         },
                         mClimb)
-                .ignoringDisable(false)
                 .withName("StreamDeckExtendWinchCommand");
         var retractWinchCommand = run(
                         () -> {
-                            mClimb.retractWinch(-10);
+                            mClimb.setPercentOutput(-.1);
                         },
                         mClimb)
-                .ignoringDisable(false)
                 .withName("StreamDeckRetractWinchCommand");
-        var stopShooterCommand =
-                run(() -> Commands.idle(mShooter)).ignoringDisable(false).withName("StreamDeckStopShootCommand");
+        var stopShooterCommand = run(
+                        () -> {
+                            mShooter.stopRollers();
+                            mShooter.stopRotation();
+                        },
+                        mShooter)
+                .withName("StreamDeckStopShootCommand");
 
         mStreamDeck.configureButton(config -> config.add(
                         StreamDeckButton.kSpeakerModeButton, () -> mRobotState.getScoringMode() == ScoringMode.SPEAKER)
@@ -476,7 +490,7 @@ public class RobotContainer {
                 .add(StreamDeckButton.kForwardButton, forwardCommand::isScheduled)
                 .add(StreamDeckButton.kArmUpButton, armUpCommand::isScheduled)
                 .add(StreamDeckButton.kArmDownButton, armDownCommand::isScheduled)
-                .add(StreamDeckButton.kArmHomeButton, armHomeCommand::isScheduled)
+                .add(StreamDeckButton.kArmStopButton, stopArmCommand::isScheduled)
                 .add(StreamDeckButton.kShooterUpButton, shooterUpCommand::isScheduled)
                 .add(StreamDeckButton.kShooterDownButton, shooterDownCommand::isScheduled)
                 .add(StreamDeckButton.kShootButton, manualShootCommand::isScheduled)
@@ -484,54 +498,56 @@ public class RobotContainer {
                 .add(StreamDeckButton.kRetractWinchButton, retractWinchCommand::isScheduled)
                 .add(StreamDeckButton.kStopShootButton, stopShooterCommand::isScheduled));
 
-        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).onTrue(stopIntakingCommand);
-        // mStreamDeck.button(StreamDeckButton.kStopIntakeButton).onFalse(run(() -> stopIntakingCommand.cancel()));
+        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(stopIntakingCommand.ignoringDisable(true));
 
-        mStreamDeck.button(StreamDeckButton.kRejectButton).whileTrue(rejectCommand)
-        // .onFalse(stopIntakingCommand)
-        ;
+        mStreamDeck.button(StreamDeckButton.kRejectButton).whileTrue(rejectCommand);
+        mStreamDeck.button(StreamDeckButton.kForwardButton).whileTrue(forwardCommand);
 
-        mStreamDeck.button(StreamDeckButton.kForwardButton).whileTrue(forwardCommand)
-        // .onFalse(stopIntakingCommand)
-        ;
-
-        mStreamDeck.button(StreamDeckButton.kArmUpButton).whileTrue(armUpCommand);
-
-        mStreamDeck.button(StreamDeckButton.kArmDownButton).whileTrue(armDownCommand);
-
-        mStreamDeck.button(StreamDeckButton.kArmHomeButton).whileTrue(armHomeCommand);
+        mStreamDeck
+                .button(StreamDeckButton.kArmUpButton)
+                .whileTrue(armUpCommand)
+                .onFalse(stopArmCommand);
+        mStreamDeck
+                .button(StreamDeckButton.kArmDownButton)
+                .whileTrue(armDownCommand)
+                .onFalse(stopArmCommand);
+        mStreamDeck.button(StreamDeckButton.kArmStopButton).toggleOnTrue(stopArmCommand);
 
         mStreamDeck
                 .button(StreamDeckButton.kShooterUpButton)
                 .whileTrue(shooterUpCommand)
                 .onFalse(stopShooterCommand);
-
         mStreamDeck
                 .button(StreamDeckButton.kShooterDownButton)
                 .whileTrue(shooterDownCommand)
                 .onFalse(stopShooterCommand);
-
-        mStreamDeck.button(StreamDeckButton.kShootButton).whileTrue(new ManualShoot(mShooter, mIndexer));
+        mStreamDeck
+                .button(StreamDeckButton.kShootButton)
+                .whileTrue(manualShootCommand)
+                .onFalse(stopShooterCommand);
+        mStreamDeck.button(StreamDeckButton.kStopShootButton).toggleOnTrue(stopShooterCommand);
 
         mStreamDeck.button(StreamDeckButton.kSpeakerModeButton).onTrue(setSpeakerModeCommand);
-
         mStreamDeck.button(StreamDeckButton.kAmpModeButton).onTrue(setAmpModeCommand);
-
         mStreamDeck.button(StreamDeckButton.kClimbModeButton).onTrue(setClimbModeCommand);
 
-        mStreamDeck.button(StreamDeckButton.kExtendWinchButton).whileTrue(extendWinchCommand);
+        mStreamDeck
+                .button(StreamDeckButton.kExtendWinchButton)
+                .whileTrue(extendWinchCommand)
+                .onFalse(runOnce(() -> mClimb.stop()));
+        mStreamDeck
+                .button(StreamDeckButton.kRetractWinchButton)
+                .whileTrue(retractWinchCommand)
+                .onFalse(runOnce(() -> mClimb.stop()));
 
-        mStreamDeck.button(StreamDeckButton.kRetractWinchButton).whileTrue(retractWinchCommand);
+        /* Timer Triggers*/
 
-        mStreamDeck.button(StreamDeckButton.kStopShootButton).onTrue(stopShooterCommand);
+        new Trigger(() -> Timer.getMatchTime() == 31)
+                .onTrue(Commands.runOnce(() -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 1)));
 
-        /* Secondary Xbox Controller TESTING ONLY */
-        mSecondaryController.a().onTrue(runOnce(() -> mIntake.stop(), mIntake));
-        mSecondaryController.b().onTrue(runOnce(() -> mIndexer.stop(), mIndexer));
-        mSecondaryController.x().onTrue(runOnce(() -> mShooter.stopRollers(), mShooter));
-        mSecondaryController.y().onTrue(runOnce(() -> mShooter.stopRotation(), mShooter));
+        new Trigger(() -> Timer.getMatchTime() == 29)
+                .onTrue(Commands.runOnce(() -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0)));
 
-        /* */
         DriverStation.silenceJoystickConnectionWarning(true);
     }
 
@@ -553,11 +569,15 @@ public class RobotContainer {
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         var demoCommand = commands.demo();
         var fourPieceCommand = commands.fourPiece();
+        var shootAndBackupCommand = commands.shootAndBackup();
         mAutonomousPaths.put("Demo", demoCommand.path());
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
+        mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
 
         autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
+        autonomousModeChooser.addOption("Shoot and Backup", shootAndBackupCommand.command());
+
         autonomousModeChooser.getSendableChooser().onChange(this::logAutonomousPath);
 
         var logAutonomousPathCommand =
@@ -600,7 +620,6 @@ public class RobotContainer {
 
     public Command getZeroCommand() {
         return runOnce(() -> {
-                    // TODO: uncomment line
                     mShooter.zeroShooterRotation();
                     mArm.zeroArmRotation();
                     mDrive.zeroModules();
