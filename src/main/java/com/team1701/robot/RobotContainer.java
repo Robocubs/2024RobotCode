@@ -405,18 +405,19 @@ public class RobotContainer {
 
         /* STREAMDECK BUTTONS */
 
-        var stopIntakingCommand = run(() -> {
-                    Commands.idle(mIndexer);
-                    Commands.idle(mIntake);
-                })
-                .withName("StreamDeckStopIntakingButton");
-        var rejectCommand = run(() -> IntakeCommands.reverse(mIntake, mIndexer), mIndexer, mIntake)
-                .withName("StreamDeckRejectButton");
+        var stopIntakingCommand = IntakeCommands.stopIntake(mIntake, mIndexer).withName("StreamDeckStopIntakeButton");
+
+        var rejectCommand = IntakeCommands.reverse(mIntake, mIndexer).withName("StreamDeckRejectButton");
+
         var forwardCommand = startEnd(
                         () -> {
                             mIntake.setForward();
                             mIndexer.setForwardLoad();
-                        }, () -> {mIndexer.stop(); mIntake.stop();},
+                        },
+                        () -> {
+                            mIndexer.stop();
+                            mIntake.stop();
+                        },
                         mIntake,
                         mIndexer)
                 .withName("StreamDeckForwardButton");
@@ -433,7 +434,6 @@ public class RobotContainer {
                         },
                         () -> mArm.stop(),
                         mArm)
-                .ignoringDisable(false)
                 .withName("StreamDeckAmDownButton");
         var setSpeakerModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.SPEAKER))
                 .ignoringDisable(true)
@@ -444,46 +444,42 @@ public class RobotContainer {
         var setClimbModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB))
                 .ignoringDisable(true)
                 .withName("SetClimbScoringMode");
-        var stopArmCommand = run(
-                        () -> {
-                            Commands.idle(mArm);
-                        },
-                        mArm)
-                .withName("StreamDeckArmHomeButton");
-        var shooterUpCommand = startEnd(
+        var stopArmCommand = Commands.run(() -> mArm.stop(), mArm).withName("StreamDeckArmHomeButton");
+        var shooterUpCommand = run(
                         () -> {
                             mShooter.setShooterUp();
                         },
-                        () -> Commands.idle(mShooter),
                         mShooter)
                 .withName("StreamDeckShooterUpCommand");
         var shooterDownCommand = startEnd(
                         () -> {
                             mShooter.setShooterDown();
                         },
-                        () -> Commands.idle(mShooter),
+                        () -> {
+                            mShooter.stopRotation();
+                        },
                         mShooter)
-                .ignoringDisable(false)
                 .withName("StreamDeckShooterDownCommand");
-        var manualShootCommand = run(() -> new ManualShoot(mShooter, mIndexer))
-                .ignoringDisable(false)
-                .withName("StreamDeckShootCommand");
+        var manualShootCommand = new ManualShoot(mShooter, mIndexer).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
                         () -> {
                             mClimb.setPercentOutput(.1);
                         },
                         mClimb)
-                .ignoringDisable(false)
                 .withName("StreamDeckExtendWinchCommand");
         var retractWinchCommand = run(
                         () -> {
                             mClimb.setPercentOutput(-.1);
                         },
                         mClimb)
-                .ignoringDisable(false)
                 .withName("StreamDeckRetractWinchCommand");
-        var stopShooterCommand =
-                run(() -> Commands.idle(mShooter)).ignoringDisable(false).withName("StreamDeckStopShootCommand");
+        var stopShooterCommand = run(
+                        () -> {
+                            mShooter.stopRollers();
+                            mShooter.stopRotation();
+                        },
+                        mShooter)
+                .withName("StreamDeckStopShootCommand");
 
         mStreamDeck.configureButton(config -> config.add(
                         StreamDeckButton.kSpeakerModeButton, () -> mRobotState.getScoringMode() == ScoringMode.SPEAKER)
@@ -521,16 +517,20 @@ public class RobotContainer {
                 .button(StreamDeckButton.kShooterUpButton)
                 .whileTrue(shooterUpCommand)
                 .onFalse(stopShooterCommand);
-
         mStreamDeck
                 .button(StreamDeckButton.kShooterDownButton)
                 .whileTrue(shooterDownCommand)
                 .onFalse(stopShooterCommand);
+        mStreamDeck
+                .button(StreamDeckButton.kShootButton)
+                .whileTrue(manualShootCommand)
+                .onFalse(stopShooterCommand);
+        mStreamDeck.button(StreamDeckButton.kStopShootButton).toggleOnTrue(stopShooterCommand);
 
-        mStreamDeck.button(StreamDeckButton.kShootButton).whileTrue(new ManualShoot(mShooter, mIndexer));
         mStreamDeck.button(StreamDeckButton.kSpeakerModeButton).onTrue(setSpeakerModeCommand);
         mStreamDeck.button(StreamDeckButton.kAmpModeButton).onTrue(setAmpModeCommand);
         mStreamDeck.button(StreamDeckButton.kClimbModeButton).onTrue(setClimbModeCommand);
+
         mStreamDeck
                 .button(StreamDeckButton.kExtendWinchButton)
                 .whileTrue(extendWinchCommand)
@@ -539,7 +539,6 @@ public class RobotContainer {
                 .button(StreamDeckButton.kRetractWinchButton)
                 .whileTrue(retractWinchCommand)
                 .onFalse(runOnce(() -> mClimb.stop()));
-        mStreamDeck.button(StreamDeckButton.kStopShootButton).toggleOnTrue(stopShooterCommand);
 
         /* Timer Triggers*/
 

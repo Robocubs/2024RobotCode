@@ -329,7 +329,7 @@ public final class Constants {
 
         public static final int kShooterRotationMotorId = 26;
 
-        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(65);
+        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(58);
         public static final double kShooterLowerLimitRotations = Units.degreesToRotations(18);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
