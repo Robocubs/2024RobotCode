@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class RobotState {
-    private static final double kDetectedNoteTimeout = 1.0;
+    private static final double kDetectedNoteTimeout = 3.0;
     private boolean mIsScoring = false;
     private static final double kDuplicateNoteDistanceThreshold = Units.inchesToMeters(10.0);
 
@@ -40,7 +40,7 @@ public class RobotState {
     private Optional<Shooter> mShooter = Optional.empty();
 
     @AutoLogOutput
-    private ScoringMode mScoringMode = ScoringMode.AMP; // TODO: reset to speaker
+    private ScoringMode mScoringMode = ScoringMode.SPEAKER;
 
     private final PoseEstimator mPoseEstimator =
             new TwistPoseEstimator(Constants.Drive.kKinematics, VecBuilder.fill(0.005, 0.005, 0.0005));
@@ -130,13 +130,14 @@ public class RobotState {
                 : poseX > FieldConstants.kFieldLongLengthMeters / 2.0;
     }
 
+    @AutoLogOutput
     public double getDistanceToAmp() {
-        return getPose3d()
+        return getPose2d()
                 .getTranslation()
                 .getDistance(
                         Configuration.isBlueAlliance()
-                                ? FieldConstants.kBlueAmpPosition
-                                : FieldConstants.kRedAmpPosition);
+                                ? FieldConstants.kBlueAmpPosition.toTranslation2d()
+                                : FieldConstants.kRedAmpPosition.toTranslation2d());
     }
 
     public Translation3d getSpeakerPose() {

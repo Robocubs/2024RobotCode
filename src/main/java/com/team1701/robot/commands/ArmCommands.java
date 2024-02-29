@@ -21,8 +21,8 @@ public class ArmCommands {
                                         case SPEAKER -> ArmPosition.HOME.armRotation;
                                         case AMP -> robotState.getDistanceToAmp() <= 1
                                                 ? ArmPosition.AMP.armRotation
-                                                : ArmPosition.HOME.armRotation;
-                                        case CLIMB -> ArmPosition.LOW_CLIMB.armRotation;
+                                                : ArmPosition.HOME.armRotation; // TODO add time locked boolean
+                                        case CLIMB -> ArmPosition.HOME.armRotation;
                                         default -> ArmPosition.HOME.armRotation;
                                     };
                             arm.setRotationAngle(targetRotation);

@@ -46,6 +46,7 @@ public class SparkMotorFactory {
                 configureWithRetry(() -> controller.setP(Constants.Shooter.kRotationKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Shooter.kRotationKd.get()), errorAlert);
                 configureWithRetry(() -> controller.setFF(0), errorAlert);
+                configureWithRetry(() -> controller.setOutputRange(-.3, .3), errorAlert);
                 configureWithRetry(
                         () -> motor.setSoftLimit(SoftLimitDirection.kForward, (float)
                                 (Constants.Shooter.kShooterUpperLimitRotations / Constants.Shooter.kAngleReduction)),
@@ -154,6 +155,7 @@ public class SparkMotorFactory {
                 configureWithRetry(() -> controller.setP(Constants.Arm.kArmRotationKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Arm.kArmRotationKd.get()), errorAlert);
                 configureWithRetry(() -> controller.setFF(Constants.Arm.kArmRotationKff.get()), errorAlert);
+                configureWithRetry(() -> controller.setOutputRange(-.3, .3), errorAlert);
                 configureWithRetry(
                         () -> motor.setSoftLimit(
                                 SoftLimitDirection.kForward, (float) (Constants.Arm.kArmUpperLimitRotations)),
@@ -164,6 +166,7 @@ public class SparkMotorFactory {
                         errorAlert);
                 configureWithRetry(() -> motor.enableSoftLimit(SoftLimitDirection.kForward, true), errorAlert);
                 configureWithRetry(() -> motor.enableSoftLimit(SoftLimitDirection.kReverse, true), errorAlert);
+
                 reduction = Constants.Arm.kRotationReduction;
                 break;
             default:

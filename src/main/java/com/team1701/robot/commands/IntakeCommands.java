@@ -47,12 +47,11 @@ public class IntakeCommands {
     }
 
     public static Command stopIntake(Intake intake, Indexer indexer) {
-        return Commands.startEnd(
+        return Commands.run(
                         () -> {
                             intake.stop();
                             indexer.stop();
                         },
-                        () -> {},
                         intake,
                         indexer)
                 .withName("StopIntaking");

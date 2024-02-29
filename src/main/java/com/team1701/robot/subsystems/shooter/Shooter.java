@@ -261,11 +261,11 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setShooterUp() {
-        mRotationMotorIO.setPercentOutput(10);
+        mRotationMotorIO.setPercentOutput(.1);
     }
 
     public void setShooterDown() {
-        mRotationMotorIO.setPercentOutput(-10);
+        mRotationMotorIO.setPercentOutput(-.1);
     }
 
     public void stopRollers() {
