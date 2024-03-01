@@ -15,7 +15,7 @@ public class TalonFxMotorFactory {
 
         var feedbackConfig = new FeedbackConfigs().withSensorToMechanismRatio(1 / Constants.Drive.kDriveReduction);
         var currentConfig =
-                new CurrentLimitsConfigs().withSupplyCurrentLimit(120).withSupplyCurrentLimitEnable(true);
+                new CurrentLimitsConfigs().withSupplyCurrentLimit(80).withSupplyCurrentLimitEnable(true);
         var config = new TalonFXConfiguration().withFeedback(feedbackConfig).withCurrentLimits(currentConfig);
 
         motor.getConfigurator().apply(config);
