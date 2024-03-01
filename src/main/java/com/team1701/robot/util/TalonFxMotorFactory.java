@@ -1,5 +1,6 @@
 package com.team1701.robot.util;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -13,7 +14,9 @@ public class TalonFxMotorFactory {
         var motor = new TalonFX(deviceId, "canivore1");
 
         var feedbackConfig = new FeedbackConfigs().withSensorToMechanismRatio(1 / Constants.Drive.kDriveReduction);
-        var config = new TalonFXConfiguration().withFeedback(feedbackConfig);
+        var currentConfig =
+                new CurrentLimitsConfigs().withSupplyCurrentLimit(120).withSupplyCurrentLimitEnable(true);
+        var config = new TalonFXConfiguration().withFeedback(feedbackConfig).withCurrentLimits(currentConfig);
 
         motor.getConfigurator().apply(config);
         motor.setNeutralMode(NeutralModeValue.Brake);
@@ -35,7 +38,9 @@ public class TalonFxMotorFactory {
         var motor = new TalonFX(deviceId, "canivore1");
 
         var feedbackConfigs = new FeedbackConfigs().withSensorToMechanismRatio(1 / Constants.Drive.kSteerReduction);
-        var config = new TalonFXConfiguration().withFeedback(feedbackConfigs);
+        var currentConfig =
+                new CurrentLimitsConfigs().withSupplyCurrentLimit(60).withSupplyCurrentLimitEnable(true);
+        var config = new TalonFXConfiguration().withFeedback(feedbackConfigs).withCurrentLimits(currentConfig);
         config.ClosedLoopGeneral.ContinuousWrap = true;
 
         motor.getConfigurator().apply(config);

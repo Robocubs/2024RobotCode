@@ -91,13 +91,15 @@ public class IdleShooterCommand extends Command {
             desiredShooterAngle = Rotation2d.fromDegrees(18);
         }
 
+        var clampedDesiredSpeed = MathUtil.clamp(shooterSpeed, 0, 200);
+
         var clampedDesiredRotations = MathUtil.clamp(
                 desiredShooterAngle.getRotations(),
                 Constants.Shooter.kShooterLowerLimitRotations,
                 Constants.Shooter.kShooterUpperLimitRotations);
 
         mShooter.setRotationAngle(Rotation2d.fromRotations(clampedDesiredRotations));
-        mShooter.setUnifiedRollerSpeed(shooterSpeed);
+        mShooter.setUnifiedRollerSpeed(clampedDesiredSpeed);
 
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));

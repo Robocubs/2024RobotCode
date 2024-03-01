@@ -573,12 +573,14 @@ public class RobotContainer {
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         var demoCommand = commands.demo();
         var fourPieceCommand = commands.fourPiece();
+        var fourPieceAmpSideCommand = commands.fourPieceAmp();
         var shootAndBackupCommand = commands.shootAndBackup();
         if (Configuration.getRobot() != RobotType.SIMULATION_BOT) {
             mAutonomousPaths.put("Demo", demoCommand.path());
         }
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
+        mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
 
         autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());

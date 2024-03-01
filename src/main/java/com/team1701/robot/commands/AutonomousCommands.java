@@ -160,13 +160,18 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public AutonomousCommand threePieceCenter() {
+    public AutonomousCommand fourPieceAmp() {
         var command = loggedSequence(
-                        print("Started three piece center auto"), aimAndShoot(),
-                        followChoreoPath("ThreePieceCenter.1", true), aimAndShoot(),
-                        followChoreoPath("ThreePieceCenter.2"), aimAndShoot())
-                .withName("ThreePieceAuto");
-
+                        print("Started four piece near amp auto"),
+                        followChoreoPath("FourPieceAmp.1"),
+                        aimAndShoot(),
+                        followChoreoPath("FourPieceAmp.2"),
+                        aimAndShoot(),
+                        followChoreoPath("FourPieceAmp.3"),
+                        aimAndShoot(),
+                        followChoreoPath("FourPieceAmp.4"),
+                        aimAndShoot())
+                .withName("FourPieceAmpAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }
