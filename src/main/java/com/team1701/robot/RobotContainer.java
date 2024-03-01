@@ -587,6 +587,7 @@ public class RobotContainer {
         autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
         autonomousModeChooser.addOption("Shoot and Backup", shootAndBackupCommand.command());
+        autonomousModeChooser.addOption("Four Piece Amp Side", fourPieceAmpSideCommand.command());
 
         autonomousModeChooser.getSendableChooser().onChange(this::logAutonomousPath);
 
