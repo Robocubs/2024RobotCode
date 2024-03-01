@@ -130,36 +130,34 @@ public class AprilTagCamera {
                     stdDevs));
         }
 
-        return Optional.empty();
+        if (pipelineResult.targets.length == 0) {
+            return Optional.empty();
+        }
 
-        // if (pipelineResult.targets.length == 0) {
-        //     return Optional.empty();
-        // }
+        var lowestAmbiguityTarget = pipelineResult.targets[0];
+        for (var i = 1; i < pipelineResult.targets.length; i++) {
+            if (pipelineResult.targets[i].ambiguity < lowestAmbiguityTarget.ambiguity) {
+                lowestAmbiguityTarget = pipelineResult.targets[i];
+            }
+        }
 
-        // var lowestAmbiguityTarget = pipelineResult.targets[0];
-        // for (var i = 1; i < pipelineResult.targets.length; i++) {
-        //     if (pipelineResult.targets[i].ambiguity < lowestAmbiguityTarget.ambiguity) {
-        //         lowestAmbiguityTarget = pipelineResult.targets[i];
-        //     }
-        // }
+        var targetPose = mFieldLayoutSupplier.get().getTagPose(lowestAmbiguityTarget.id);
+        if (targetPose.isEmpty()) {
+            return Optional.empty();
+        }
 
-        // var targetPose = mFieldLayoutSupplier.get().getTagPose(lowestAmbiguityTarget.id);
-        // if (targetPose.isEmpty()) {
-        //     return Optional.empty();
-        // }
+        var stdDevs = mStdDevsFunction.apply(
+                lowestAmbiguityTarget.bestCameraToTarget.getTranslation().getNorm());
 
-        // var stdDevs = mStdDevsFunction.apply(
-        //         lowestAmbiguityTarget.bestCameraToTarget.getTranslation().getNorm());
+        Logger.recordOutput(mLoggingPrefix + "StdDev", stdDevs.getData());
 
-        // Logger.recordOutput(mLoggingPrefix + "StdDev", stdDevs.getData());
-
-        // return Optional.of(new EstimatedRobotPose(
-        //         targetPose
-        //                 .get()
-        //                 .transformBy(lowestAmbiguityTarget.bestCameraToTarget.inverse())
-        //                 .transformBy(mCameraToRobot),
-        //         pipelineResult.timestamp,
-        //         stdDevs));
+        return Optional.of(new EstimatedRobotPose(
+                targetPose
+                        .get()
+                        .transformBy(lowestAmbiguityTarget.bestCameraToTarget.inverse())
+                        .transformBy(mCameraToRobot),
+                pipelineResult.timestamp,
+                stdDevs));
     }
 
     private Vector<N3> getStdDevs(int[] targetIds, Pose3d cameraPose) {

@@ -406,8 +406,8 @@ public final class Constants {
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kRollerKff.initDefault(0.000165);
-                    kRollerKp.initDefault(0.00035);
+                    kRollerKff.initDefault(0.000155);
+                    kRollerKp.initDefault(0.0002);
                     kRollerKd.initDefault(0.0);
 
                     kRotationKp.initDefault(0.3);
@@ -416,7 +416,7 @@ public final class Constants {
                     kTargetShootSpeedRadiansPerSecond.initDefault(450);
 
                     kShooterAngleEncoderOffset =
-                            Rotation2d.fromRadians(3.311).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
+                            Rotation2d.fromRadians(3.341).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
 
                     kMaxRotationVelocityRadiansPerSecond.initDefault(0);
                     kMaxRotationAccelerationRadiansPerSecondSquared.initDefault(0);
