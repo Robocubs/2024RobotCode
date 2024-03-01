@@ -71,7 +71,7 @@ public class Robot extends LoggedRobot {
 
         // Start AdvantageKit logger
         setUseTiming(Configuration.getMode() != Mode.REPLAY);
-        Logger.start();
+        // Logger.start();
 
         // Default to blue alliance in sim
         if (Configuration.getMode() == Mode.SIMULATION) {
