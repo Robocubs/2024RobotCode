@@ -407,7 +407,9 @@ public class RobotContainer {
 
         /* STREAMDECK BUTTONS */
 
-        var stopIntakingCommand = IntakeCommands.stopIntake(mIntake, mIndexer).withName("StreamDeckStopIntakeButton");
+        var stopIntakingCommand = IntakeCommands.stopIntake(mIntake, mIndexer)
+                .ignoringDisable(true)
+                .withName("StreamDeckStopIntakeButton");
 
         var rejectCommand = IntakeCommands.reverse(mIntake, mIndexer).withName("StreamDeckRejectButton");
 
@@ -502,7 +504,7 @@ public class RobotContainer {
                 .add(StreamDeckButton.kRetractWinchButton, retractWinchCommand::isScheduled)
                 .add(StreamDeckButton.kStopShootButton, stopShooterCommand::isScheduled));
 
-        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(stopIntakingCommand.ignoringDisable(true));
+        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(stopIntakingCommand);
 
         mStreamDeck.button(StreamDeckButton.kRejectButton).whileTrue(rejectCommand);
         mStreamDeck.button(StreamDeckButton.kForwardButton).whileTrue(forwardCommand);

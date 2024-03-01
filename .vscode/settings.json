@@ -70,6 +70,7 @@
     "digitalinputs",
     "dtheta",
     "Holonomic",
+    "Intaking",
     "Odometry",
     "Reprojection",
     "robocub",

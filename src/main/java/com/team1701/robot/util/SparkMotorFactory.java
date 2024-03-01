@@ -33,7 +33,7 @@ public class SparkMotorFactory {
         double reduction = 1.0;
         switch (motorUse) {
             case SHOOTER_ROLLER:
-                configureWithRetry(() -> motor.setSmartCurrentLimit(80), errorAlert);
+                configureWithRetry(() -> motor.setSmartCurrentLimit(60), errorAlert);
                 configureWithRetry(() -> motor.setClosedLoopRampRate(0.8), errorAlert);
                 configureWithRetry(() -> controller.setP(/*Constants.Shooter.kRollerKp.get()*/ 0), errorAlert);
                 configureWithRetry(() -> controller.setD(/*Constants.Shooter.kRollerKd.get()*/ 0), errorAlert);

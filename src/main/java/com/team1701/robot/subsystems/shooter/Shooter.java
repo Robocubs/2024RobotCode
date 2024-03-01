@@ -273,10 +273,15 @@ public class Shooter extends SubsystemBase {
         mRightLowerRollerMotorIO.setPercentOutput(0);
         mLeftUpperRollerMotorIO.setPercentOutput(0);
         mLeftLowerRollerMotorIO.setPercentOutput(0);
+        mRightUpperRollerMotorIO.stopMotor();
+        mRightLowerRollerMotorIO.stopMotor();
+        mLeftUpperRollerMotorIO.stopMotor();
+        mLeftLowerRollerMotorIO.stopMotor();
     }
 
     public void stopRotation() {
         mRotationMotorIO.setPercentOutput(0);
+        mRotationMotorIO.stopMotor();
     }
 
     public void setRotationPercentOutput(double percent) {

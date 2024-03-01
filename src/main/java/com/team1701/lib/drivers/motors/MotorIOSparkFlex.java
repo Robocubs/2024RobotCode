@@ -150,4 +150,8 @@ public class MotorIOSparkFlex implements MotorIO {
     public void setPosition(Rotation2d position) {
         mEncoder.setPosition(position.getRotations() / mReduction);
     }
+
+    public void stopMotor() {
+        mMotor.stopMotor();
+    }
 }
