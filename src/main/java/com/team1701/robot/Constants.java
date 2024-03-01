@@ -354,7 +354,7 @@ public final class Constants {
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =
                 new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 43);
         public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 100);
+                new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 150);
         public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/TrapRollerSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
