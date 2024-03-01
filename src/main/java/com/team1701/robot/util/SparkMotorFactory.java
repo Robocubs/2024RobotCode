@@ -139,7 +139,6 @@ public class SparkMotorFactory {
         configureWithRetry(() -> motor.setSmartCurrentLimit(80), errorAlert);
         configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);
 
-        configureWithRetry(() -> encoder.setPosition(0), errorAlert);
         configureWithRetry(() -> encoder.setMeasurementPeriod(10), errorAlert);
         configureWithRetry(() -> encoder.setAverageDepth(2), errorAlert);
 
@@ -149,13 +148,28 @@ public class SparkMotorFactory {
                 configureWithRetry(() -> controller.setP(Constants.Climb.kWinchKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Climb.kWinchKd.get()), errorAlert);
                 configureWithRetry(() -> controller.setFF(Constants.Climb.kWinchKff.get()), errorAlert);
+
+                configureWithRetry(
+                        () -> motor.setSoftLimit(
+                                SoftLimitDirection.kForward, (float) Constants.Climb.upperLimitRotations),
+                        errorAlert);
+                configureWithRetry(
+                        () -> motor.setSoftLimit(
+                                SoftLimitDirection.kReverse, (float) Constants.Climb.lowerLimitRotations),
+                        errorAlert);
+
+                configureWithRetry(() -> motor.enableSoftLimit(SoftLimitDirection.kForward, true), errorAlert);
+                configureWithRetry(() -> motor.enableSoftLimit(SoftLimitDirection.kReverse, true), errorAlert);
+
                 reduction = Constants.Climb.kWinchReduction;
                 break;
             case ROTATION:
+                configureWithRetry(() -> encoder.setPosition(0), errorAlert);
                 configureWithRetry(() -> controller.setP(Constants.Arm.kArmRotationKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Arm.kArmRotationKd.get()), errorAlert);
                 configureWithRetry(() -> controller.setFF(Constants.Arm.kArmRotationKff.get()), errorAlert);
                 configureWithRetry(() -> controller.setOutputRange(-.15, .15), errorAlert);
+
                 configureWithRetry(
                         () -> motor.setSoftLimit(
                                 SoftLimitDirection.kForward, (float) (Constants.Arm.kArmUpperLimitRotations)),

@@ -169,11 +169,11 @@ public class RobotContainer {
                             SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                                     Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
                             new EncoderIORevThroughBore(Constants.Arm.kEncoderId, false)));
-                    // climb = Optional.of(new Climb(
-                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                    //                 Constants.Winch.kLeftWinchId, MotorUsage.WINCH, true),
-                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                    //                 Constants.Winch.kRightWinchId, MotorUsage.WINCH, false))); //TODO: determine
+                    climb = Optional.of(new Climb(
+                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                                    Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
+                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                                    Constants.Climb.kRightWinchId, MotorUsage.WINCH, false))); // TODO: determine
                     // inversion
                     break;
                 case SIMULATION_BOT:
@@ -326,7 +326,8 @@ public class RobotContainer {
 
         mArm.setDefaultCommand(ArmCommands.idleArmCommand(mArm, mRobotState));
 
-        mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb));
+        mClimb.setDefaultCommand(
+                Commands.startEnd(mClimb::stop, () -> {}, mClimb).andThen(idle(mClimb)));
 
         /* DRIVER CONTROLLER BINDINGS */
 
@@ -464,13 +465,15 @@ public class RobotContainer {
         var manualShootCommand = new ManualShoot(mShooter, mIndexer).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
                         () -> {
-                            mClimb.setPercentOutput(.1);
+                            mClimb.extendWinch();
+                            ;
                         },
                         mClimb)
                 .withName("StreamDeckExtendWinchCommand");
         var retractWinchCommand = run(
                         () -> {
-                            mClimb.setPercentOutput(-.1);
+                            mClimb.retractWinch();
+                            ;
                         },
                         mClimb)
                 .withName("StreamDeckRetractWinchCommand");

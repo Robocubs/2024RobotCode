@@ -443,6 +443,9 @@ public final class Constants {
         public static final int kLeftWinchId = 40;
         public static final int kRightWinchId = 41;
 
+        public static final double upperLimitRotations = Units.radiansToRotations(35) / kWinchReduction;
+        public static final double lowerLimitRotations = Units.radiansToRotations(3) / kWinchReduction;
+
         public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Arm/Winch/Kff");
         public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Arm/Winch/Kp");
         public static final LoggedTunableNumber kWinchKd = new LoggedTunableNumber("Arm/Winch/Kd");

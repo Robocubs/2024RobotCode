@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import com.team1701.lib.commands.CommandLogger;
 import com.team1701.robot.Configuration.Mode;
+import com.team1701.robot.states.RobotState.ScoringMode;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
@@ -141,6 +142,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit() {
         CommandScheduler.getInstance().cancelAll();
+        mRobotContainer.getRobotState().setScoringMode(ScoringMode.SPEAKER);
         mAutonomousCommand = mRobotContainer.getAutonomousCommand();
         mAutonomousCommand.ifPresent((command) -> command.schedule());
     }
