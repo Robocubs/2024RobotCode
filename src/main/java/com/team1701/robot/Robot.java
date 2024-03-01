@@ -57,31 +57,6 @@ public class Robot extends LoggedRobot {
         switch (Configuration.getMode()) {
             case REAL:
                 Logger.addDataReceiver(new WPILOGWriter("/media/sda1/"));
-                Logger.addDataReceiver(new NT4Publisher());
-                break;
-            case SIMULATION:
-                Logger.addDataReceiver(new NT4Publisher());
-                break;
-            case REPLAY:
-                var logPath = LogFileUtil.findReplayLog();
-                Logger.setReplaySource(new WPILOGReader(logPath));
-                Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
-                break;
-        }
-
-        // Start AdvantageKit logger
-        setUseTiming(Configuration.getMode() != Mode.REPLAY);
-        // Logger.start();
-
-        // Default to blue alliance in sim
-        if (Configuration.getMode() == Mode.SIMULATION) {
-            DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
-        }
-
-        // Set up data receivers & replay source
-        switch (Configuration.getMode()) {
-            case REAL:
-                Logger.addDataReceiver(new WPILOGWriter());
                 // Logger.addDataReceiver(new NT4Publisher());
                 break;
             case SIMULATION:
@@ -92,6 +67,11 @@ public class Robot extends LoggedRobot {
                 Logger.setReplaySource(new WPILOGReader(logPath));
                 Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
                 break;
+        }
+
+        // Default to blue alliance in sim
+        if (Configuration.getMode() == Mode.SIMULATION) {
+            DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
         }
 
         // Start AdvantageKit logger

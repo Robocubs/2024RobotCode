@@ -271,8 +271,9 @@ public final class Constants {
             }
 
             kModuleRadius = Math.hypot(kTrackWidthMeters / 2.0, kWheelbaseMeters / 2.0);
-            kMaxVelocityMetersPerSecond =
-                    Units.rotationsPerMinuteToRadiansPerSecond(driveMotorMaxRPM) * kDriveReduction * kWheelRadiusMeters;
+            kMaxVelocityMetersPerSecond = 5.0;
+            // kMaxVelocityMetersPerSecond =
+            //         Units.rotationsPerMinuteToRadiansPerSecond(driveMotorMaxRPM) * kDriveReduction * kWheelRadiusMeters;
             kMaxAngularVelocityRadiansPerSecond =
                     kMaxVelocityMetersPerSecond / Math.hypot(kTrackWidthMeters / 2.0, kWheelbaseMeters / 2.0);
             kMaxSteerVelocityRadiansPerSecond =
@@ -475,7 +476,7 @@ public final class Constants {
         // TODO: Update values
         public static final double kRotationReduction = 1.0 / 20.0;
 
-        public static final double kArmUpperLimitRotations = Units.degreesToRotations(100) / kRotationReduction;
+        public static final double kArmUpperLimitRotations = Units.degreesToRotations(95) / kRotationReduction;
         public static final double kArmLowerLimitRotations = Units.degreesToRotations(20) / kRotationReduction;
 
         public static final double kAngleReduction = 1;
