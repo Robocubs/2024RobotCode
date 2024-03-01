@@ -416,7 +416,7 @@ public final class Constants {
                     kTargetShootSpeedRadiansPerSecond.initDefault(450);
 
                     kShooterAngleEncoderOffset =
-                            Rotation2d.fromRadians(3.347).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
+                            Rotation2d.fromRadians(3.311).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
 
                     kMaxRotationVelocityRadiansPerSecond.initDefault(0);
                     kMaxRotationAccelerationRadiansPerSecondSquared.initDefault(0);
@@ -446,7 +446,7 @@ public final class Constants {
         public static final int kRightWinchId = 41;
 
         public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
-        public static final double lowerLimitRotations = Units.radiansToRotations(-3) / kWinchReduction;
+        public static final double lowerLimitRotations = Units.radiansToRotations(-2.9) / kWinchReduction;
 
         public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Arm/Winch/Kff");
         public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Arm/Winch/Kp");
