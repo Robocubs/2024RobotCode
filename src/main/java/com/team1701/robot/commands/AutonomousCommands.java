@@ -18,6 +18,7 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import static com.team1701.lib.commands.LoggedCommands.*;
@@ -163,7 +164,7 @@ public class AutonomousCommands {
     public AutonomousCommand fourPieceAmp() {
         var command = loggedSequence(
                         print("Started four piece near amp auto"),
-                        followChoreoPath("FourPieceAmp.1"),
+                        followChoreoPath("FourPieceAmp.1", true),
                         aimAndShoot(),
                         followChoreoPath("FourPieceAmp.2"),
                         aimAndShoot(),
@@ -172,6 +173,23 @@ public class AutonomousCommands {
                         followChoreoPath("FourPieceAmp.4"),
                         aimAndShoot())
                 .withName("FourPieceAmpAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand sourceFourPieceTwoOne() {
+        var command = loggedSequence(
+                        print("Started source four piece two one auto"),
+                        driveToPose(new Pose2d(
+                                new Translation2d(2.46260666847229, 2.526517391204834),
+                                new Rotation2d(2.2091161460921795))),
+                        aimAndShoot(),
+                        followChoreoPath("SourceFourPieceTwoOne.1"),
+                        aimAndShoot(),
+                        followChoreoPath("SourceFourPieceTwoOne.2"),
+                        aimAndShoot(),
+                        followChoreoPath("SourceFourPieceTwoOne.3"),
+                        aimAndShoot())
+                .withName("SourceFourPieceTwoOneAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }

@@ -346,7 +346,7 @@ public class RobotContainer {
         mDriverController
                 .y()
                 .whileTrue(DriveCommands.driveToPiece(
-                        mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits, mDriverController));
+                        mDrive, mRobotState, Constants.Drive.kFastTrapezoidalKinematicLimits, mDriverController));
 
         // Drive while Rotating to Speaker - note, this Trigger is also used for the shoot while moving command
         mDriverController
@@ -576,6 +576,7 @@ public class RobotContainer {
         var demoCommand = commands.demo();
         var fourPieceCommand = commands.fourPiece();
         var fourPieceAmpSideCommand = commands.fourPieceAmp();
+        var sourceFourPieceTwoOneCommand = commands.sourceFourPieceTwoOne();
         var shootAndBackupCommand = commands.shootAndBackup();
         if (Configuration.getRobot() != RobotType.SIMULATION_BOT) {
             mAutonomousPaths.put("Demo", demoCommand.path());
@@ -583,11 +584,13 @@ public class RobotContainer {
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
+        mAutonomousPaths.put("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.path());
 
         autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
         autonomousModeChooser.addOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Four Piece Amp Side", fourPieceAmpSideCommand.command());
+        autonomousModeChooser.addOption("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.command());
 
         autonomousModeChooser.getSendableChooser().onChange(this::logAutonomousPath);
 
