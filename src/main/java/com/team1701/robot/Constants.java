@@ -371,7 +371,7 @@ public final class Constants {
         public static final InterpolatingDoubleTreeMap kShooterSpeedInterpolator =
                 new InterpolatingDoubleTreeMap(); // Radians/sec
 
-        public static final double kRollerRampRate = 600;
+        public static final double kRollerRampRate = 450;
 
         public static final double[][] kShooterDistanceToAngleValues = {
             {3.5, 0.55},

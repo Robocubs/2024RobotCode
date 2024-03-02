@@ -51,7 +51,6 @@ public class Shooter extends SubsystemBase {
     private final SlewRateLimiter mLeftRollerSlewRateLimiter = new SlewRateLimiter(Constants.Shooter.kRollerRampRate);
     private final SlewRateLimiter mRightRollerSlewRateLimiter = new SlewRateLimiter(Constants.Shooter.kRollerRampRate);
 
-
     private Optional<Rotation2d> mRotationMotorOffset = Optional.empty();
 
     public Shooter(
