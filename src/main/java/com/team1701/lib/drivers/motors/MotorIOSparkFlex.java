@@ -8,7 +8,10 @@ import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.team1701.lib.util.SignalSamplingThread;
+import com.team1701.robot.Constants;
+
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import org.littletonrobotics.junction.Logger;
 
@@ -18,14 +21,29 @@ public class MotorIOSparkFlex implements MotorIO {
     private final SparkPIDController mController;
     private final double mReduction;
 
+    private final TrapezoidProfile mProfile;
+    private final TrapezoidProfile.State mGoal = new TrapezoidProfile.State();
+    private final TrapezoidProfile.State mSetpoint = new TrapezoidProfile.State();
+
+    private final double mVelocityConstraints;
+    private final double mAccelerationConstraints;
+
     private Optional<Queue<Double>> mPositionSamples = Optional.empty();
     private Optional<Queue<Double>> mVelocitySamples = Optional.empty();
 
     public MotorIOSparkFlex(CANSparkFlex motor, double reduction) {
+        this(motor, reduction, 0, 0);
+    }
+
+    public MotorIOSparkFlex(CANSparkFlex motor, double reduction, double velocityConstraint, double accelerationConstraint) {
         mMotor = motor;
         mEncoder = motor.getEncoder();
         mController = motor.getPIDController();
         mReduction = reduction;
+        mVelocityConstraints = velocityConstraint;
+        mAccelerationConstraints = accelerationConstraint;
+        mProfile = new TrapezoidProfile(
+                new TrapezoidProfile.Constraints(mVelocityConstraints, mAccelerationConstraints));
     }
 
     @Override
@@ -79,12 +97,13 @@ public class MotorIOSparkFlex implements MotorIO {
     @Override
     public void setSmoothPositionControl(
             Rotation2d position, double maxVelocityRadiansPerSecond, double maxAccelerationRadiansPerSecond) {
-        mController.setReference(position.getRotations() / mReduction, CANSparkFlex.ControlType.kSmartMotion);
-        mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kTrapezoidal, 0);
-        mController.setSmartMotionMaxVelocity(
-                Units.radiansPerSecondToRotationsPerMinute(maxVelocityRadiansPerSecond), 0);
-        mController.setSmartMotionMaxAccel(
-                Units.radiansPerSecondToRotationsPerMinute(maxAccelerationRadiansPerSecond), 0);
+        
+                // mController.setReference(position.getRotations() / mReduction, CANSparkFlex.ControlType.kSmartMotion);
+        // mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kTrapezoidal, 0);
+        // mController.setSmartMotionMaxVelocity(
+        //         Units.radiansPerSecondToRotationsPerMinute(maxVelocityRadiansPerSecond), 0);
+        // mController.setSmartMotionMaxAccel(
+        //         Units.radiansPerSecondToRotationsPerMinute(maxAccelerationRadiansPerSecond), 0);
     }
 
     @Override
