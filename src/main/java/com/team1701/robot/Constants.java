@@ -418,7 +418,7 @@ public final class Constants {
                     kTargetShootSpeedRadiansPerSecond.initDefault(450);
 
                     kShooterAngleEncoderOffset =
-                            Rotation2d.fromRadians(3.341).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
+                            Rotation2d.fromRadians(2.373).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
 
                     kMaxRotationVelocityRadiansPerSecond.initDefault(0);
                     kMaxRotationAccelerationRadiansPerSecondSquared.initDefault(0);
