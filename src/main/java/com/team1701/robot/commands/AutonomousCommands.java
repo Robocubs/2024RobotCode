@@ -192,4 +192,17 @@ public class AutonomousCommands {
                 .withName("SourceFourPieceTwoOneAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
+
+    public AutonomousCommand middleToMiddle() {
+        var command = loggedSequence(
+                        print("Started middle to middle auto"),
+                        followChoreoPath("MiddleToMiddle.1", true),
+                        aimAndShoot(),
+                        followChoreoPath("MiddleToMiddle.2"),
+                        aimAndShoot(),
+                        followChoreoPath("MiddleToMiddle.3"),
+                        aimAndShoot())
+                .withName("MiddleToMiddleAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
 }
