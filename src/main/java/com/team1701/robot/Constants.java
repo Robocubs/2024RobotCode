@@ -271,8 +271,10 @@ public final class Constants {
             }
 
             kModuleRadius = Math.hypot(kTrackWidthMeters / 2.0, kWheelbaseMeters / 2.0);
-            kMaxVelocityMetersPerSecond =
-                    Units.rotationsPerMinuteToRadiansPerSecond(driveMotorMaxRPM) * kDriveReduction * kWheelRadiusMeters;
+            kMaxVelocityMetersPerSecond = 5.0;
+            // kMaxVelocityMetersPerSecond =
+            //         Units.rotationsPerMinuteToRadiansPerSecond(driveMotorMaxRPM) * kDriveReduction *
+            // kWheelRadiusMeters;
             kMaxAngularVelocityRadiansPerSecond =
                     kMaxVelocityMetersPerSecond / Math.hypot(kTrackWidthMeters / 2.0, kWheelbaseMeters / 2.0);
             kMaxSteerVelocityRadiansPerSecond =
@@ -350,9 +352,9 @@ public final class Constants {
         public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 100);
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =
-                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 85);
+                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 43);
         public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 175);
+                new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 150);
         public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/TrapRollerSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
@@ -368,6 +370,8 @@ public final class Constants {
                 new InterpolatingDoubleTreeMap(); // Radians
         public static final InterpolatingDoubleTreeMap kShooterSpeedInterpolator =
                 new InterpolatingDoubleTreeMap(); // Radians/sec
+
+        public static final double kRollerRampRate = 450;
 
         public static final double[][] kShooterDistanceToAngleValues = {
             {3.5, 0.55},
@@ -404,8 +408,8 @@ public final class Constants {
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kRollerKff.initDefault(0.000165);
-                    kRollerKp.initDefault(0.00035);
+                    kRollerKff.initDefault(0.000155);
+                    kRollerKp.initDefault(0.0002);
                     kRollerKd.initDefault(0.0);
 
                     kRotationKp.initDefault(0.3);
@@ -414,7 +418,7 @@ public final class Constants {
                     kTargetShootSpeedRadiansPerSecond.initDefault(450);
 
                     kShooterAngleEncoderOffset =
-                            Rotation2d.fromRadians(3.347).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
+                            Rotation2d.fromRadians(2.373).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
 
                     kMaxRotationVelocityRadiansPerSecond.initDefault(0);
                     kMaxRotationAccelerationRadiansPerSecondSquared.initDefault(0);
@@ -442,6 +446,9 @@ public final class Constants {
 
         public static final int kLeftWinchId = 40;
         public static final int kRightWinchId = 41;
+
+        public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
+        public static final double lowerLimitRotations = Units.radiansToRotations(-2.9) / kWinchReduction;
 
         public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Arm/Winch/Kff");
         public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Arm/Winch/Kp");

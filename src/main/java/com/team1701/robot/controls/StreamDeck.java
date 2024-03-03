@@ -76,7 +76,7 @@ public class StreamDeck {
         kForwardButton(0, 0, "Controls/ForwardButton", "ForceIntakeIcon", "Intake"),
         kArmUpButton(0, 1, "Controls/ArmUpButton", "RaiseArmIcon", "Up"),
         kArmDownButton(2, 1, "Controls/ArmDownButton", "LowerArmIcon", "Down"),
-        kArmStopButton(1, 1, "Controls/ArmStopButton", "HomeArmIcon", "Stop"),
+        kArmStopButton(1, 1, "Controls/ArmStopButton", "StopArmIcon", "Stop"),
         kShooterUpButton(0, 3, "Controls/ShooterUpButton", "RaiseShooterIcon", "Up"),
         kShooterDownButton(2, 3, "Controls/ShooterDownButton", "LowerShooterIcon", "Down"),
         kShootButton(1, 2, "Controls/ShootButton", "ShootIcon", "Shoot"),

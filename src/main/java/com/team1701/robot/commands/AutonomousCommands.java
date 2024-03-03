@@ -18,6 +18,7 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import static com.team1701.lib.commands.LoggedCommands.*;
@@ -147,27 +148,61 @@ public class AutonomousCommands {
     public AutonomousCommand fourPiece() {
         var command = loggedSequence(
                         print("Started four piece auto"),
-                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
                         followChoreoPath("FourPiece.1", true),
-                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
+                        aimAndShoot(),
                         followChoreoPath("FourPiece.2"),
-                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
+                        aimAndShoot(),
                         followChoreoPath("FourPiece.3"),
-                        ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState))
-                .withName("FourPieceAuton");
+                        aimAndShoot(),
+                        followChoreoPath("FourPiece.4"),
+                        aimAndShoot())
+                .withName("FourPieceAuto");
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public AutonomousCommand threePieceCenter() {
+    public AutonomousCommand fourPieceAmp() {
         var command = loggedSequence(
-                print("Started three piece center auto"),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
-                followChoreoPath("ThreePieceCenter.1", true),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState),
-                followChoreoPath("ThreePieceCenter.2"),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
+                        print("Started four piece near amp auto"),
+                        followChoreoPath("FourPieceAmp.1", true),
+                        aimAndShoot(),
+                        followChoreoPath("FourPieceAmp.2"),
+                        aimAndShoot(),
+                        followChoreoPath("FourPieceAmp.3"),
+                        aimAndShoot(),
+                        followChoreoPath("FourPieceAmp.4"),
+                        aimAndShoot())
+                .withName("FourPieceAmpAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
 
+    public AutonomousCommand sourceFourPieceTwoOne() {
+        var command = loggedSequence(
+                        print("Started source four piece two one auto"),
+                        driveToPose(new Pose2d(
+                                new Translation2d(2.46260666847229, 2.526517391204834),
+                                new Rotation2d(2.2091161460921795))),
+                        aimAndShoot(),
+                        followChoreoPath("SourceFourPieceTwoOne.1"),
+                        aimAndShoot(),
+                        followChoreoPath("SourceFourPieceTwoOne.2"),
+                        aimAndShoot(),
+                        followChoreoPath("SourceFourPieceTwoOne.3"),
+                        aimAndShoot())
+                .withName("SourceFourPieceTwoOneAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand middleToMiddle() {
+        var command = loggedSequence(
+                        print("Started middle to middle auto"),
+                        followChoreoPath("MiddleToMiddle.1", true),
+                        aimAndShoot(),
+                        followChoreoPath("MiddleToMiddle.2"),
+                        aimAndShoot(),
+                        followChoreoPath("MiddleToMiddle.3"),
+                        aimAndShoot())
+                .withName("MiddleToMiddleAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }

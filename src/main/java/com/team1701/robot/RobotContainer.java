@@ -30,6 +30,7 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
+import com.team1701.robot.Configuration.RobotType;
 import com.team1701.robot.commands.ArmCommands;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
@@ -168,11 +169,11 @@ public class RobotContainer {
                             SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                                     Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
                             new EncoderIORevThroughBore(Constants.Arm.kEncoderId, false)));
-                    // climb = Optional.of(new Climb(
-                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                    //                 Constants.Winch.kLeftWinchId, MotorUsage.WINCH, true),
-                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                    //                 Constants.Winch.kRightWinchId, MotorUsage.WINCH, false))); //TODO: determine
+                    climb = Optional.of(new Climb(
+                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                                    Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
+                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                                    Constants.Climb.kRightWinchId, MotorUsage.WINCH, false))); // TODO: determine
                     // inversion
                     break;
                 case SIMULATION_BOT:
@@ -325,7 +326,8 @@ public class RobotContainer {
 
         mArm.setDefaultCommand(ArmCommands.idleArmCommand(mArm, mRobotState));
 
-        mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb));
+        mClimb.setDefaultCommand(
+                Commands.startEnd(mClimb::stop, () -> {}, mClimb).andThen(idle(mClimb)));
 
         /* DRIVER CONTROLLER BINDINGS */
 
@@ -344,7 +346,7 @@ public class RobotContainer {
         mDriverController
                 .y()
                 .whileTrue(DriveCommands.driveToPiece(
-                        mDrive, mRobotState, Constants.Drive.kSlowTrapezoidalKinematicLimits, mDriverController));
+                        mDrive, mRobotState, Constants.Drive.kFastTrapezoidalKinematicLimits, mDriverController));
 
         // Drive while Rotating to Speaker - note, this Trigger is also used for the shoot while moving command
         mDriverController
@@ -405,7 +407,9 @@ public class RobotContainer {
 
         /* STREAMDECK BUTTONS */
 
-        var stopIntakingCommand = IntakeCommands.stopIntake(mIntake, mIndexer).withName("StreamDeckStopIntakeButton");
+        var stopIntakingCommand = IntakeCommands.stopIntake(mIntake, mIndexer)
+                .ignoringDisable(true)
+                .withName("StreamDeckStopIntakeButton");
 
         var rejectCommand = IntakeCommands.reverse(mIntake, mIndexer).withName("StreamDeckRejectButton");
 
@@ -463,13 +467,15 @@ public class RobotContainer {
         var manualShootCommand = new ManualShoot(mShooter, mIndexer).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
                         () -> {
-                            mClimb.setPercentOutput(.1);
+                            mClimb.extendWinch();
+                            ;
                         },
                         mClimb)
                 .withName("StreamDeckExtendWinchCommand");
         var retractWinchCommand = run(
                         () -> {
-                            mClimb.setPercentOutput(-.1);
+                            mClimb.retractWinch();
+                            ;
                         },
                         mClimb)
                 .withName("StreamDeckRetractWinchCommand");
@@ -498,7 +504,7 @@ public class RobotContainer {
                 .add(StreamDeckButton.kRetractWinchButton, retractWinchCommand::isScheduled)
                 .add(StreamDeckButton.kStopShootButton, stopShooterCommand::isScheduled));
 
-        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(stopIntakingCommand.ignoringDisable(true));
+        mStreamDeck.button(StreamDeckButton.kStopIntakeButton).toggleOnTrue(stopIntakingCommand);
 
         mStreamDeck.button(StreamDeckButton.kRejectButton).whileTrue(rejectCommand);
         mStreamDeck.button(StreamDeckButton.kForwardButton).whileTrue(forwardCommand);
@@ -569,14 +575,25 @@ public class RobotContainer {
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         var demoCommand = commands.demo();
         var fourPieceCommand = commands.fourPiece();
+        var fourPieceAmpSideCommand = commands.fourPieceAmp();
+        var sourceFourPieceTwoOneCommand = commands.sourceFourPieceTwoOne();
         var shootAndBackupCommand = commands.shootAndBackup();
-        mAutonomousPaths.put("Demo", demoCommand.path());
+        var middleToMiddleCommand = commands.middleToMiddle();
+        if (Configuration.getRobot() != RobotType.SIMULATION_BOT) {
+            mAutonomousPaths.put("Demo", demoCommand.path());
+            autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
+        }
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
+        mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
+        mAutonomousPaths.put("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.path());
+        mAutonomousPaths.put("Middle To Middle Auto", sourceFourPieceTwoOneCommand.path());
 
-        autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
         autonomousModeChooser.addOption("Shoot and Backup", shootAndBackupCommand.command());
+        autonomousModeChooser.addOption("Four Piece Amp Side", fourPieceAmpSideCommand.command());
+        autonomousModeChooser.addOption("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.command());
+        autonomousModeChooser.addOption("Middle To Middle Auto", sourceFourPieceTwoOneCommand.command());
 
         autonomousModeChooser.getSendableChooser().onChange(this::logAutonomousPath);
 

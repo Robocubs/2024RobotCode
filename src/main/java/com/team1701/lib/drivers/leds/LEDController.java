@@ -37,7 +37,7 @@ public class LEDController {
     }
 
     private int percentageColorToStandard(double p) {
-        return (int) (p * 255);
+        return (int) (p * 128);
     }
 
     private void setRBGfromRGBGradient(int i, double r, double g, double b) {

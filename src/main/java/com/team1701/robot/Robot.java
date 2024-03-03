@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import com.team1701.lib.commands.CommandLogger;
 import com.team1701.robot.Configuration.Mode;
+import com.team1701.robot.states.RobotState.ScoringMode;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
@@ -56,7 +57,7 @@ public class Robot extends LoggedRobot {
         switch (Configuration.getMode()) {
             case REAL:
                 Logger.addDataReceiver(new WPILOGWriter("/media/sda1/"));
-                Logger.addDataReceiver(new NT4Publisher());
+                // Logger.addDataReceiver(new NT4Publisher());
                 break;
             case SIMULATION:
                 Logger.addDataReceiver(new NT4Publisher());
@@ -67,30 +68,10 @@ public class Robot extends LoggedRobot {
                 Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
                 break;
         }
-
-        // Start AdvantageKit logger
-        setUseTiming(Configuration.getMode() != Mode.REPLAY);
-        Logger.start();
 
         // Default to blue alliance in sim
         if (Configuration.getMode() == Mode.SIMULATION) {
             DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
-        }
-
-        // Set up data receivers & replay source
-        switch (Configuration.getMode()) {
-            case REAL:
-                Logger.addDataReceiver(new WPILOGWriter());
-                Logger.addDataReceiver(new NT4Publisher());
-                break;
-            case SIMULATION:
-                Logger.addDataReceiver(new NT4Publisher());
-                break;
-            case REPLAY:
-                var logPath = LogFileUtil.findReplayLog();
-                Logger.setReplaySource(new WPILOGReader(logPath));
-                Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
-                break;
         }
 
         // Start AdvantageKit logger
@@ -141,6 +122,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit() {
         CommandScheduler.getInstance().cancelAll();
+        mRobotContainer.getRobotState().setScoringMode(ScoringMode.SPEAKER);
         mAutonomousCommand = mRobotContainer.getAutonomousCommand();
         mAutonomousCommand.ifPresent((command) -> command.schedule());
     }

@@ -38,4 +38,6 @@ public interface MotorIO {
     public default void enableVelocitySampling(SignalSamplingThread samplingThread) {}
 
     public default void setPosition(Rotation2d position) {}
+
+    public default void stopMotor() {}
 }

@@ -12,8 +12,9 @@ export class OperatorButton extends LitElement {
   @property({ type: String }) label = 'Button';
   @property({ type: Boolean }) selected = false;
 
-  onMouseDown(): void {
+  onMouseDown(event: Event): void {
     this.nt.setValue(this.key, true);
+    event.preventDefault();
   }
 
   onMouseUp(): void {
@@ -22,7 +23,16 @@ export class OperatorButton extends LitElement {
 
   render(): TemplateResult {
     return html`
-      <button class="${this.selected ? 'toggled' : ''}" @mousedown="${this.onMouseDown}" @mouseup="${this.onMouseUp}">${this.label}</button>
+      <button
+        class="${this.selected ? 'toggled' : ''}"
+        @mousedown="${this.onMouseDown}"
+        @touchstart="${this.onMouseDown}"
+        @mouseup="${this.onMouseUp}"
+        @touchend="${this.onMouseUp}"
+        @touchcancel="${this.onMouseUp}"
+      >
+        ${this.label}
+      </button>
     `;
   }
 
