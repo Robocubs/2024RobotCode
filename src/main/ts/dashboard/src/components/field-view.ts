@@ -6,24 +6,19 @@ import { globalStylesCss } from '../styles/styles';
 
 @customElement('team1701-field-view')
 export class FieldView extends LitElement {
-  @consume({ context: nt4Context })
-  private nt!: NetworkTables;
+  @consume({ context: nt4Context }) private nt!: NetworkTables;
 
   render() {
     return html`<frc-field style="align-items: top" class="grow w-full h-full" crop-left=".1" crop-right=".9" rotation-unit="deg">
       <frc-field-robot
         color="${this.nt.$allianceColor()}"
         opacity="1"
-        rotation-unit="rad"
+        rotation-unit="deg"
         width="0.7"
         length="0.7"
-        .pose=${this.nt.$doubleArray('/AdvantageKit/RealOutputs/RobotState/Pose2d', [])}
+        .pose=${this.nt.$doubleArray('/SmartDashboard/Field/Robot', [])}
       ></frc-field-robot>
-      <frc-field-path
-        color="orange"
-        opacity="1"
-        .poses=${this.nt.$doubleArray('/AdvantageKit/RealOutputs/Autonomous/PathPose2ds', [])}
-      ></frc-field-path>
+      <frc-field-path color="orange" opacity="1" .poses=${this.nt.$doubleArray('/SmartDashboard/Field/Path', [])}></frc-field-path>
     </frc-field>`;
   }
 

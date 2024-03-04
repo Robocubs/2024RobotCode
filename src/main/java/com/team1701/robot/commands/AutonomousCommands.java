@@ -19,6 +19,7 @@ import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import static com.team1701.lib.commands.LoggedCommands.*;
@@ -57,6 +58,11 @@ public class AutonomousCommands {
 
     private Command resetPose(Supplier<Pose2d> pose) {
         return runOnce(() -> mRobotState.resetPose(pose.get())).withName("ResetPose");
+    }
+
+    private Command timedDriveWithVelocity(ChassisSpeeds speeds, double seconds) {
+        return race(DriveCommands.driveWithVelocity(() -> speeds, mDrive), waitSeconds(seconds))
+                .withName("TimedDriveWithVelocity");
     }
 
     private Command driveToPose(Pose2d pose) {
@@ -135,12 +141,12 @@ public class AutonomousCommands {
     }
 
     public AutonomousCommand shootAndBackup() {
-        /*
-         * TODO: Robot-relative drive command so we can remove dependency on odometry for this command
-         */
         var command = loggedSequence(
-                print("Started shoot and backup"),
-                ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
+                        print("Started shoot and backup"),
+                        timedDriveWithVelocity(new ChassisSpeeds(-1, 0, 0), 2.0),
+                        aimAndShoot(),
+                        timedDriveWithVelocity(new ChassisSpeeds(-1, 0, 0), 2.0))
+                .withName("ShootAndBackupAuto");
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
