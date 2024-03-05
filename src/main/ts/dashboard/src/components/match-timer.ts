@@ -5,8 +5,7 @@ import { globalStylesCss } from '../styles/styles';
 
 @customElement('team1701-match-timer')
 export class MatchTimer extends LitElement {
-  @property({ type: Number })
-  timer = 0;
+  @property({ type: Number }) timer = 0;
 
   render() {
     const roundedTimer = Math.floor(this.timer);

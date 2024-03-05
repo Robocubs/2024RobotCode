@@ -26,6 +26,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class RobotState {
@@ -35,10 +37,16 @@ public class RobotState {
 
     private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
     private final TimeLockedBoolean mOutOfAmpRange = new TimeLockedBoolean(0.25, Timer.getFPGATimestamp(), true, true);
+    private final Field2d mField;
 
     private Optional<Indexer> mIndexer = Optional.empty();
     private Optional<Intake> mIntake = Optional.empty();
     private Optional<Shooter> mShooter = Optional.empty();
+
+    public RobotState() {
+        mField = new Field2d();
+        SmartDashboard.putData("Field", mField);
+    }
 
     @AutoLogOutput
     private ScoringMode mScoringMode = ScoringMode.SPEAKER;
@@ -57,6 +65,7 @@ public class RobotState {
         var timeout = Timer.getFPGATimestamp() - kDetectedNoteTimeout;
         mDetectedNotes.removeIf(note -> note.timestamp() < timeout);
         mOutOfAmpRange.update(getDistanceToAmp() > 1, Timer.getFPGATimestamp());
+        mField.setRobotPose(getPose2d());
     }
 
     @AutoLogOutput
@@ -227,6 +236,10 @@ public class RobotState {
 
     public void setScoringMode(ScoringMode scoringMode) {
         this.mScoringMode = scoringMode;
+    }
+
+    public void setPath(Pose2d... poses) {
+        mField.getObject("Path").setPoses(poses);
     }
 
     @AutoLogOutput

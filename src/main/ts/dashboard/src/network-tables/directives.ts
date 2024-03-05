@@ -6,7 +6,7 @@ export class SourceValue extends AsyncDirective {
   static getSourceValue(store: Store, provider: string, key: string, defaultValue: unknown): unknown {
     const source = store.getSource(provider, key);
     const value = source?.hasValue() ? source.getValue() : defaultValue;
-    return typeof value === 'string' ? value : JSON.stringify(value);
+    return typeof value === 'object' ? JSON.stringify(value) : value;
   }
 
   render(store: Store, provider: string, key: string, defaultValue: unknown) {
@@ -22,23 +22,12 @@ export class SourceValue extends AsyncDirective {
   }
 }
 export const sourceValue = directive(SourceValue);
-
 export const ntValueDirective = (store: Store) => (key: string, defaultValue: unknown) => sourceValue(store, 'NetworkTables', key, defaultValue);
 
 export class SourceDoubleArray extends AsyncDirective {
   static getSourceValue(store: Store, provider: string, key: string, defaultValue: number[]): number[] {
     const source = store.getSource(provider, key);
-    if (!source?.hasValue()) {
-      return defaultValue;
-    }
-
-    const view = new DataView(new Uint8Array(source.getValue() as Uint8Array).buffer);
-    const doubles = [];
-    for (let i = 0; i < view.byteLength / 8; i++) {
-      doubles.push(view.getFloat64(i * 8, true));
-    }
-
-    return doubles;
+    return source?.hasValue() ? (source.getValue() as number[]) : defaultValue;
   }
 
   render(store: Store, provider: string, key: string, defaultValue: number[]) {
