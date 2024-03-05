@@ -8,8 +8,10 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class IntakeCommands {
 
@@ -29,16 +31,22 @@ public class IntakeCommands {
     }
 
     public static Command rejectAndDrive(
-            Intake intake, Indexer indexer, Drive drive, Supplier<Rotation2d> robotHeadingSupplier) {
+            Intake intake,
+            Indexer indexer,
+            Drive drive,
+            CommandXboxController driverController,
+            Supplier<Rotation2d> robotHeadingSupplier) {
         return Commands.startEnd(
                         () -> {
                             intake.setReverse();
                             indexer.setReverse();
                             drive.setVelocity(new ChassisSpeeds(0.75, 0, 0));
+                            driverController.getHID().setRumble(RumbleType.kLeftRumble, 0.3);
                         },
                         () -> {
                             intake.stop();
                             indexer.stop();
+                            driverController.getHID().setRumble(RumbleType.kLeftRumble, 0);
                         },
                         intake,
                         indexer,
@@ -57,7 +65,7 @@ public class IntakeCommands {
                 .withName("StopIntaking");
     }
 
-    public static Command defaultCommand(Intake intake, RobotState mRobotState) {
-        return new IntakeCommand(intake, mRobotState);
+    public static Command defaultCommand(Intake intake, CommandXboxController driverController, RobotState mRobotState) {
+        return new IntakeCommand(intake, driverController, mRobotState);
     }
 }

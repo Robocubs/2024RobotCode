@@ -78,7 +78,7 @@ public class IdleShooterCommand extends Command {
                 }
                 break;
             case CLIMB:
-                desiredShooterAngle = Rotation2d.fromDegrees(Constants.Shooter.kShooterUpperLimitRotations);
+                desiredShooterAngle = Rotation2d.fromDegrees(Constants.Shooter.kMaxAngleDegrees.get());
                 shooterSpeed = 0;
                 break;
             default:
@@ -96,7 +96,7 @@ public class IdleShooterCommand extends Command {
         var clampedDesiredRotations = MathUtil.clamp(
                 desiredShooterAngle.getRotations(),
                 Constants.Shooter.kShooterLowerLimitRotations,
-                Constants.Shooter.kShooterUpperLimitRotations);
+                Constants.Shooter.kMaxAngleDegrees.get());
 
         mShooter.setRotationAngle(Rotation2d.fromRotations(clampedDesiredRotations));
         mShooter.setUnifiedRollerSpeed(clampedDesiredSpeed);
@@ -114,11 +114,5 @@ public class IdleShooterCommand extends Command {
     @Override
     public void end(boolean interrupted) {
         mShooter.stopRotation();
-    }
-
-    // 5 * max is top idle speed
-    private double speedRegression(double reference, double current, double factor) {
-        var scale = current - reference > 0.2 ? 4 / (1 + Math.abs(reference - current)) : 400 / 100;
-        return factor * scale;
     }
 }

@@ -13,6 +13,8 @@ import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
+import com.team1701.robot.subsystems.indexer.Indexer;
+import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -131,5 +133,23 @@ public class DriveCommands {
                             .withName("DriveToPiece");
                 },
                 Set.of(drive));
+    }
+
+    public static Command shootAndMove(
+            Drive drive,
+            Shooter shooter,
+            Indexer indexer,
+            RobotState robotState,
+            DoubleSupplier throttle,
+            DoubleSupplier strafe) {
+        return Commands.race(
+                new RotateToFieldHeading(
+                        drive,
+                        robotState::getSpeakerHeading,
+                        robotState::getHeading,
+                        Constants.Drive.kFastTrapezoidalKinematicLimits,
+                        throttle,
+                        strafe),
+                ShootCommands.shoot(shooter, indexer, robotState));
     }
 }

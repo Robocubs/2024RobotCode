@@ -320,7 +320,7 @@ public final class Constants {
 
     public static final class Shooter {
         // TODO: Update values
-        public static final double kRollerReduction = 30.0 / 18.0; // 32.0 /18.0
+        public static final double kRollerReduction = 1.0 / 1.0; // 32.0 /18.0
         public static final double kEncoderToShooterReduction = 30.0 / 50.0;
         public static final double kAngleReduction = (1.0 / 4.0) * (1.0 / 5.0) * (20.0 / 93.0);
 
@@ -331,7 +331,7 @@ public final class Constants {
 
         public static final int kShooterRotationMotorId = 26;
 
-        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(58);
+        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(62);
         public static final double kShooterLowerLimitRotations = Units.degreesToRotations(18);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
@@ -343,6 +343,9 @@ public final class Constants {
         public static final LoggedTunableNumber kRollerKff = new LoggedTunableNumber("Shooter/Motor/Roller/Kff");
         public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");
         public static final LoggedTunableNumber kRollerKd = new LoggedTunableNumber("Shooter/Motor/Roller/Kd");
+
+        public static final LoggedTunableNumber kMaxAngleDegrees =
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAngleDegrees", 62);
 
         public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity", 1.0);
@@ -362,6 +365,12 @@ public final class Constants {
 
         public static final LoggedTunableNumber kTunableShooterAngleRadians =
                 new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
+
+        public static final LoggedTunableNumber kLowerAmpSpeed =
+                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 80);
+
+        public static final LoggedTunableNumber kUpperAmpSpeed =
+                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 81.5);
 
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
@@ -408,7 +417,7 @@ public final class Constants {
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kRollerKff.initDefault(0.000155);
+                    kRollerKff.initDefault(0.00017);
                     kRollerKp.initDefault(0.0002);
                     kRollerKd.initDefault(0.0);
 

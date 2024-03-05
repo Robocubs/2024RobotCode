@@ -155,6 +155,6 @@ public class RotateToFieldHeading extends Command {
 
     @Override
     public boolean isFinished() {
-        return mFinishAtRotation && mAtTargetRotation == false;
+        return mFinishAtRotation && !mAtTargetRotation;
     }
 }

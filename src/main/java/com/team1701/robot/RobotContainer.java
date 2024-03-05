@@ -37,7 +37,6 @@ import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.commands.IntakeCommands;
-import com.team1701.robot.commands.ManualShoot;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.StreamDeck;
 import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
@@ -316,7 +315,7 @@ public class RobotContainer {
 
         mIndexer.setDefaultCommand(new IndexCommand(mIndexer, () -> true));
 
-        mIntake.setDefaultCommand(new IntakeCommand(mIntake, mRobotState));
+        mIntake.setDefaultCommand(new IntakeCommand(mIntake, mDriverController, mRobotState));
 
         mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
         // mShooter.setDefaultCommand(Commands.run(
@@ -333,7 +332,8 @@ public class RobotContainer {
 
         mDriverController
                 .b()
-                .whileTrue(IntakeCommands.rejectAndDrive(mIntake, mIndexer, mDrive, () -> mRobotState.getHeading()));
+                .whileTrue(IntakeCommands.rejectAndDrive(
+                        mIntake, mIndexer, mDrive, mDriverController, () -> mRobotState.getHeading()));
 
         mDriverController
                 .x()
@@ -349,13 +349,24 @@ public class RobotContainer {
                         mDrive, mRobotState, Constants.Drive.kFastTrapezoidalKinematicLimits, mDriverController));
 
         // Drive while Rotating to Speaker - note, this Trigger is also used for the shoot while moving command
+        // mDriverController
+        //         .leftBumper()
+        //         .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
+        //         .whileTrue(DriveCommands.slowlyDriveToSpeaker(
+        //                 mDrive,
+        //                 mRobotState::getSpeakerHeading,
+        //                 mRobotState::getHeading,
+        //                 () -> -mDriverController.getLeftY(),
+        //                 () -> -mDriverController.getLeftX()));
+
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-                .whileTrue(DriveCommands.slowlyDriveToSpeaker(
+                .whileTrue(DriveCommands.shootAndMove(
                         mDrive,
-                        mRobotState::getSpeakerHeading,
-                        mRobotState::getHeading,
+                        mShooter,
+                        mIndexer,
+                        mRobotState,
                         () -> -mDriverController.getLeftY(),
                         () -> -mDriverController.getLeftX()));
 
@@ -374,7 +385,7 @@ public class RobotContainer {
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
                 .whileTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
 
-        // Shoot while Slowly Rotating
+        // Shoot while Slowly Rotating - combo trigger
         mDriverController
                 .rightTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
@@ -386,24 +397,6 @@ public class RobotContainer {
                 .rightTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mArm, mRobotState));
-
-        // mDriverController
-        //         .a()
-        //         .whileTrue((DriveCommands.driveToPose(
-        //                 mDrive,
-        //                 () -> new Pose2d(
-        //                         new Translation2d(0.9079903960227966, 4.299035549163818),
-        //                         Rotation2d.fromRadians(2.079867230915455)),
-        //                 mRobotState::getPose2d,
-        //                 Constants.Drive.kSlowKinematicLimits,
-        //                 false)));
-
-        // mDriverController
-        //         .b()
-        //         .whileTrue(startEnd(
-        //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, .5),
-        //                         () -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0))
-        //                 .ignoringDisable(true));
 
         /* STREAMDECK BUTTONS */
 
@@ -464,18 +457,16 @@ public class RobotContainer {
                         },
                         mShooter)
                 .withName("StreamDeckShooterDownCommand");
-        var manualShootCommand = new ManualShoot(mShooter, mIndexer).withName("StreamDeckShootCommand");
+        var manualShootCommand = ShootCommands.manualShoot(mShooter, mIndexer).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
                         () -> {
                             mClimb.extendWinch();
-                            ;
                         },
                         mClimb)
                 .withName("StreamDeckExtendWinchCommand");
         var retractWinchCommand = run(
                         () -> {
                             mClimb.retractWinch();
-                            ;
                         },
                         mClimb)
                 .withName("StreamDeckRetractWinchCommand");
@@ -548,10 +539,10 @@ public class RobotContainer {
 
         /* Timer Triggers*/
 
-        new Trigger(() -> Timer.getMatchTime() == 31)
+        new Trigger(() -> Timer.getMatchTime() == 30.5)
                 .onTrue(Commands.runOnce(() -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 1)));
 
-        new Trigger(() -> Timer.getMatchTime() == 29)
+        new Trigger(() -> Timer.getMatchTime() == 29.5)
                 .onTrue(Commands.runOnce(() -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0)));
 
         DriverStation.silenceJoystickConnectionWarning(true);
@@ -579,7 +570,7 @@ public class RobotContainer {
         var sourceFourPieceTwoOneCommand = commands.sourceFourPieceTwoOne();
         var shootAndBackupCommand = commands.shootAndBackup();
         var middleToMiddleCommand = commands.middleToMiddle();
-        if (Configuration.getRobot() != RobotType.SIMULATION_BOT) {
+        if (Configuration.getRobot() == RobotType.SIMULATION_BOT) {
             mAutonomousPaths.put("Demo", demoCommand.path());
             autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
         }

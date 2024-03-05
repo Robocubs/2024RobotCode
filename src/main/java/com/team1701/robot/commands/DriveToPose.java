@@ -129,7 +129,7 @@ public class DriveToPose extends Command {
                 fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
 
         if (!mDriverController.isEmpty()) {
-            mDriverController.get().setRumble(RumbleType.kRightRumble, .2);
+            mDriverController.get().setRumble(RumbleType.kRightRumble, 0.2);
         }
     }
 
