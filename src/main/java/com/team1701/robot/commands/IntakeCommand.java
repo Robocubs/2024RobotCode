@@ -2,9 +2,7 @@ package com.team1701.robot.commands;
 
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.intake.Intake;
-
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -24,10 +22,10 @@ public class IntakeCommand extends Command {
     public void execute() {
         if (mRobotState.hasNote() && !mIntake.hasNote()) {
             mIntake.stop();
-            mDriverController.setRumble(RumbleType.kLeftRumble, 0);
+            // mDriverController.setRumble(RumbleType.kLeftRumble, 0);
         } else if (mIntake.hasNote()) {
             mIntake.setForward();
-            mDriverController.setRumble(RumbleType.kLeftRumble, 0.1);
+            // mDriverController.setRumble(RumbleType.kLeftRumble, 0.1);
 
         } else if (mRobotState.getDetectedNotePoses2d().length > 0) {
             mIntake.setMediumForward();

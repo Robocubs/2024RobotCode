@@ -386,11 +386,11 @@ public class RobotContainer {
                 .whileTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
 
         // Shoot while Slowly Rotating - combo trigger
-        mDriverController
-                .rightTrigger()
-                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-                .and(mDriverController.leftBumper())
-                .whileTrue(ShootCommands.shoot(mShooter, mIndexer, mRobotState));
+        // mDriverController
+        //         .rightTrigger()
+        //         .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
+        //         .and(mDriverController.leftBumper())
+        //         .whileTrue(ShootCommands.shoot(mShooter, mIndexer, mRobotState));
 
         // Amp Shot
         mDriverController

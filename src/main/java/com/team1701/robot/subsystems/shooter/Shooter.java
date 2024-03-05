@@ -7,6 +7,7 @@ import com.team1701.lib.drivers.encoders.EncoderIOSim;
 import com.team1701.lib.drivers.encoders.EncoderInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
+import com.team1701.lib.drivers.motors.MotorIOSparkFlex;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
@@ -142,6 +143,23 @@ public class Shooter extends SubsystemBase {
         Logger.processInputs("Shooter/Motors/Rotation", mRotationShooterMotorInputs);
 
         Logger.processInputs("Shooter/Encoder", mAngleEncoderInputs);
+
+        Logger.recordOutput(
+                "Shooter/Motors/RightUpperRollerWattage",
+                ((MotorIOSparkFlex) mRightUpperRollerMotorIO).getAppliedVoltage()
+                        * ((MotorIOSparkFlex) mRightUpperRollerMotorIO).getOutputCurrent());
+        Logger.recordOutput(
+                "Shooter/Motors/RightLowerRollerWattage",
+                ((MotorIOSparkFlex) mRightLowerRollerMotorIO).getAppliedVoltage()
+                        * ((MotorIOSparkFlex) mRightLowerRollerMotorIO).getOutputCurrent());
+        Logger.recordOutput(
+                "Shooter/Motors/LeftUpperRollerWattage",
+                ((MotorIOSparkFlex) mLeftUpperRollerMotorIO).getAppliedVoltage()
+                        * ((MotorIOSparkFlex) mLeftUpperRollerMotorIO).getOutputCurrent());
+        Logger.recordOutput(
+                "Shooter/Motors/LeftLowerRollerWattage",
+                ((MotorIOSparkFlex) mLeftLowerRollerMotorIO).getAppliedVoltage()
+                        * ((MotorIOSparkFlex) mLeftLowerRollerMotorIO).getOutputCurrent());
 
         if (Constants.Shooter.kRollerKff.hasChanged(hash)
                 || Constants.Shooter.kRollerKp.hasChanged(hash)

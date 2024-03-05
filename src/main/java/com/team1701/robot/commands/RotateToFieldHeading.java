@@ -138,7 +138,10 @@ public class RotateToFieldHeading extends Command {
 
             // Set drive outputs
             mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                    mXSupplier.getAsDouble(), mYSupplier.getAsDouble(), rotationalVelocity, currentHeading));
+                    mXSupplier.getAsDouble(),
+                    mYSupplier.getAsDouble(),
+                    rotationalVelocity,
+                    mDrive.getFieldRelativeHeading()));
             setpoint = Rotation2d.fromRadians(mRotationState.position);
         }
 

@@ -142,7 +142,7 @@ public class DriveCommands {
             RobotState robotState,
             DoubleSupplier throttle,
             DoubleSupplier strafe) {
-        return Commands.race(
+        return Commands.parallel(
                 new RotateToFieldHeading(
                         drive,
                         robotState::getSpeakerHeading,
@@ -150,6 +150,6 @@ public class DriveCommands {
                         Constants.Drive.kFastTrapezoidalKinematicLimits,
                         throttle,
                         strafe),
-                ShootCommands.shoot(shooter, indexer, robotState));
+                ShootCommands.shoot(shooter, indexer, robotState, true));
     }
 }

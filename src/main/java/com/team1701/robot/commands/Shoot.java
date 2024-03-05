@@ -140,6 +140,7 @@ public class Shoot extends Command {
 
     @Override
     public void end(boolean interrupted) {
+        mShooting = false;
         mRobotState.setScoring(false);
         mShooter.stopRollers();
         mShooter.stopRotation();
