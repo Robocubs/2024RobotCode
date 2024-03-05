@@ -320,7 +320,7 @@ public final class Constants {
 
     public static final class Shooter {
         // TODO: Update values
-        public static final double kRollerReduction = 30.0 / 18.0; // 32.0 /18.0
+        public static final double kRollerReduction = 1; // 30.0 / 18.0; // 32.0 /18.0
         public static final double kEncoderToShooterReduction = 30.0 / 50.0;
         public static final double kAngleReduction = (1.0 / 4.0) * (1.0 / 5.0) * (20.0 / 93.0);
 
@@ -373,26 +373,48 @@ public final class Constants {
 
         public static final double kRollerRampRate = 450;
 
+        // public static final double[][] kShooterDistanceToAngleValues = {
+        //     {3.47, 0.535},
+        //     {2.75, 0.7},
+        //     {2.298, 0.9},
+        //     {4.25, 0.49},
+        //     {4.75, 0.442},
+        //     {5.5, 0.385},
+        //     {6.46, .3785}
+        // };
+
+        // public static final double[][] kShooterDistanceToSpeedValues = {
+        //     {2.3, 200},
+        //     {3.5, 400},
+        //     {3.78, 400},
+        //     {2.75, 300},
+        //     {2.298, 300},
+        //     {4.25, 410},
+        //     {4.75, 410},
+        //     {5.5, 480},
+        //     {6.46, 520}
+        // };
+
         public static final double[][] kShooterDistanceToAngleValues = {
+            {2.3, 0.99},
+            {2.75, 0.755},
             {3.5, 0.55},
-            {3.78, 0.535},
-            {2.75, 0.7},
-            {2.298, 0.9},
-            {4.25, 0.49},
-            {4.75, 0.442},
-            {5.5, 0.385},
-            {6.46, .3785}
+            {3.78, 0.515},
+            {4.25, 0.48},
+            {4.76, 0.438},
+            {5.55, 0.385},
+            {6.43, 0.352}
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
-            {3.5, 400},
+            {2.3, 200},
+            {2.75, 275},
+            {3.5, 350},
             {3.78, 400},
-            {2.75, 300},
-            {2.298, 300},
-            {4.25, 410},
-            {4.75, 410},
-            {5.5, 480},
-            {6.46, 520}
+            {4.25, 440},
+            {4.76, 470},
+            {5.55, 490},
+            {6.43, 533}
         };
 
         static {

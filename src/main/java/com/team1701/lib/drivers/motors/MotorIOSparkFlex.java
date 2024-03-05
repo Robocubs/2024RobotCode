@@ -45,9 +45,16 @@ public class MotorIOSparkFlex implements MotorIO {
                 new TrapezoidProfile(new TrapezoidProfile.Constraints(mVelocityConstraints, mAccelerationConstraints));
     }
 
+    public double getOutputCurrent() {
+        return mMotor.getOutputCurrent();
+    }
+
+    public double getAppliedVoltage() {
+        return mMotor.getBusVoltage() * mMotor.getAppliedOutput();
+    }
+
     @Override
     public void updateInputs(MotorInputs inputs) {
-
         inputs.positionRadians = Units.rotationsToRadians(mEncoder.getPosition()) * mReduction;
         inputs.velocityRadiansPerSecond =
                 Units.rotationsPerMinuteToRadiansPerSecond(mEncoder.getVelocity()) * mReduction;

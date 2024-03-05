@@ -45,7 +45,7 @@ public class Shoot extends Command {
 
         mScoringMode = scoringMode;
 
-        mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp(), false, false);
+        mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp());
 
         addRequirements(shooter, indexer);
     }
