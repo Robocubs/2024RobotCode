@@ -60,6 +60,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -288,6 +289,13 @@ public class RobotContainer {
 
         mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
 
+        SmartDashboard.putData(mDrive);
+        SmartDashboard.putData(mShooter);
+        SmartDashboard.putData(mIndexer);
+        SmartDashboard.putData(mIntake);
+        SmartDashboard.putData(mArm);
+        SmartDashboard.putData(mClimb);
+
         setupControllerBindings();
         setupAutonomous();
         setupStateTriggers();
@@ -318,15 +326,12 @@ public class RobotContainer {
         mIntake.setDefaultCommand(new IntakeCommand(mIntake, mDriverController, mRobotState));
 
         mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
-        // mShooter.setDefaultCommand(Commands.run(
-        //         () -> mShooter.setRotationAngle(
-        //                 Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get())),
-        //         mShooter));
 
         mArm.setDefaultCommand(ArmCommands.idleArmCommand(mArm, mRobotState));
 
-        mClimb.setDefaultCommand(
-                Commands.startEnd(mClimb::stop, () -> {}, mClimb).andThen(idle(mClimb)));
+        mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb)
+                .andThen(idle(mClimb))
+                .withName("IdleClimbCommand"));
 
         /* DRIVER CONTROLLER BINDINGS */
 
@@ -576,15 +581,21 @@ public class RobotContainer {
         }
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
+        mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
         mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
         mAutonomousPaths.put("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.path());
-        mAutonomousPaths.put("Middle To Middle Auto", sourceFourPieceTwoOneCommand.path());
+        mAutonomousPaths.put("Middle To Middle Auto", middleToMiddleCommand.path());
 
+        autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
-        autonomousModeChooser.addOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Four Piece Amp Side", fourPieceAmpSideCommand.command());
         autonomousModeChooser.addOption("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.command());
-        autonomousModeChooser.addOption("Middle To Middle Auto", sourceFourPieceTwoOneCommand.command());
+        autonomousModeChooser.addOption("Middle To Middle Auto", middleToMiddleCommand.command());
+
+        if (Configuration.getMode() == Mode.SIMULATION) {
+            mAutonomousPaths.put("Demo", demoCommand.path());
+            autonomousModeChooser.addOption("Demo", demoCommand.command());
+        }
 
         autonomousModeChooser.getSendableChooser().onChange(this::logAutonomousPath);
 
@@ -604,6 +615,7 @@ public class RobotContainer {
     private void logAutonomousPath(String name) {
         if (!mAutonomousPaths.containsKey(name)) {
             Logger.recordOutput("Autonomous/PathPose2d", new Pose2d[] {});
+            mRobotState.setPath();
             return;
         }
 
@@ -614,6 +626,7 @@ public class RobotContainer {
         }
 
         Logger.recordOutput("Autonomous/PathPose2ds", path);
+        mRobotState.setPath(path);
     }
 
     private void setupStateTriggers() {

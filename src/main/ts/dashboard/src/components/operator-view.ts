@@ -20,9 +20,7 @@ interface StreamDeckButton {
 
 @customElement('team1701-operator-view')
 export class OperatorView extends LitElement {
-  @consume({ context: nt4Context })
-  private nt!: NetworkTables;
-
+  @consume({ context: nt4Context }) private nt!: NetworkTables;
   @state() buttons: (StreamDeckButton | undefined)[] = [];
 
   protected firstUpdated(): void {

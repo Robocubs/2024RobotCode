@@ -17,6 +17,7 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -151,5 +152,11 @@ public class DriveCommands {
                         throttle,
                         strafe),
                 ShootCommands.shoot(shooter, indexer, robotState, true));
+    }
+
+    public static Command driveWithVelocity(Supplier<ChassisSpeeds> velocity, Drive drive) {
+        return Commands.run(() -> drive.setVelocity(velocity.get()), drive)
+                .finallyDo(() -> drive.stop())
+                .withName("DriveWithVelocity");
     }
 }
