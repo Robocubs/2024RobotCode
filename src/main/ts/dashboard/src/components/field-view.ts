@@ -16,9 +16,9 @@ export class FieldView extends LitElement {
         rotation-unit="deg"
         width="0.7"
         length="0.7"
-        .pose=${this.nt.$doubleArray('/SmartDashboard/Field/Robot', [])}
+        .pose=${this.nt.$value('/SmartDashboard/Field/Robot', [])}
       ></frc-field-robot>
-      <frc-field-path color="orange" opacity="1" .poses=${this.nt.$doubleArray('/SmartDashboard/Field/Path', [])}></frc-field-path>
+      <frc-field-path color="orange" opacity="1" .poses=${this.nt.$value('/SmartDashboard/Field/Path', [])}></frc-field-path>
     </frc-field>`;
   }
 

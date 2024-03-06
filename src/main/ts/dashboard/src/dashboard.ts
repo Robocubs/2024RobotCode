@@ -25,13 +25,19 @@ export class Dashboard extends LitElement {
       <div id="dashboard-root" class="flex flex-row gap-4 h-full">
         <team1701-side-bar class="flex w-72"></team1701-side-bar>
         <div class="flex flex-col w-1 grow h-full gap-4">
-          <team1701-top-bar class="w-full" page="${this.page}" @pageChange="${this.onPageChange}"></team1701-top-bar>
+          <team1701-top-bar
+            class="w-full"
+            page="${this.page}"
+            isSimulation="${this.nt.$value('/SmartDashboard/IsSimulation', false)}"
+            @pageChange="${this.onPageChange}"
+          ></team1701-top-bar>
           <div class="w-full h-full">
             ${choose(
               this.page,
               [
                 ['Operator', () => html`<team1701-operator-view></team1701-operator-view>`],
                 ['Diagnostic', () => html`<team1701-diagnostic-view></team1701-diagnostic-view>`],
+                ['Simulation', () => html`<team1701-simulation-view></team1701-simulation-view>`],
               ],
               () => html`<team1701-field-view></team1701-field-view>`
             )}

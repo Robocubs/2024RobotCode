@@ -5,13 +5,12 @@ import { Store } from '@webbitjs/store';
 import { WebbitConnector } from '@webbitjs/webbit';
 import { DirectiveResult } from 'lit/directive.js';
 import { componentElementConfigs } from '../components/component-configs';
-import { SourceDoubleArray, SourceValue, ntAllianceColorDirective, ntDoubleArrayDirective, ntValueDirective } from './directives';
+import { SourceAllianceColor, SourceValue, ntAllianceColorDirective, ntValueDirective } from './directives';
 
 export class NetworkTables {
   private readonly store: Store;
   private readonly provider: Nt4Provider;
   private readonly nt4ValueDirective;
-  private readonly nt4DoubleArrayDirective;
   private readonly nt4AllianceColorDirective;
 
   constructor(address: string) {
@@ -22,7 +21,6 @@ export class NetworkTables {
     this.provider.connect(address);
 
     this.nt4ValueDirective = ntValueDirective(this.store);
-    this.nt4DoubleArrayDirective = ntDoubleArrayDirective(this.store);
     this.nt4AllianceColorDirective = ntAllianceColorDirective(this.store);
   }
 
@@ -70,11 +68,7 @@ export class NetworkTables {
     return this.nt4ValueDirective(key, defaultValue);
   }
 
-  $doubleArray(key: string, defaultValue: number[]): DirectiveResult<typeof SourceDoubleArray> {
-    return this.nt4DoubleArrayDirective(key, defaultValue);
-  }
-
-  $allianceColor(): DirectiveResult<typeof SourceDoubleArray> {
+  $allianceColor(): DirectiveResult<typeof SourceAllianceColor> {
     return this.nt4AllianceColorDirective();
   }
 }

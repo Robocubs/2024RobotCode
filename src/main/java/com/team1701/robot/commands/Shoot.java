@@ -8,6 +8,7 @@ import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.states.RobotState.ScoringMode;
+import com.team1701.robot.states.ShootingState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.MathUtil;
@@ -31,9 +32,7 @@ public class Shoot extends Command {
     private final boolean mWaitForHeading;
 
     private TimeLockedBoolean mLockedReadyToShoot;
-
     private boolean mShooting;
-
     private ScoringMode mScoringMode;
 
     public Shoot(
@@ -63,8 +62,6 @@ public class Shoot extends Command {
 
         double leftTargetSpeed;
         double rightTargetSpeed; // if we want to induce spin
-
-        mRobotState.setScoring(true);
 
         switch (mScoringMode) {
             case SPEAKER:
@@ -116,9 +113,7 @@ public class Shoot extends Command {
                 && DoubleStream.of(mShooter.getRightRollerSpeedsRadiansPerSecond())
                         .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 50.0));
 
-        mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp());
-
-        if (mLockedReadyToShoot.getValue()) {
+        if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
             mIndexer.setForwardShoot();
             mShooting = true;
         }
@@ -131,6 +126,8 @@ public class Shoot extends Command {
             }
         }
 
+        mRobotState.setShootingState(new ShootingState(true, atAngle, atSpeed, atHeading, mShooting));
+
         Logger.recordOutput(kLoggingPrefix + "TargetShooterAngle", desiredShooterAngle);
         Logger.recordOutput(kLoggingPrefix + "Shooting", mShooting);
         Logger.recordOutput(kLoggingPrefix + "AtAngle", atAngle);
@@ -140,10 +137,15 @@ public class Shoot extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        mRobotState.setScoring(false);
+        mRobotState.setShootingState(new ShootingState());
         mShooter.stopRollers();
         mShooter.stopRotation();
         mIndexer.stop();
+
+        Logger.recordOutput(kLoggingPrefix + "Shooting", false);
+        Logger.recordOutput(kLoggingPrefix + "AtAngle", false);
+        Logger.recordOutput(kLoggingPrefix + "AtHeading", false);
+        Logger.recordOutput(kLoggingPrefix + "AtSpeed", false);
     }
 
     @Override
