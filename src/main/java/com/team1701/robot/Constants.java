@@ -272,8 +272,8 @@ public final class Constants {
             }
 
             kModuleRadius = Math.hypot(kTrackWidthMeters / 2.0, kWheelbaseMeters / 2.0);
-            kMaxVelocityMetersPerSecond =
-                    Units.rotationsPerMinuteToRadiansPerSecond(driveMotorMaxRPM) * kDriveReduction * kWheelRadiusMeters;
+            kMaxVelocityMetersPerSecond = 5.41;
+            // Units.rotationsPerMinuteToRadiansPerSecond(driveMotorMaxRPM) * kDriveReduction * kWheelRadiusMeters;
             kMaxAngularVelocityRadiansPerSecond =
                     kMaxVelocityMetersPerSecond / Math.hypot(kTrackWidthMeters / 2.0, kWheelbaseMeters / 2.0);
             kMaxSteerVelocityRadiansPerSecond =
@@ -356,7 +356,7 @@ public final class Constants {
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration", 1.0);
 
         public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 100);
+                new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =
                 new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 43);
         public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
@@ -412,8 +412,8 @@ public final class Constants {
             {2.75, 0.785},
             {3.5, 0.6}, // .49
             {3.78, 0.545},
-            {4.25, 0.51},
-            {4.9, 0.555},
+            {4.25, 0.52},
+            {4.9, 0.47},
             {5.5, 0.408},
             {6.38, 0.37}
         };
@@ -571,7 +571,8 @@ public final class Constants {
         public static final int kIndexerExitSensorId = 2;
 
         public static final double kIndexerShootPercent = 1;
-        public static final double kIndexerLoadPercent = 0.25;
+        public static final double kIndexerLoadPercent = 0.5;
+        public static final double kIndexerSlowPercent = 0.25;
 
         public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
@@ -604,7 +605,7 @@ public final class Constants {
         public static final int kIntakeExitSensorId = 1;
 
         public static final double kIntakeSpeed = 0.8;
-        public static final double kOuttakeSpeed = -1.0;
+        public static final double kOuttakeSpeed = -0.75;
         public static final double kReduction = 1.0 / 9.0;
     }
 }

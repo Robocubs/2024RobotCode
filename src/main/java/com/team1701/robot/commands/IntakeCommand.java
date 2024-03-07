@@ -20,7 +20,7 @@ public class IntakeCommand extends Command {
     @Override
     public void execute() {
 
-        if (mIndexer.hasNote()) {
+        if (mIndexer.hasNoteAtExit()) {
             mIntake.stop();
         } else {
             mIntake.setForward();

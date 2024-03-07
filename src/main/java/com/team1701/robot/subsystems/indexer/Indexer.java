@@ -23,7 +23,7 @@ public class Indexer extends SubsystemBase {
     private final DigitalInputsAutoLogged mIndexerExitSensorInputs = new DigitalInputsAutoLogged();
 
     private TimeLockedBoolean mLockedHasNoteAtExit =
-            new TimeLockedBoolean(/*.075*/ 10, Timer.getFPGATimestamp(), false, false);
+            new TimeLockedBoolean(/*.075*/ 0.075, Timer.getFPGATimestamp(), false, false);
 
     @AutoLogOutput(key = "Indexer/Motor/PercentDemand")
     private double mPercentDemand;
@@ -71,6 +71,11 @@ public class Indexer extends SubsystemBase {
     }
 
     public void setForwardLoad() {
+        mPercentDemand = Constants.Indexer.kIndexerLoadPercent;
+        mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerLoadPercent);
+    }
+
+    public void setSlowLoad() {
         mPercentDemand = Constants.Indexer.kIndexerLoadPercent;
         mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerLoadPercent);
     }

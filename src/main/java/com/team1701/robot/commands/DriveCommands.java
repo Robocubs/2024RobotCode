@@ -147,7 +147,7 @@ public class DriveCommands {
         return Commands.parallel(
                 new RotateToFieldHeading(
                         drive,
-                        () -> robotState.getMovingSpeakerHeading(drive),
+                        robotState::getSpeakerHeading,
                         robotState::getHeading,
                         Constants.Drive.kFastTrapezoidalKinematicLimits,
                         Constants.Drive.kFastSmoothKinematicLimits,

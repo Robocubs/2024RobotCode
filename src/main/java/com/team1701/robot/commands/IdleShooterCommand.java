@@ -46,16 +46,16 @@ public class IdleShooterCommand extends Command {
         switch (mRobotState.getScoringMode()) {
             case SPEAKER:
                 // TODO: ramp up speeds on approach
-                desiredShooterAngle =
-                        mRobotState.calculateShooterAngleTowardsSpeaker().plus(Rotation2d.fromDegrees(2.5));
+                desiredShooterAngle = Rotation2d.fromDegrees(18);
+                // mRobotState.calculateShooterAngleTowardsSpeaker().plus(Rotation2d.fromDegrees(2.5));
                 if (mDrive.getKinematicLimits().equals(Constants.Drive.kSlowKinematicLimits)) {
                     shooterSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 } else {
                     if (mRobotState.hasNote()) {
                         if (mRobotState.inNearHalf()) {
-                            shooterSpeed =
-                                    Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker())
-                                            - 50;
+                            shooterSpeed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
+                            // Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker())
+                            // - 50;
                         } else {
                             shooterSpeed = mRobotState.inOpponentWing()
                                     ? 0

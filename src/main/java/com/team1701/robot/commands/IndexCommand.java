@@ -17,8 +17,10 @@ public class IndexCommand extends Command {
 
     @Override
     public void execute() {
-        if (mIndexer.hasNote() || !mShouldLoad.getAsBoolean()) {
+        if (mIndexer.hasNoteAtExit() || !mShouldLoad.getAsBoolean()) {
             mIndexer.stop();
+        } else if (mIndexer.hasNoteAtEntrance()) {
+            mIndexer.setSlowLoad();
         } else {
             mIndexer.setForwardLoad();
         }

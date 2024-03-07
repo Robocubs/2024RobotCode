@@ -189,7 +189,7 @@ public class Shooter extends SubsystemBase {
         if (mRotationMotorOffset.isEmpty() && !Util.epsilonEquals(mAngleEncoderInputs.position.getRadians(), 0)) {
             mRotationMotorOffset = Optional.of(angle.div(Constants.Shooter.kAngleReduction));
 
-            zeroShooterRotation();
+            zeroShooter();
         }
 
         Logger.recordOutput("Shooter/calculatedAngle", angle);
@@ -208,7 +208,7 @@ public class Shooter extends SubsystemBase {
         mRotationMotorIO.setPID(ff, p, i, d);
     }
 
-    public void zeroShooterRotation() {
+    public void zeroShooter() {
         mRotationMotorIO.setPosition(mAngle);
     }
 

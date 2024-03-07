@@ -153,7 +153,7 @@ public class RobotContainer {
                     indexer = Optional.of(new Indexer(
                             SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
                             new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId, true),
-                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, false)));
+                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, true)));
                     intake = Optional.of(new Intake(
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                             new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
@@ -630,7 +630,7 @@ public class RobotContainer {
 
     public Command getZeroCommand() {
         return runOnce(() -> {
-                    mShooter.zeroShooterRotation();
+                    mShooter.zeroShooter();
                     mArm.zeroArmRotation();
                     mDrive.zeroModules();
                 })
