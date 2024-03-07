@@ -85,6 +85,7 @@ public class DriveCommands {
                 targetHeadingSupplier,
                 robotHeadingSupplier,
                 Constants.Drive.kSlowKinematicLimits,
+                Constants.Drive.kSlowKinematicLimits,
                 throttle,
                 strafe);
     }
@@ -146,9 +147,10 @@ public class DriveCommands {
         return Commands.parallel(
                 new RotateToFieldHeading(
                         drive,
-                        robotState::getSpeakerHeading,
+                        () -> robotState.getMovingSpeakerHeading(drive),
                         robotState::getHeading,
                         Constants.Drive.kFastTrapezoidalKinematicLimits,
+                        Constants.Drive.kFastSmoothKinematicLimits,
                         throttle,
                         strafe),
                 ShootCommands.shoot(shooter, indexer, robotState, true));

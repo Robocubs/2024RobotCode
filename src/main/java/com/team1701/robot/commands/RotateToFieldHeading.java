@@ -22,9 +22,10 @@ import org.littletonrobotics.junction.Logger;
 public class RotateToFieldHeading extends Command {
     private static final String kLoggingPrefix = "Command/RotateToFieldHeading/";
     private static final double kModuleRadius = Constants.Drive.kModuleRadius;
-    private static final KinematicLimits kMaxKinematicLimits = Constants.Drive.kFastTrapezoidalKinematicLimits;
+
     private static final LoggedTunableNumber kMaxAngularVelocity = new LoggedTunableNumber(
-            kLoggingPrefix + "MaxAngularVelocity", kMaxKinematicLimits.maxDriveVelocity() / kModuleRadius);
+            kLoggingPrefix + "MaxAngularVelocity",
+            Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity() / kModuleRadius);
     private static final LoggedTunableNumber kMaxAngularAcceleration =
             new LoggedTunableNumber(kLoggingPrefix + "MaxAngularAcceleration", kMaxAngularVelocity.get() / 2.0);
     // TODO: Update PID values
@@ -37,7 +38,7 @@ public class RotateToFieldHeading extends Command {
     private final Drive mDrive;
     private final Supplier<Rotation2d> mTargetHeadingSupplier;
     private final Supplier<Rotation2d> mRobotHeadingSupplier;
-    private final KinematicLimits mKinematicLimits;
+    private final KinematicLimits mRotationKinematicLimits;
     private final boolean mFinishAtRotation;
     private final PIDController mRotationController;
 
@@ -48,6 +49,8 @@ public class RotateToFieldHeading extends Command {
     private DoubleSupplier mXSupplier;
     private DoubleSupplier mYSupplier;
 
+    private KinematicLimits mDriveKinematicLimits;
+
     RotateToFieldHeading(
             Drive drive,
             Supplier<Rotation2d> targetHeadingSupplier,
@@ -57,7 +60,7 @@ public class RotateToFieldHeading extends Command {
         mDrive = drive;
         mTargetHeadingSupplier = targetHeadingSupplier;
         mRobotHeadingSupplier = robotHeadingSupplier;
-        mKinematicLimits = kinematicLimits;
+        mRotationKinematicLimits = kinematicLimits;
         mFinishAtRotation = finishAtRotation;
 
         mRotationController = new PIDController(
@@ -65,6 +68,8 @@ public class RotateToFieldHeading extends Command {
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
+
+        mDriveKinematicLimits = Constants.Drive.kFastKinematicLimits;
 
         mXSupplier = () -> 0;
         mYSupplier = () -> 0;
@@ -77,9 +82,12 @@ public class RotateToFieldHeading extends Command {
             Supplier<Rotation2d> targetHeadingSupplier,
             Supplier<Rotation2d> robotHeadingSupplier,
             KinematicLimits kinematicLimits,
+            KinematicLimits driveKinematicLimits,
             DoubleSupplier xSupplier,
             DoubleSupplier ySupplier) {
         this(drive, targetHeadingSupplier, robotHeadingSupplier, kinematicLimits, false);
+
+        mDriveKinematicLimits = driveKinematicLimits;
 
         mXSupplier = xSupplier;
         mYSupplier = ySupplier;
@@ -87,7 +95,7 @@ public class RotateToFieldHeading extends Command {
 
     @Override
     public void initialize() {
-        mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits);
+        mDrive.setKinematicLimits(mDriveKinematicLimits);
 
         mRotationController.reset();
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
@@ -112,8 +120,10 @@ public class RotateToFieldHeading extends Command {
                 || kRotationKi.hasChanged(hash)
                 || kRotationKd.hasChanged(hash)) {
             mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                    Math.min(kMaxAngularVelocity.get(), mKinematicLimits.maxDriveVelocity() / kModuleRadius),
-                    Math.min(kMaxAngularAcceleration.get(), mKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
+                    Math.min(kMaxAngularVelocity.get(), mRotationKinematicLimits.maxDriveVelocity() / kModuleRadius),
+                    Math.min(
+                            kMaxAngularAcceleration.get(),
+                            mRotationKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
             mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
         }
 
@@ -138,8 +148,8 @@ public class RotateToFieldHeading extends Command {
 
             // Set drive outputs
             mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                    mXSupplier.getAsDouble(),
-                    mYSupplier.getAsDouble(),
+                    mXSupplier.getAsDouble() * mDriveKinematicLimits.maxDriveVelocity(),
+                    mYSupplier.getAsDouble() * mDriveKinematicLimits.maxDriveVelocity(),
                     rotationalVelocity,
                     mDrive.getFieldRelativeHeading()));
             setpoint = Rotation2d.fromRadians(mRotationState.position);

@@ -12,6 +12,7 @@ import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
+import com.team1701.robot.Robot;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -144,22 +145,24 @@ public class Shooter extends SubsystemBase {
 
         Logger.processInputs("Shooter/Encoder", mAngleEncoderInputs);
 
-        Logger.recordOutput(
-                "Shooter/Motors/RightUpperRollerWattage",
-                ((MotorIOSparkFlex) mRightUpperRollerMotorIO).getAppliedVoltage()
-                        * ((MotorIOSparkFlex) mRightUpperRollerMotorIO).getOutputCurrent());
-        Logger.recordOutput(
-                "Shooter/Motors/RightLowerRollerWattage",
-                ((MotorIOSparkFlex) mRightLowerRollerMotorIO).getAppliedVoltage()
-                        * ((MotorIOSparkFlex) mRightLowerRollerMotorIO).getOutputCurrent());
-        Logger.recordOutput(
-                "Shooter/Motors/LeftUpperRollerWattage",
-                ((MotorIOSparkFlex) mLeftUpperRollerMotorIO).getAppliedVoltage()
-                        * ((MotorIOSparkFlex) mLeftUpperRollerMotorIO).getOutputCurrent());
-        Logger.recordOutput(
-                "Shooter/Motors/LeftLowerRollerWattage",
-                ((MotorIOSparkFlex) mLeftLowerRollerMotorIO).getAppliedVoltage()
-                        * ((MotorIOSparkFlex) mLeftLowerRollerMotorIO).getOutputCurrent());
+        if (!Robot.isSimulation()) {
+            Logger.recordOutput(
+                    "Shooter/Motors/RightUpperRollerWattage",
+                    ((MotorIOSparkFlex) mRightUpperRollerMotorIO).getAppliedVoltage()
+                            * ((MotorIOSparkFlex) mRightUpperRollerMotorIO).getOutputCurrent());
+            Logger.recordOutput(
+                    "Shooter/Motors/RightLowerRollerWattage",
+                    ((MotorIOSparkFlex) mRightLowerRollerMotorIO).getAppliedVoltage()
+                            * ((MotorIOSparkFlex) mRightLowerRollerMotorIO).getOutputCurrent());
+            Logger.recordOutput(
+                    "Shooter/Motors/LeftUpperRollerWattage",
+                    ((MotorIOSparkFlex) mLeftUpperRollerMotorIO).getAppliedVoltage()
+                            * ((MotorIOSparkFlex) mLeftUpperRollerMotorIO).getOutputCurrent());
+            Logger.recordOutput(
+                    "Shooter/Motors/LeftLowerRollerWattage",
+                    ((MotorIOSparkFlex) mLeftLowerRollerMotorIO).getAppliedVoltage()
+                            * ((MotorIOSparkFlex) mLeftLowerRollerMotorIO).getOutputCurrent());
+        }
 
         if (Constants.Shooter.kRollerKff.hasChanged(hash)
                 || Constants.Shooter.kRollerKp.hasChanged(hash)

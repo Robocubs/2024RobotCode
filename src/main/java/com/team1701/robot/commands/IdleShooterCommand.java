@@ -87,7 +87,7 @@ public class IdleShooterCommand extends Command {
                 break;
         }
 
-        if (!mIndexer.hasNote()) {
+        if (!mIndexer.hasNoteAtEntrance() || !mIndexer.hasNoteAtExit()) {
             desiredShooterAngle = Rotation2d.fromDegrees(18);
         }
 

@@ -64,8 +64,7 @@ public class IntakeCommands {
                 .withName("StopIntaking");
     }
 
-    public static Command defaultCommand(
-            Intake intake, CommandXboxController driverController, RobotState mRobotState) {
-        return new IntakeCommand(intake, driverController, mRobotState);
+    public static Command defaultCommand(Intake intake, Indexer indexer, RobotState mRobotState) {
+        return new IntakeCommand(intake, indexer, mRobotState);
     }
 }

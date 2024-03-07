@@ -30,12 +30,10 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
-import com.team1701.robot.Configuration.RobotType;
 import com.team1701.robot.commands.ArmCommands;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IndexCommand;
-import com.team1701.robot.commands.IntakeCommand;
 import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.StreamDeck;
@@ -150,17 +148,12 @@ public class RobotContainer {
                                     Constants.Shooter.kShooterLeftLowerRollerMotorId, MotorUsage.SHOOTER_ROLLER, false),
                             SparkMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterRotationMotorId, MotorUsage.ROTATION, false),
-                            // new MotorIO() {},
-                            // new MotorIO() {},
-                            // new MotorIO() {},
-                            // new MotorIO() {},
-                            // new MotorIO() {},
                             new EncoderIORevThroughBore(Constants.Shooter.kShooterThroughBoreEncoderId, true)));
 
                     indexer = Optional.of(new Indexer(
                             SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
-                            new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId, false),
-                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, true)));
+                            new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId, true),
+                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, false)));
                     intake = Optional.of(new Intake(
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                             new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
@@ -323,7 +316,7 @@ public class RobotContainer {
 
         mIndexer.setDefaultCommand(new IndexCommand(mIndexer, () -> true));
 
-        mIntake.setDefaultCommand(new IntakeCommand(mIntake, mDriverController, mRobotState));
+        mIntake.setDefaultCommand(IntakeCommands.defaultCommand(mIntake, mIndexer, mRobotState));
 
         mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
 
@@ -575,10 +568,6 @@ public class RobotContainer {
         var sourceFourPieceTwoOneCommand = commands.sourceFourPieceTwoOne();
         var shootAndBackupCommand = commands.shootAndBackup();
         var middleToMiddleCommand = commands.middleToMiddle();
-        if (Configuration.getRobot() == RobotType.SIMULATION_BOT) {
-            mAutonomousPaths.put("Demo", demoCommand.path());
-            autonomousModeChooser.addDefaultOption("Demo", demoCommand.command());
-        }
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());

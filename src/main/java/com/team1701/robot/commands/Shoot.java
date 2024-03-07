@@ -53,7 +53,7 @@ public class Shoot extends Command {
     @Override
     public void initialize() {
         mShooting = false;
-        mLockedReadyToShoot.update(true, Timer.getFPGATimestamp());
+        mLockedReadyToShoot.update(false, Timer.getFPGATimestamp());
     }
 
     @Override
@@ -68,15 +68,14 @@ public class Shoot extends Command {
 
         switch (mScoringMode) {
             case SPEAKER:
-                // TODO: Linear reg of speeds
                 desiredShooterAngle =
                         mRobotState.calculateShooterAngleTowardsSpeaker().minus(Rotation2d.fromDegrees(1));
 
-                // leftTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 upperTargetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker());
+                lowerTargetSpeed = upperTargetSpeed;
+
                 Logger.recordOutput(kLoggingPrefix + "InterpolatedShooterSpeed", upperTargetSpeed);
 
-                lowerTargetSpeed = upperTargetSpeed;
                 targetHeading = mRobotState.getSpeakerHeading();
                 break;
             case AMP:
@@ -94,8 +93,7 @@ public class Shoot extends Command {
         var clampedDesiredRotations = MathUtil.clamp(
                 desiredShooterAngle.getRotations(),
                 Constants.Shooter.kShooterLowerLimitRotations,
-                // Constants.Shooter.kShooterUpperLimitRotations
-                Constants.Shooter.kMaxAngleDegrees.get());
+                Constants.Shooter.kShooterUpperLimitRotations);
 
         mShooter.setRotationAngle(Rotation2d.fromRotations(clampedDesiredRotations));
         mShooter.setUpperRollerSpeeds(upperTargetSpeed);
@@ -145,6 +143,7 @@ public class Shoot extends Command {
         mShooter.stopRollers();
         mShooter.stopRotation();
         mIndexer.stop();
+        Logger.recordOutput(kLoggingPrefix + "Shooting", mShooting);
     }
 
     @Override

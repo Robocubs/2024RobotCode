@@ -14,6 +14,7 @@ import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
+import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -171,6 +173,15 @@ public class RobotState {
                 .toTranslation2d()
                 .minus(getPose2d().getTranslation())
                 .getAngle();
+    }
+
+    public Rotation2d getMovingSpeakerHeading(Drive drive) {
+        var projectedTranslation = getPose2d()
+                .getTranslation()
+                .plus(new Translation2d(
+                        drive.getFieldRelativeVelocity().vxMetersPerSecond * Constants.kLoopPeriodSeconds,
+                        drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
+        return getSpeakerPose().toTranslation2d().minus(projectedTranslation).getAngle();
     }
 
     public Rotation2d getAmpHeading() {
