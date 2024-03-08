@@ -14,6 +14,7 @@ import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
+import com.team1701.robot.Robot;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -32,7 +33,6 @@ import org.littletonrobotics.junction.AutoLogOutput;
 
 public class RobotState {
     private static final double kDetectedNoteTimeout = 3.0;
-    private boolean mIsScoring = false;
     private static final double kDuplicateNoteDistanceThreshold = Units.inchesToMeters(10.0);
 
     private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
@@ -43,9 +43,12 @@ public class RobotState {
     private Optional<Intake> mIntake = Optional.empty();
     private Optional<Shooter> mShooter = Optional.empty();
 
+    private ShootingState mShootingState = new ShootingState();
+
     public RobotState() {
         mField = new Field2d();
         SmartDashboard.putData("Field", mField);
+        SmartDashboard.putBoolean("IsSimulation", Robot.isSimulation());
     }
 
     @AutoLogOutput
@@ -226,12 +229,12 @@ public class RobotState {
         // return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
     }
 
-    public void setScoring(boolean isScoring) {
-        mIsScoring = isScoring;
+    public void setShootingState(ShootingState shootingState) {
+        mShootingState = shootingState;
     }
 
-    public boolean isScoring() {
-        return mIsScoring;
+    public ShootingState getShootingState() {
+        return mShootingState;
     }
 
     public void setScoringMode(ScoringMode scoringMode) {
@@ -245,6 +248,18 @@ public class RobotState {
     @AutoLogOutput
     public ScoringMode getScoringMode() {
         return mScoringMode;
+    }
+
+    public boolean isSpeakerMode() {
+        return mScoringMode == ScoringMode.SPEAKER;
+    }
+
+    public boolean isAmpMode() {
+        return mScoringMode == ScoringMode.AMP;
+    }
+
+    public boolean isClimbMode() {
+        return mScoringMode == ScoringMode.CLIMB;
     }
 
     public enum ScoringMode {
