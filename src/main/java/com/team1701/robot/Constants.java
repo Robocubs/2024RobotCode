@@ -176,7 +176,8 @@ public final class Constants {
     }
 
     public static final class Controls {
-        public static final double kDriverDeadband = 0.09;
+        public static final double kDriverDeadband =
+                Configuration.getMode() == Configuration.Mode.SIMULATION ? 0.15 : 0.09;
     }
 
     public static final class Motors {
