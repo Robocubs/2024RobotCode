@@ -78,7 +78,7 @@ public class IdleShooterCommand extends Command {
                 }
                 break;
             case CLIMB:
-                desiredShooterAngle = Rotation2d.fromDegrees(Constants.Shooter.kMaxAngleDegrees.get());
+                desiredShooterAngle = Rotation2d.fromRotations(Constants.Shooter.kShooterLowerLimitRotations);
                 shooterSpeed = 0;
                 break;
             default:
