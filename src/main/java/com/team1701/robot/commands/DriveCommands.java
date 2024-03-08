@@ -13,6 +13,8 @@ import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
+import com.team1701.robot.subsystems.indexer.Indexer;
+import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -83,6 +85,7 @@ public class DriveCommands {
                 targetHeadingSupplier,
                 robotHeadingSupplier,
                 Constants.Drive.kSlowKinematicLimits,
+                Constants.Drive.kSlowKinematicLimits,
                 throttle,
                 strafe);
     }
@@ -132,6 +135,25 @@ public class DriveCommands {
                             .withName("DriveToPiece");
                 },
                 Set.of(drive));
+    }
+
+    public static Command shootAndMove(
+            Drive drive,
+            Shooter shooter,
+            Indexer indexer,
+            RobotState robotState,
+            DoubleSupplier throttle,
+            DoubleSupplier strafe) {
+        return Commands.parallel(
+                new RotateToFieldHeading(
+                        drive,
+                        robotState::getSpeakerHeading,
+                        robotState::getHeading,
+                        Constants.Drive.kFastTrapezoidalKinematicLimits,
+                        Constants.Drive.kFastSmoothKinematicLimits,
+                        throttle,
+                        strafe),
+                ShootCommands.shoot(shooter, indexer, robotState, true));
     }
 
     public static Command driveWithVelocity(Supplier<ChassisSpeeds> velocity, Drive drive) {

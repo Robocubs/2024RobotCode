@@ -4,9 +4,8 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
-import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
-import com.team1701.lib.util.Util;
+import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
@@ -22,13 +21,15 @@ import org.littletonrobotics.junction.Logger;
 public class RotateToFieldHeading extends Command {
     private static final String kLoggingPrefix = "Command/RotateToFieldHeading/";
     private static final double kModuleRadius = Constants.Drive.kModuleRadius;
-    private static final KinematicLimits kMaxKinematicLimits = Constants.Drive.kFastTrapezoidalKinematicLimits;
+    private static final TrapezoidProfile.State kZeroState = new TrapezoidProfile.State(0.0, 0.0);
+
     private static final LoggedTunableNumber kMaxAngularVelocity = new LoggedTunableNumber(
-            kLoggingPrefix + "MaxAngularVelocity", kMaxKinematicLimits.maxDriveVelocity() / kModuleRadius);
+            kLoggingPrefix + "MaxAngularVelocity",
+            Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity() / kModuleRadius);
     private static final LoggedTunableNumber kMaxAngularAcceleration =
             new LoggedTunableNumber(kLoggingPrefix + "MaxAngularAcceleration", kMaxAngularVelocity.get() / 2.0);
     // TODO: Update PID values
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 4.0);
+    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
     private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
     private static final LoggedTunableNumber kRotationToleranceRadians =
@@ -37,7 +38,7 @@ public class RotateToFieldHeading extends Command {
     private final Drive mDrive;
     private final Supplier<Rotation2d> mTargetHeadingSupplier;
     private final Supplier<Rotation2d> mRobotHeadingSupplier;
-    private final KinematicLimits mKinematicLimits;
+    private final KinematicLimits mRotationKinematicLimits;
     private final boolean mFinishAtRotation;
     private final PIDController mRotationController;
 
@@ -48,6 +49,8 @@ public class RotateToFieldHeading extends Command {
     private DoubleSupplier mXSupplier;
     private DoubleSupplier mYSupplier;
 
+    private KinematicLimits mDriveKinematicLimits;
+
     RotateToFieldHeading(
             Drive drive,
             Supplier<Rotation2d> targetHeadingSupplier,
@@ -57,7 +60,7 @@ public class RotateToFieldHeading extends Command {
         mDrive = drive;
         mTargetHeadingSupplier = targetHeadingSupplier;
         mRobotHeadingSupplier = robotHeadingSupplier;
-        mKinematicLimits = kinematicLimits;
+        mRotationKinematicLimits = kinematicLimits;
         mFinishAtRotation = finishAtRotation;
 
         mRotationController = new PIDController(
@@ -65,6 +68,8 @@ public class RotateToFieldHeading extends Command {
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
+
+        mDriveKinematicLimits = Constants.Drive.kFastKinematicLimits;
 
         mXSupplier = () -> 0;
         mYSupplier = () -> 0;
@@ -77,9 +82,12 @@ public class RotateToFieldHeading extends Command {
             Supplier<Rotation2d> targetHeadingSupplier,
             Supplier<Rotation2d> robotHeadingSupplier,
             KinematicLimits kinematicLimits,
+            KinematicLimits driveKinematicLimits,
             DoubleSupplier xSupplier,
             DoubleSupplier ySupplier) {
         this(drive, targetHeadingSupplier, robotHeadingSupplier, kinematicLimits, false);
+
+        mDriveKinematicLimits = driveKinematicLimits;
 
         mXSupplier = xSupplier;
         mYSupplier = ySupplier;
@@ -93,14 +101,10 @@ public class RotateToFieldHeading extends Command {
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mAtTargetRotation = false;
 
-        var currentHeading = mRobotHeadingSupplier.get();
         var fieldRelativeChassisSpeeds = mDrive.getFieldRelativeVelocity();
+        var headingError = mRobotHeadingSupplier.get().minus(mTargetHeadingSupplier.get());
         mRotationState = new TrapezoidProfile.State(
-                MathUtil.inputModulus(
-                        currentHeading.getRadians(),
-                        mTargetHeadingSupplier.get().getRadians() - Math.PI,
-                        mTargetHeadingSupplier.get().getRadians() + Math.PI),
-                fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
+                MathUtil.angleModulus(headingError.getRadians()), fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
     }
 
     @Override
@@ -112,35 +116,37 @@ public class RotateToFieldHeading extends Command {
                 || kRotationKi.hasChanged(hash)
                 || kRotationKd.hasChanged(hash)) {
             mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                    Math.min(kMaxAngularVelocity.get(), mKinematicLimits.maxDriveVelocity() / kModuleRadius),
-                    Math.min(kMaxAngularAcceleration.get(), mKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
+                    Math.min(kMaxAngularVelocity.get(), mRotationKinematicLimits.maxDriveVelocity() / kModuleRadius),
+                    Math.min(
+                            kMaxAngularAcceleration.get(),
+                            mRotationKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
             mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
         }
 
         var currentHeading = mRobotHeadingSupplier.get();
         var targetHeading = mTargetHeadingSupplier.get();
+        var headingError = currentHeading.minus(targetHeading);
         Rotation2d setpoint;
-        mAtTargetRotation = GeometryUtil.isNear(
-                targetHeading, currentHeading, Rotation2d.fromRadians(kRotationToleranceRadians.get()));
-        if (mAtTargetRotation
-                && Util.epsilonEquals(mXSupplier.getAsDouble(), 0.0)
-                && Util.epsilonEquals(mYSupplier.getAsDouble(), 0.0)) {
-            mDrive.stop();
-            setpoint = currentHeading;
+        mAtTargetRotation = MathUtil.isNear(0, headingError.getRadians(), kRotationToleranceRadians.get());
+        double rotationalVelocity;
+        if (MathUtil.isNear(0, headingError.getRadians(), 0.2)) {
+            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), 0);
+            rotationalVelocity = rotationPidOutput;
+            mRotationState = kZeroState;
+            setpoint = targetHeading;
         } else {
-
-            // Calculate rotational velocity
-            var rotationPidOutput = mRotationController.calculate(currentHeading.getRadians(), mRotationState.position);
-            var rotationTargetState = new TrapezoidProfile.State(targetHeading.getRadians(), 0.0);
-            mRotationState =
-                    mRotationProfile.calculate(Constants.kLoopPeriodSeconds, mRotationState, rotationTargetState);
-            var rotationalVelocity = mRotationState.velocity + rotationPidOutput;
-
-            // Set drive outputs
-            mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                    mXSupplier.getAsDouble(), mYSupplier.getAsDouble(), rotationalVelocity, currentHeading));
-            setpoint = Rotation2d.fromRadians(mRotationState.position);
+            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), 0);
+            mRotationState = mRotationProfile.calculate(Constants.kLoopPeriodSeconds, mRotationState, kZeroState);
+            rotationalVelocity = mRotationState.velocity + rotationPidOutput;
+            setpoint = Rotation2d.fromRadians(targetHeading.getRadians() + mRotationState.position);
         }
+
+        var translationSign = Configuration.isBlueAlliance() ? 1.0 : -1.0;
+        mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                mXSupplier.getAsDouble() * mDriveKinematicLimits.maxDriveVelocity() * translationSign,
+                mYSupplier.getAsDouble() * mDriveKinematicLimits.maxDriveVelocity() * translationSign,
+                rotationalVelocity,
+                mDrive.getFieldRelativeHeading()));
 
         Logger.recordOutput(
                 kLoggingPrefix + "RotationError", Rotation2d.fromRadians(mRotationController.getPositionError()));
@@ -155,6 +161,6 @@ public class RotateToFieldHeading extends Command {
 
     @Override
     public boolean isFinished() {
-        return mFinishAtRotation && mAtTargetRotation == false;
+        return mFinishAtRotation && !mAtTargetRotation;
     }
 }

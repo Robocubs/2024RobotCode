@@ -48,7 +48,7 @@ public class SparkMotorFactory {
                 configureWithRetry(() -> controller.setOutputRange(-.3, .3), errorAlert);
                 configureWithRetry(
                         () -> motor.setSoftLimit(SoftLimitDirection.kForward, (float)
-                                (Constants.Shooter.kShooterUpperLimitRotations / Constants.Shooter.kAngleReduction)),
+                                (Constants.Shooter.kMaxAngleDegrees.get() / Constants.Shooter.kAngleReduction)),
                         errorAlert);
                 configureWithRetry(
                         () -> motor.setSoftLimit(SoftLimitDirection.kReverse, (float)

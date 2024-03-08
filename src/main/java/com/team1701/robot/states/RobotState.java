@@ -15,6 +15,7 @@ import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.Robot;
+import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -23,6 +24,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -176,6 +178,15 @@ public class RobotState {
                 .getAngle();
     }
 
+    public Rotation2d getMovingSpeakerHeading(Drive drive) {
+        var projectedTranslation = getPose2d()
+                .getTranslation()
+                .plus(new Translation2d(
+                        drive.getFieldRelativeVelocity().vxMetersPerSecond * Constants.kLoopPeriodSeconds,
+                        drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
+        return getSpeakerPose().toTranslation2d().minus(projectedTranslation).getAngle();
+    }
+
     public Rotation2d getAmpHeading() {
         return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;
     }
@@ -220,13 +231,7 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d calculateShooterAngleTowardsSpeaker() {
-        // var translationToSpeaker = getSpeakerPose()
-        //         .minus(getPose3d()
-        //                 .transformBy(Constants.Robot.kRobotToShooterHinge)
-        //                 .getTranslation());
-
         return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(getDistanceToSpeaker()));
-        // return new Rotation2d(translationToSpeaker.toTranslation2d().getNorm(), translationToSpeaker.getZ());
     }
 
     public void setShootingState(ShootingState shootingState) {

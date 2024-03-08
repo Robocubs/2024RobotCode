@@ -6,6 +6,8 @@ public class TimeLockedBoolean {
     private double mLastUnlockedValueTimestamp;
     private boolean mValue;
 
+    // Locked value = value that is "locked from becoming" - returns locked value after certain time
+
     public TimeLockedBoolean(double minimumTime, double timestamp) {
         this(minimumTime, timestamp, true);
     }

@@ -6,6 +6,7 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.robot.Constants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
@@ -17,6 +18,9 @@ public class Intake extends SubsystemBase {
 
     private final DigitalIO mIntakeEntranceSensor;
     private final DigitalIO mIntakeExitSensor;
+
+    @AutoLogOutput(key = "Intake/Motor/PercentDemand")
+    private double mPercentDemand;
 
     public Intake(MotorIO intakeMotor, DigitalIO intakeEntranceSensor, DigitalIO intakeExitSensor) {
         mIntakeMotor = intakeMotor;
@@ -52,22 +56,27 @@ public class Intake extends SubsystemBase {
     }
 
     public void setForward() {
+        mPercentDemand = Constants.Intake.kIntakeSpeed;
         mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed);
     }
 
     public void setMediumForward() {
-        mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed / 2);
+        mPercentDemand = Constants.Intake.kIntakeSpeed / 2.0;
+        mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed / 2.0);
     }
 
     public void setSlowForward() {
-        mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed / 3);
+        mPercentDemand = Constants.Intake.kIntakeSpeed / 3.0;
+        mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed / 3.0);
     }
 
     public void setReverse() {
+        mPercentDemand = Constants.Intake.kOuttakeSpeed;
         mIntakeMotor.setPercentOutput(Constants.Intake.kOuttakeSpeed);
     }
 
     public void stop() {
+        mPercentDemand = 0;
         mIntakeMotor.setPercentOutput(0);
     }
 }

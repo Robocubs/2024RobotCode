@@ -176,7 +176,8 @@ public final class Constants {
     }
 
     public static final class Controls {
-        public static final double kDriverDeadband = 0.09;
+        public static final double kDriverDeadband =
+                Configuration.getMode() == Configuration.Mode.SIMULATION ? 0.15 : 0.09;
     }
 
     public static final class Motors {
@@ -214,6 +215,7 @@ public final class Constants {
         public static final KinematicLimits kSlowKinematicLimits;
         public static final KinematicLimits kFastTrapezoidalKinematicLimits;
         public static final KinematicLimits kSlowTrapezoidalKinematicLimits;
+        public static final KinematicLimits kFastSmoothKinematicLimits;
 
         public static final LoggedTunableNumber kDriveKff = new LoggedTunableNumber("Drive/Module/DriveKff");
         public static final LoggedTunableNumber kDriveKp = new LoggedTunableNumber("Drive/Module/DriveKp");
@@ -271,10 +273,8 @@ public final class Constants {
             }
 
             kModuleRadius = Math.hypot(kTrackWidthMeters / 2.0, kWheelbaseMeters / 2.0);
-            kMaxVelocityMetersPerSecond = 5.0;
-            // kMaxVelocityMetersPerSecond =
-            //         Units.rotationsPerMinuteToRadiansPerSecond(driveMotorMaxRPM) * kDriveReduction *
-            // kWheelRadiusMeters;
+            kMaxVelocityMetersPerSecond = 5.41;
+            // Units.rotationsPerMinuteToRadiansPerSecond(driveMotorMaxRPM) * kDriveReduction * kWheelRadiusMeters;
             kMaxAngularVelocityRadiansPerSecond =
                     kMaxVelocityMetersPerSecond / Math.hypot(kTrackWidthMeters / 2.0, kWheelbaseMeters / 2.0);
             kMaxSteerVelocityRadiansPerSecond =
@@ -295,6 +295,10 @@ public final class Constants {
                     new KinematicLimits(kMaxVelocityMetersPerSecond, Double.MAX_VALUE, Double.MAX_VALUE);
             kFastKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond, kMaxVelocityMetersPerSecond / 0.2, Units.degreesToRadians(1000.0));
+            kFastSmoothKinematicLimits = new KinematicLimits(
+                    kMaxVelocityMetersPerSecond / 2.0,
+                    kMaxVelocityMetersPerSecond / 2.0,
+                    kFastKinematicLimits.maxSteeringVelocity());
             kSlowKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.5,
                     kMaxVelocityMetersPerSecond * 0.5 / 0.2,
@@ -320,7 +324,7 @@ public final class Constants {
 
     public static final class Shooter {
         // TODO: Update values
-        public static final double kRollerReduction = 30.0 / 18.0; // 32.0 /18.0
+        public static final double kRollerReduction = 1.0 / 1.0; // 32.0 /18.0
         public static final double kEncoderToShooterReduction = 30.0 / 50.0;
         public static final double kAngleReduction = (1.0 / 4.0) * (1.0 / 5.0) * (20.0 / 93.0);
 
@@ -332,7 +336,7 @@ public final class Constants {
         public static final int kShooterRotationMotorId = 26;
 
         public static final double kShooterUpperLimitRotations = Units.degreesToRotations(58);
-        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(18);
+        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(16);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
 
@@ -344,13 +348,16 @@ public final class Constants {
         public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");
         public static final LoggedTunableNumber kRollerKd = new LoggedTunableNumber("Shooter/Motor/Roller/Kd");
 
+        public static final LoggedTunableNumber kMaxAngleDegrees =
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAngleDegrees", 62);
+
         public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity", 1.0);
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration", 1.0);
 
         public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 100);
+                new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =
                 new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 43);
         public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
@@ -363,6 +370,12 @@ public final class Constants {
         public static final LoggedTunableNumber kTunableShooterAngleRadians =
                 new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
 
+        public static final LoggedTunableNumber kLowerAmpSpeed =
+                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 80);
+
+        public static final LoggedTunableNumber kUpperAmpSpeed =
+                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 80);
+
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
@@ -373,26 +386,48 @@ public final class Constants {
 
         public static final double kRollerRampRate = 450;
 
+        // public static final double[][] kShooterDistanceToAngleValues = {
+        //     {3.47, 0.535},
+        //     {2.75, 0.7},
+        //     {2.298, 0.9},
+        //     {4.25, 0.49},
+        //     {4.75, 0.442},
+        //     {5.5, 0.385},
+        //     {6.46, .3785}
+        // };
+
+        // public static final double[][] kShooterDistanceToSpeedValues = {
+        //     {2.3, 200},
+        //     {3.5, 400},
+        //     {3.78, 400},
+        //     {2.75, 300},
+        //     {2.298, 300},
+        //     {4.25, 410},
+        //     {4.75, 410},
+        //     {5.5, 480},
+        //     {6.46, 520}
+        // };
+
         public static final double[][] kShooterDistanceToAngleValues = {
-            {3.5, 0.55},
-            {3.78, 0.535},
-            {2.75, 0.7},
-            {2.298, 0.9},
-            {4.25, 0.49},
-            {4.75, 0.442},
-            {5.5, 0.385},
-            {6.46, .3785}
+            {2.3, 1},
+            {2.75, 0.785},
+            {3.5, 0.6}, // .49
+            {3.78, 0.545},
+            {4.25, 0.52},
+            {4.9, 0.45},
+            {5.5, 0.43},
+            {6.38, 0.37}
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
-            {3.5, 400},
+            {2.3, 250},
+            {2.75, 275},
+            {3.5, 330},
             {3.78, 400},
-            {2.75, 300},
-            {2.298, 300},
-            {4.25, 410},
-            {4.75, 410},
-            {5.5, 480},
-            {6.46, 520}
+            {4.25, 440},
+            {4.9, 500},
+            {5.55, 570},
+            {6.38, 620}
         };
 
         static {
@@ -408,7 +443,7 @@ public final class Constants {
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kRollerKff.initDefault(0.000155);
+                    kRollerKff.initDefault(0.00017);
                     kRollerKp.initDefault(0.0002);
                     kRollerKd.initDefault(0.0);
 
@@ -417,8 +452,8 @@ public final class Constants {
 
                     kTargetShootSpeedRadiansPerSecond.initDefault(450);
 
-                    kShooterAngleEncoderOffset =
-                            Rotation2d.fromRadians(2.373).plus(Rotation2d.fromDegrees(12.3)); // hard stop is 12.3º
+                    kShooterAngleEncoderOffset = Rotation2d.fromRadians(2.305)
+                            .plus(Rotation2d.fromDegrees(12.3 / kEncoderToShooterReduction)); // hard stop is 12.3º
 
                     kMaxRotationVelocityRadiansPerSecond.initDefault(0);
                     kMaxRotationAccelerationRadiansPerSecondSquared.initDefault(0);
@@ -537,7 +572,8 @@ public final class Constants {
         public static final int kIndexerExitSensorId = 2;
 
         public static final double kIndexerShootPercent = 1;
-        public static final double kIndexerLoadPercent = .25;
+        public static final double kIndexerLoadPercent = 0.5;
+        public static final double kIndexerSlowPercent = 0.25;
 
         public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
         public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
@@ -570,7 +606,7 @@ public final class Constants {
         public static final int kIntakeExitSensorId = 1;
 
         public static final double kIntakeSpeed = 0.8;
-        public static final double kOuttakeSpeed = -1.0;
+        public static final double kOuttakeSpeed = -0.75;
         public static final double kReduction = 1.0 / 9.0;
     }
 }

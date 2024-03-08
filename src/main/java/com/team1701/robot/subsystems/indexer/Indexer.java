@@ -5,8 +5,10 @@ import com.team1701.lib.drivers.digitalinputs.DigitalInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
+import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -17,12 +19,14 @@ public class Indexer extends SubsystemBase {
 
     private final DigitalIO mIndexerEntranceSensor;
     private final DigitalIO mIndexerExitSensor;
-
     private final DigitalInputsAutoLogged mIndexerEntranceSensorInputs = new DigitalInputsAutoLogged();
     private final DigitalInputsAutoLogged mIndexerExitSensorInputs = new DigitalInputsAutoLogged();
 
-    @AutoLogOutput(key = "Indexer/Motor/DemandRadiansPerSecond")
-    private double mDemandRadiansPerSecond;
+    private TimeLockedBoolean mLockedHasNoteAtExit =
+            new TimeLockedBoolean(/*.075*/ 0.075, Timer.getFPGATimestamp(), false, false);
+
+    @AutoLogOutput(key = "Indexer/Motor/PercentDemand")
+    private double mPercentDemand;
 
     public Indexer(MotorIO motor, DigitalIO indexerEntranceSensor, DigitalIO indexerExitSensor) {
         mIndexerEntranceSensor = indexerEntranceSensor;
@@ -45,10 +49,13 @@ public class Indexer extends SubsystemBase {
         Logger.processInputs("Indexer/EntranceSensor", mIndexerEntranceSensorInputs);
         Logger.processInputs("Indexer/ExitSensor", mIndexerExitSensorInputs);
         Logger.processInputs("Indexer/Motor", mIndexerMotorInputs);
+
+        mLockedHasNoteAtExit.update(mIndexerExitSensorInputs.blocked, Timer.getFPGATimestamp());
     }
 
+    @AutoLogOutput(key = "Indexer/LockedHasNoteAtExit")
     public boolean hasNoteAtExit() {
-        return mIndexerExitSensorInputs.blocked;
+        return mLockedHasNoteAtExit.getValue();
     }
 
     public boolean hasNoteAtEntrance() {
@@ -64,18 +71,27 @@ public class Indexer extends SubsystemBase {
     }
 
     public void setForwardLoad() {
+        mPercentDemand = Constants.Indexer.kIndexerLoadPercent;
+        mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerLoadPercent);
+    }
+
+    public void setSlowLoad() {
+        mPercentDemand = Constants.Indexer.kIndexerLoadPercent;
         mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerLoadPercent);
     }
 
     public void setForwardShoot() {
+        mPercentDemand = Constants.Indexer.kIndexerShootPercent;
         mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerShootPercent);
     }
 
     public void setReverse() {
+        mPercentDemand = -Constants.Indexer.kIndexerShootPercent;
         mIndexerMotorIO.setPercentOutput(-Constants.Indexer.kIndexerShootPercent);
     }
 
     public void stop() {
+        mPercentDemand = 0;
         mIndexerMotorIO.setPercentOutput(0);
     }
 }

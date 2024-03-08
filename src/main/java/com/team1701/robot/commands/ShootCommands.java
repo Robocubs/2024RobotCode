@@ -19,6 +19,14 @@ public class ShootCommands {
         return new Shoot(shooter, indexer, robotState, false, robotState.getScoringMode());
     }
 
+    public static Command shoot(Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForHeading) {
+        return new Shoot(shooter, indexer, robotState, waitForHeading, robotState.getScoringMode());
+    }
+
+    public static Command manualShoot(Shooter shooter, Indexer indexer) {
+        return new ManualShoot(shooter, indexer);
+    }
+
     public static Command aimAndShootInSpeaker(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
         return Commands.race(
                         new Shoot(shooter, indexer, robotState, true, ScoringMode.SPEAKER),

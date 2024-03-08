@@ -11,7 +11,6 @@ import com.team1701.lib.util.SignalSamplingThread;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import org.littletonrobotics.junction.Logger;
 
 public class MotorIOSparkFlex implements MotorIO {
     private final CANSparkFlex mMotor;
@@ -45,9 +44,16 @@ public class MotorIOSparkFlex implements MotorIO {
                 new TrapezoidProfile(new TrapezoidProfile.Constraints(mVelocityConstraints, mAccelerationConstraints));
     }
 
+    public double getOutputCurrent() {
+        return mMotor.getOutputCurrent();
+    }
+
+    public double getAppliedVoltage() {
+        return mMotor.getBusVoltage() * mMotor.getAppliedOutput();
+    }
+
     @Override
     public void updateInputs(MotorInputs inputs) {
-
         inputs.positionRadians = Units.rotationsToRadians(mEncoder.getPosition()) * mReduction;
         inputs.velocityRadiansPerSecond =
                 Units.rotationsPerMinuteToRadiansPerSecond(mEncoder.getVelocity()) * mReduction;
@@ -123,7 +129,6 @@ public class MotorIOSparkFlex implements MotorIO {
     @Override
     public void setPercentOutput(double percentage) {
         mController.setReference(percentage, CANSparkFlex.ControlType.kDutyCycle);
-        Logger.recordOutput("MotorIO/PercentOutputDemand", percentage);
     }
 
     @Override

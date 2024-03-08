@@ -46,16 +46,16 @@ public class IdleShooterCommand extends Command {
         switch (mRobotState.getScoringMode()) {
             case SPEAKER:
                 // TODO: ramp up speeds on approach
-                desiredShooterAngle =
-                        mRobotState.calculateShooterAngleTowardsSpeaker().plus(Rotation2d.fromDegrees(2.5));
+                desiredShooterAngle = Rotation2d.fromDegrees(18);
+                // mRobotState.calculateShooterAngleTowardsSpeaker().plus(Rotation2d.fromDegrees(2.5));
                 if (mDrive.getKinematicLimits().equals(Constants.Drive.kSlowKinematicLimits)) {
                     shooterSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 } else {
                     if (mRobotState.hasNote()) {
                         if (mRobotState.inNearHalf()) {
-                            shooterSpeed =
-                                    Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker())
-                                            - 50;
+                            shooterSpeed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
+                            // Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker())
+                            // - 50;
                         } else {
                             shooterSpeed = mRobotState.inOpponentWing()
                                     ? 0
@@ -78,7 +78,7 @@ public class IdleShooterCommand extends Command {
                 }
                 break;
             case CLIMB:
-                desiredShooterAngle = Rotation2d.fromDegrees(Constants.Shooter.kShooterUpperLimitRotations);
+                desiredShooterAngle = Rotation2d.fromRotations(Constants.Shooter.kShooterLowerLimitRotations);
                 shooterSpeed = 0;
                 break;
             default:
@@ -87,7 +87,7 @@ public class IdleShooterCommand extends Command {
                 break;
         }
 
-        if (!mIndexer.hasNote()) {
+        if (!mIndexer.hasNoteAtEntrance() || !mIndexer.hasNoteAtExit()) {
             desiredShooterAngle = Rotation2d.fromDegrees(18);
         }
 
@@ -96,7 +96,7 @@ public class IdleShooterCommand extends Command {
         var clampedDesiredRotations = MathUtil.clamp(
                 desiredShooterAngle.getRotations(),
                 Constants.Shooter.kShooterLowerLimitRotations,
-                Constants.Shooter.kShooterUpperLimitRotations);
+                Constants.Shooter.kMaxAngleDegrees.get());
 
         mShooter.setRotationAngle(Rotation2d.fromRotations(clampedDesiredRotations));
         mShooter.setUnifiedRollerSpeed(clampedDesiredSpeed);
@@ -114,11 +114,5 @@ public class IdleShooterCommand extends Command {
     @Override
     public void end(boolean interrupted) {
         mShooter.stopRotation();
-    }
-
-    // 5 * max is top idle speed
-    private double speedRegression(double reference, double current, double factor) {
-        var scale = current - reference > 0.2 ? 4 / (1 + Math.abs(reference - current)) : 400 / 100;
-        return factor * scale;
     }
 }
