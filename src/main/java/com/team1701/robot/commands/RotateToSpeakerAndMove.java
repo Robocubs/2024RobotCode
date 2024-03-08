@@ -29,7 +29,7 @@ public class RotateToSpeakerAndMove extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "MaxAngularAcceleration", kMaxAngularVelocity.get() / 2.0);
 
     private static final LoggedTunableNumber kLoopsLatency =
-            new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 3.0);
+            new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 7.0);
     private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
     private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
@@ -83,8 +83,8 @@ public class RotateToSpeakerAndMove extends Command {
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
         var endTranslation = new Translation2d(
-                currentPose.getX() + fieldRelativeSpeeds.getX() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
-                currentPose.getY() + fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
+                currentPose.getX() - fieldRelativeSpeeds.getX() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
+                currentPose.getY() - fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
         var targetHeading = mRobotState
                 .getSpeakerPose()
                 .toTranslation2d()
@@ -94,7 +94,7 @@ public class RotateToSpeakerAndMove extends Command {
 
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (MathUtil.isNear(0, headingError.getRadians(), 0.2)) {
+        if (MathUtil.isNear(0, headingError.getRadians(), 0.1)) {
             var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), 0);
             rotationalVelocity = rotationPidOutput;
             mRotationState = kZeroState;
