@@ -2,18 +2,20 @@ import { consume } from '@lit/context';
 import { LitElement, TemplateResult, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { when } from 'lit/directives/when.js';
 import { NetworkTables, nt4Context } from '../network-tables/network-tables';
 import { ensureSendableChooserInitialized } from '../network-tables/util';
 import { globalStylesCss } from '../styles/styles';
 
 export interface PageChangeDetail {
-  page: 'Field' | 'Operator' | 'Diagnostic';
+  page: 'Field' | 'Operator' | 'Diagnostic' | 'Simulation';
 }
 
 @customElement('team1701-top-bar')
 export class TopBar extends LitElement {
   @consume({ context: nt4Context }) private nt!: NetworkTables;
   @property({ type: String }) page = 'Field';
+  @property({ type: Boolean }) isSimulation = false;
 
   protected firstUpdated(): void {
     this.nt.bindConnection(this.renderRoot.querySelector('#top-bar-root')!);
@@ -46,6 +48,13 @@ export class TopBar extends LitElement {
           <li>
             <div @click="${() => this.#dispatchPageChange('Diagnostic')}" class="${classMap(this.tabClass('Diagnostic'))}">Diagnostic</div>
           </li>
+          ${when(
+            this.isSimulation,
+            () =>
+              html`<li>
+                <div @click="${() => this.#dispatchPageChange('Simulation')}" class="${classMap(this.tabClass('Simulation'))}">Simulation</div>
+              </li>`
+          )}
         </ul>
       </div>
     `;
