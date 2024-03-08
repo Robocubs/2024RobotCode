@@ -356,6 +356,7 @@ public final class Constants {
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration", 1.0);
 
+        public static final Rotation2d kLoadingAngle = Rotation2d.fromDegrees(24);
         public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =

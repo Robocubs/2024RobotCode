@@ -14,15 +14,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
 
-// Default shooter command which consistently updates shooter angle to always point towards the speaker
 public class IdleShooterCommand extends Command {
     private static final String kLoggingPrefix = "Command/IdleShooterCommand/";
 
     private static final LoggedTunableNumber kAngleToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
-
-    private static final LoggedTunableNumber kExpectedShootingDistance =
-            new LoggedTunableNumber(kLoggingPrefix + "ExpectedShootingDistance", 6.0);
 
     private final Shooter mShooter;
     private final Indexer mIndexer;
@@ -46,8 +42,7 @@ public class IdleShooterCommand extends Command {
         switch (mRobotState.getScoringMode()) {
             case SPEAKER:
                 // TODO: ramp up speeds on approach
-                desiredShooterAngle = Rotation2d.fromDegrees(18);
-                // mRobotState.calculateShooterAngleTowardsSpeaker().plus(Rotation2d.fromDegrees(2.5));
+                desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
                 if (mDrive.getKinematicLimits().equals(Constants.Drive.kSlowKinematicLimits)) {
                     shooterSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 } else {
@@ -88,7 +83,7 @@ public class IdleShooterCommand extends Command {
         }
 
         if (!mIndexer.hasNoteAtEntrance() || !mIndexer.hasNoteAtExit()) {
-            desiredShooterAngle = Rotation2d.fromDegrees(18);
+            desiredShooterAngle = Constants.Shooter.kLoadingAngle;
         }
 
         var clampedDesiredSpeed = MathUtil.clamp(shooterSpeed, 0, 200);
