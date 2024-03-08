@@ -17,10 +17,12 @@ import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 import static com.team1701.lib.commands.LoggedCommands.*;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
@@ -119,6 +121,39 @@ public class AutonomousCommands {
         return new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose);
     }
 
+    private Command followChoreoPathAndPreWarm(String pathName) {
+        return followChoreoPathAndPreWarm(pathName, false);
+    }
+
+    private Command followChoreoPathAndPreWarm(String pathName, boolean resetPose) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        if (trajectory == null) {
+            return idle(); // Prevent auto mode from continuing if trajectory failed to load
+        }
+
+        mPathBuilder.addPath(trajectory.getPoses());
+
+        var targetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(
+                mRobotState.getSpeakerDistanceFromPose(new Pose3d(autoFlipPose(trajectory.getFinalPose()))));
+
+        var targetAngle = Constants.Shooter.kShooterAngleInterpolator.get(
+                mRobotState.getSpeakerDistanceFromPose(new Pose3d(autoFlipPose(trajectory.getFinalPose()))));
+
+        return Commands.parallel(
+                        new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose),
+                        run(() -> {
+                            if (mRobotState.hasNote()) {
+                                mShooter.setUnifiedRollerSpeed(targetSpeed);
+                            }
+                        }),
+                        run(() -> {
+                            if (mRobotState.hasNote()) {
+                                mShooter.setRotationAngle(Rotation2d.fromRadians(targetAngle));
+                            }
+                        }))
+                .withName("FollowAndPremove");
+    }
+
     private Command aimAndShoot() {
         return ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState);
     }
@@ -154,13 +189,13 @@ public class AutonomousCommands {
     public AutonomousCommand fourPiece() {
         var command = loggedSequence(
                         print("Started four piece auto"),
-                        followChoreoPath("FourPiece.1", true),
+                        followChoreoPathAndPreWarm("FourPiece.1", true),
                         aimAndShoot(),
-                        followChoreoPath("FourPiece.2"),
+                        followChoreoPathAndPreWarm("FourPiece.2"),
                         aimAndShoot(),
-                        followChoreoPath("FourPiece.3"),
+                        followChoreoPathAndPreWarm("FourPiece.3"),
                         aimAndShoot(),
-                        followChoreoPath("FourPiece.4"),
+                        followChoreoPathAndPreWarm("FourPiece.4"),
                         aimAndShoot())
                 .withName("FourPieceAuto");
 

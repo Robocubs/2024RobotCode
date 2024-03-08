@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
     private static final double kDetectedNoteTimeout = 3.0;
@@ -106,6 +107,16 @@ public class RobotState {
                                 : FieldConstants.kRedSpeakerOpeningCenter);
     }
 
+    public double getSpeakerDistanceFromPose(Pose3d pose) {
+        var distance = pose.getTranslation()
+                .getDistance(
+                        Configuration.isBlueAlliance()
+                                ? FieldConstants.kBlueSpeakerOpeningCenter
+                                : FieldConstants.kRedSpeakerOpeningCenter);
+        Logger.recordOutput("DistanceFromProjectedPose", distance);
+        return distance;
+    }
+
     public Rotation2d getHeading() {
         return getPose2d().getRotation();
     }
@@ -115,7 +126,7 @@ public class RobotState {
     }
 
     public void addVisionMeasurements(VisionMeasurement... visionMeasurements) {
-        mPoseEstimator.addVisionMeasurements(visionMeasurements);
+        // mPoseEstimator.addVisionMeasurements(visionMeasurements);
     }
 
     public void resetPose(Pose2d pose) {
@@ -186,6 +197,8 @@ public class RobotState {
                         drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
         return getSpeakerPose().toTranslation2d().minus(projectedTranslation).getAngle();
     }
+
+    // public Rotation2d getSpeakerHeadingWithVelocity(Drive drive) {}
 
     public Rotation2d getAmpHeading() {
         return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;
