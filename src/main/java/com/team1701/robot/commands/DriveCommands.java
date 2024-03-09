@@ -136,7 +136,7 @@ public class DriveCommands {
                     return new Translation2d(
                                     throttle.getAsDouble() * maxDriveVelocity * translationSign,
                                     strafe.getAsDouble() * maxDriveVelocity * translationSign)
-                            .rotateBy(drive.getFieldRelativeHeading());
+                            .rotateBy(drive.getFieldRelativeHeading().unaryMinus());
                 }),
                 ShootCommands.shoot(shooter, indexer, robotState, true));
     }
