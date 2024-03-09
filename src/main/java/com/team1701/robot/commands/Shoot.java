@@ -57,7 +57,7 @@ public class Shoot extends Command {
         }
 
         Rotation2d targetHeading = mRobotState.getStationaryTargetHeading();
-        
+
         Rotation2d desiredShooterAngle = GeometryUtil.clampRotation(
                 ShooterUtil.calculateStationaryDesiredAngle(mRobotState),
                 Constants.Shooter.kShooterLowerLimitRotations,

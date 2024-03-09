@@ -40,8 +40,7 @@ public final class GeometryUtil {
     }
 
     public static Rotation2d clampRotation(Rotation2d rotation, double minimumRotations, double maximumRotations) {
-        return Rotation2d.fromRotations(
-                MathUtil.clamp(rotation.getRotations(), minimumRotations, maximumRotations));
+        return Rotation2d.fromRotations(MathUtil.clamp(rotation.getRotations(), minimumRotations, maximumRotations));
     }
 
     public static Rotation2d angleModulus(Rotation2d rotation) {

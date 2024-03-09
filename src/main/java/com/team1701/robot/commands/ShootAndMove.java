@@ -190,7 +190,6 @@ public class ShootAndMove extends Command {
         mIndexer.stop();
         mDrive.stop();
 
-
         Logger.recordOutput(kLoggingPrefix + "Shooting", false);
         Logger.recordOutput(kLoggingPrefix + "AtAngle", false);
         Logger.recordOutput(kLoggingPrefix + "AtHeading", false);

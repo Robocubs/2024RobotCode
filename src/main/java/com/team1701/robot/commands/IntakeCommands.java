@@ -1,7 +1,7 @@
 package com.team1701.robot.commands;
 
-import java.util.function.Supplier;import java.util.function.BooleanSupplier;
-
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
@@ -89,7 +89,8 @@ public class IntakeCommands {
                                 indexer.setForwardLoad();
                             }
                         },
-                        indexer).finallyDo(indexer::stop)
+                        indexer)
+                .finallyDo(indexer::stop)
                 .withName("idleIndexer");
     }
 }

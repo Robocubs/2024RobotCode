@@ -31,6 +31,8 @@ public final class FieldConstants {
     public static Translation3d kRedAmpPosition =
             new Translation3d(Units.inchesToMeters(578.77), 7.89, Units.inchesToMeters(53.38));
 
-    public static Pose2d kBlueAmpDrivePose = new Pose2d(new Translation2d(11.8415, 8.2042 - .876), Rotation2d.fromDegrees(90));
-    public static Pose2d kRedAmpDrivePose = new Pose2d(new Translation2d(14.700758, 8.2042 - .876), Rotation2d.fromDegrees(90));
+    public static Pose2d kBlueAmpDrivePose =
+            new Pose2d(new Translation2d(11.8415, 8.2042 - .876), Rotation2d.fromDegrees(90));
+    public static Pose2d kRedAmpDrivePose =
+            new Pose2d(new Translation2d(14.700758, 8.2042 - .876), Rotation2d.fromDegrees(90));
 }
