@@ -59,7 +59,7 @@ public class ShootCommands {
             return new Translation2d(
                             throttle.getAsDouble() * maxDriveVelocity * translationSign,
                             strafe.getAsDouble() * maxDriveVelocity * translationSign)
-                    .rotateBy(drive.getFieldRelativeHeading());
+                    .rotateBy(drive.getFieldRelativeHeading().unaryMinus());
         });
     }
 }

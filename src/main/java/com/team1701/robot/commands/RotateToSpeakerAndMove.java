@@ -22,6 +22,8 @@ public class RotateToSpeakerAndMove extends Command {
     private static final TrapezoidProfile.State kZeroState = new TrapezoidProfile.State(0.0, 0.0);
     private static final KinematicLimits kKinematicLimits = Constants.Drive.kFastKinematicLimits;
 
+    private static final LoggedTunableNumber kMaxPAngularVelocity =
+            new LoggedTunableNumber(kLoggingPrefix + "MaxAngularVelocity", 2.0);
     private static final LoggedTunableNumber kMaxAngularVelocity = new LoggedTunableNumber(
             kLoggingPrefix + "MaxAngularVelocity",
             Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity() / kModuleRadius);
@@ -29,7 +31,7 @@ public class RotateToSpeakerAndMove extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "MaxAngularAcceleration", kMaxAngularVelocity.get() / 2.0);
 
     private static final LoggedTunableNumber kLoopsLatency =
-            new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 7.0);
+            new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 15.0);
     private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
     private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
@@ -95,7 +97,10 @@ public class RotateToSpeakerAndMove extends Command {
         Rotation2d setpoint;
         double rotationalVelocity;
         if (MathUtil.isNear(0, headingError.getRadians(), 0.1)) {
-            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), 0);
+            var rotationPidOutput = MathUtil.clamp(
+                    mRotationController.calculate(headingError.getRadians(), 0),
+                    -kMaxPAngularVelocity.get(),
+                    kMaxPAngularVelocity.get());
             rotationalVelocity = rotationPidOutput;
             mRotationState = kZeroState;
             setpoint = targetHeading;
