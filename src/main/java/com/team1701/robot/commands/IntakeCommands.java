@@ -91,6 +91,6 @@ public class IntakeCommands {
                         },
                         indexer)
                 .finallyDo(indexer::stop)
-                .withName("idleIndexer");
+                .withName("IdleIndexer");
     }
 }

@@ -28,6 +28,7 @@ public final class Constants {
         public static final double kRobotFrontToCenter = Units.inchesToMeters(23.0 / 2.0);
         public static final double kRobotBackToCenter = kRobotLength - kRobotFrontToCenter;
         public static final double kRobotSideToCenter = kRobotWidth / 2.0;
+        public static final double kRobotFrontToCenterWithBumpers = kRobotWidthWithBumpers / 2.0;
 
         public static final Transform3d kRobotToShooterHinge = new Transform3d(
                 new Translation3d(Units.inchesToMeters(-3), Units.inchesToMeters(0), Units.inchesToMeters(7.52)),

@@ -73,13 +73,14 @@ public class DriveCommands {
 
     public static Command driveToAmp(Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits) {
         return new DriveToPose(
-                drive,
-                Configuration.isBlueAlliance()
-                        ? () -> FieldConstants.kBlueAmpDrivePose
-                        : () -> FieldConstants.kRedAmpDrivePose,
-                poseSupplier,
-                kinematicLimits,
-                true);
+                        drive,
+                        () -> Configuration.isBlueAlliance()
+                                ? FieldConstants.kBlueAmpDrivePose
+                                : FieldConstants.kRedAmpDrivePose,
+                        poseSupplier,
+                        kinematicLimits,
+                        true)
+                .withName("DriveToAmp");
     }
 
     public static Command driveToPiece(

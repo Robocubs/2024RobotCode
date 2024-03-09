@@ -157,15 +157,15 @@ public class RobotContainer {
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                             new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
                             new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
-                    arm = Optional.of(new Arm(
-                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                                    Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
-                            new EncoderIORevThroughBore(Constants.Arm.kEncoderId, false)));
+                    // arm = Optional.of(new Arm(
+                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                    //                 Constants.Arm.kRotationMotorId, MotorUsage.ROTATION, false),
+                    //         new EncoderIORevThroughBore(Constants.Arm.kEncoderId, false)));
                     climb = Optional.of(new Climb(
                             SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                                     Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
                             SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                                    Constants.Climb.kRightWinchId, MotorUsage.WINCH, false))); // TODO: determine
+                                    Constants.Climb.kRightWinchId, MotorUsage.WINCH, false)));
                     // inversion
                     break;
                 case SIMULATION_BOT:
