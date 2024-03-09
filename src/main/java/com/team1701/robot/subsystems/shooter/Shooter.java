@@ -53,11 +53,7 @@ public class Shooter extends SubsystemBase {
 
     private Optional<Rotation2d> mRotationMotorOffset = Optional.empty();
 
-    public Shooter(
-            MotorIO rightUpperMotor,
-            MotorIO rightLowerMotor,
-            MotorIO rotationMotor,
-            EncoderIO angleEncoder) {
+    public Shooter(MotorIO rightUpperMotor, MotorIO rightLowerMotor, MotorIO rotationMotor, EncoderIO angleEncoder) {
         mRightUpperRollerMotorIO = rightUpperMotor;
         mRightLowerRollerMotorIO = rightLowerMotor;
 
@@ -204,17 +200,12 @@ public class Shooter extends SubsystemBase {
         };
     }
 
-
     public double[] getUpperRollerSpeedsRadiansPerSecond() {
-        return new double[] {
-            mRightUpperShooterMotorInputs.velocityRadiansPerSecond
-        };
+        return new double[] {mRightUpperShooterMotorInputs.velocityRadiansPerSecond};
     }
 
     public double[] getLowerRollerSpeedsRadiansPerSecond() {
-        return new double[] {
-            mRightLowerShooterMotorInputs.velocityRadiansPerSecond
-        };
+        return new double[] {mRightLowerShooterMotorInputs.velocityRadiansPerSecond};
     }
 
     public void setUnifiedRollerSpeed(double radiansPerSecond) {

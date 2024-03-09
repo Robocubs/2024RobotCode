@@ -35,8 +35,7 @@ public class ShootCommands {
     }
 
     public static Command scoreInAmp(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
-        return Commands.sequence(
-                        new Shoot(shooter, indexer, robotState, false, ScoringMode.AMP))
+        return Commands.sequence(new Shoot(shooter, indexer, robotState, false, ScoringMode.AMP))
                 .withName("scoreInAmp");
     }
 }

@@ -154,7 +154,7 @@ public class RobotContainer {
                             SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                                     Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
                             SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                                    Constants.Climb.kRightWinchId, MotorUsage.WINCH, false))); 
+                                    Constants.Climb.kRightWinchId, MotorUsage.WINCH, false)));
                     break;
                 case SIMULATION_BOT:
                     var gyroIO = new GyroIOSim(mRobotState::getHeading);
@@ -245,11 +245,8 @@ public class RobotContainer {
                 },
                 new DetectorCameraIO[] {() -> Constants.Vision.kLimelightConfig}));
 
-        mShooter = shooter.orElseGet(() -> new Shooter(
-                new MotorIO() {},
-                new MotorIO() {},
-                new MotorIO() {},
-                new EncoderIO() {}));
+        mShooter = shooter.orElseGet(
+                () -> new Shooter(new MotorIO() {}, new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}));
 
         mIndexer = indexer.orElseGet(() -> new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
@@ -297,7 +294,6 @@ public class RobotContainer {
         mIntake.setDefaultCommand(IntakeCommands.defaultCommand(mIntake, mIndexer, mRobotState));
 
         mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
-
 
         mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb)
                 .andThen(idle(mClimb))
