@@ -4,11 +4,9 @@ import java.util.stream.DoubleStream;
 
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.Constants;
-import com.team1701.robot.states.RobotState.ScoringMode;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
 
@@ -24,8 +22,6 @@ public class ManualShoot extends Command {
 
     private boolean mShooting;
 
-    private ScoringMode mScoringMode;
-
     public ManualShoot(Shooter shooter, Indexer indexer) {
         mShooter = shooter;
         mIndexer = indexer;
@@ -40,8 +36,6 @@ public class ManualShoot extends Command {
 
     @Override
     public void execute() {
-        Rotation2d desiredShooterAngle;
-        Rotation2d targetHeading;
 
         double leftTargetSpeed;
         double rightTargetSpeed; // if we want to induce spin
@@ -50,12 +44,8 @@ public class ManualShoot extends Command {
 
         mShooter.setUnifiedRollerSpeed(leftTargetSpeed);
 
-        // TODO: Determine if time-locked boolean is needed
-        // Or alternatively use a speed range based on distance
-        var atSpeed = DoubleStream.of(mShooter.getLeftRollerSpeedsRadiansPerSecond())
-                        .allMatch(actualSpeed -> MathUtil.isNear(leftTargetSpeed, actualSpeed, 50.0))
-                && DoubleStream.of(mShooter.getRightRollerSpeedsRadiansPerSecond())
-                        .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 50.0));
+        var atSpeed = DoubleStream.of(mShooter.getRightRollerSpeedsRadiansPerSecond())
+                .allMatch(actualSpeed -> MathUtil.isNear(rightTargetSpeed, actualSpeed, 50.0));
 
         if (atSpeed) {
             mIndexer.setForwardShoot();

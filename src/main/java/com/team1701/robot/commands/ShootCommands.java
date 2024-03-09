@@ -3,7 +3,6 @@ package com.team1701.robot.commands;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.states.RobotState.ScoringMode;
-import com.team1701.robot.subsystems.arm.Arm;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -35,10 +34,8 @@ public class ShootCommands {
                 .withName("AimAndShootInSpeaker");
     }
 
-    public static Command scoreInAmp(Shooter shooter, Indexer indexer, Drive drive, Arm arm, RobotState robotState) {
+    public static Command scoreInAmp(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
         return Commands.sequence(
-                        // ArmCommands.positionArm(
-                        //         arm, Rotation2d.fromDegrees(Constants.Arm.kArmAmpRotationDegrees.get())),
                         new Shoot(shooter, indexer, robotState, false, ScoringMode.AMP))
                 .withName("scoreInAmp");
     }
