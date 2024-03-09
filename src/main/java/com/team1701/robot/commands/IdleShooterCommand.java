@@ -4,6 +4,7 @@ import java.util.stream.DoubleStream;
 
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.ShooterUtil;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
@@ -36,57 +37,11 @@ public class IdleShooterCommand extends Command {
 
     @Override
     public void execute() {
-        Rotation2d desiredShooterAngle;
-        double shooterSpeed;
+        double[] shooterSpeeds;
 
-        switch (mRobotState.getScoringMode()) {
-            case SPEAKER:
-                // TODO: ramp up speeds on approach
-                desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
-                if (mDrive.getKinematicLimits().equals(Constants.Drive.kSlowKinematicLimits)) {
-                    shooterSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
-                } else {
-                    if (mRobotState.hasNote()) {
-                        if (mRobotState.inNearHalf()) {
-                            shooterSpeed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
-                            // Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker())
-                            // - 50;
-                        } else {
-                            shooterSpeed = mRobotState.inOpponentWing()
-                                    ? 0
-                                    : Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
-                        }
-                    } else {
-                        shooterSpeed =
-                                mRobotState.inNearHalf() ? Constants.Shooter.kIdleSpeedRadiansPerSecond.get() : 0;
-                    }
-                }
-                break;
-            case AMP:
-                desiredShooterAngle = Rotation2d.fromDegrees(Constants.Shooter.kShooterAmpAngleDegrees.get());
-                if (mRobotState.hasNote()) {
-                    shooterSpeed = mRobotState.getDistanceToAmp() <= 1
-                            ? Constants.Shooter.kAmpRollerSpeedRadiansPerSecond.get()
-                            : 250;
-                } else {
-                    shooterSpeed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
-                }
-                break;
-            case CLIMB:
-                desiredShooterAngle = Rotation2d.fromRotations(Constants.Shooter.kShooterLowerLimitRotations);
-                shooterSpeed = 0;
-                break;
-            default:
-                desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
-                shooterSpeed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
-                break;
-        }
-
-        if (!mIndexer.hasNoteAtEntrance() || !mIndexer.hasNoteAtExit()) {
-            desiredShooterAngle = Constants.Shooter.kLoadingAngle;
-        }
-
-        var clampedDesiredSpeed = MathUtil.clamp(shooterSpeed, 0, 200);
+        Rotation2d desiredShooterAngle = !mIndexer.hasNote()
+                ? Rotation2d.fromDegrees(18)
+                : ShooterUtil.calculateStationaryDesiredAngle(mRobotState);
 
         var clampedDesiredRotations = MathUtil.clamp(
                 desiredShooterAngle.getRotations(),
@@ -94,7 +49,9 @@ public class IdleShooterCommand extends Command {
                 Constants.Shooter.kMaxAngleDegrees.get());
 
         mShooter.setRotationAngle(Rotation2d.fromRotations(clampedDesiredRotations));
-        mShooter.setUnifiedRollerSpeed(clampedDesiredSpeed);
+
+        shooterSpeeds = ShooterUtil.calculateIdleRollerSpeeds(mRobotState, mDrive);
+        mShooter.setRollerSpeeds(shooterSpeeds);
 
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));

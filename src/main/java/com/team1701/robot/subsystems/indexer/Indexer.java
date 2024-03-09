@@ -63,7 +63,7 @@ public class Indexer extends SubsystemBase {
     }
 
     public boolean hasNote() {
-        return mIndexerEntranceSensorInputs.blocked || mIndexerExitSensorInputs.blocked;
+        return hasNoteAtExit() || hasNoteAtEntrance();
     }
 
     public double getVelocityRadiansPerSecond() {

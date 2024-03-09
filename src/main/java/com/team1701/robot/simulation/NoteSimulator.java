@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.DoubleStream;
 
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.ShooterUtil;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
@@ -129,7 +130,7 @@ public class NoteSimulator {
                     note.position += averageRollerSpeed * kShooterRollerRadius * Constants.kLoopPeriodSeconds;
 
                     if (averageRollerSpeed > 0 && note.position > kShooterPathLength) {
-                        var shooterExitPose = mRobotState.getShooterExitPose();
+                        var shooterExitPose = ShooterUtil.getShooterExitPose(mRobotState, mShooter);
                         var notePose = shooterExitPose.transformBy(
                                 new Transform3d(kNoteRadius, 0, 0, shooterExitPose.getRotation()));
                         var noteVelocity = new Translation3d(averageRollerSpeed * kShooterRollerRadius, 0, 0);

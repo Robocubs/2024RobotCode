@@ -217,66 +217,26 @@ public class Shooter extends SubsystemBase {
         return Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians);
     }
 
+    /**
+     * upper, lower
+     */
     public double[] getRollerSpeedsRadiansPerSecond() {
-        // left motor speeds inverted for comparison in Shoot commands
-        return new double[] {
-            mRightUpperShooterMotorInputs.velocityRadiansPerSecond,
-            mRightLowerShooterMotorInputs.velocityRadiansPerSecond,
-            mLeftUpperShooterMotorInputs.velocityRadiansPerSecond,
-            mLeftLowerShooterMotorInputs.velocityRadiansPerSecond
-        };
-    }
-
-    public double[] getRightRollerSpeedsRadiansPerSecond() {
         return new double[] {
             mRightUpperShooterMotorInputs.velocityRadiansPerSecond,
             mRightLowerShooterMotorInputs.velocityRadiansPerSecond
         };
     }
 
-    public double[] getLeftRollerSpeedsRadiansPerSecond() {
-        return new double[] {
-            mLeftUpperShooterMotorInputs.velocityRadiansPerSecond, mLeftLowerShooterMotorInputs.velocityRadiansPerSecond
-        };
-    }
-
-    public double[] getUpperRollerSpeedsRadiansPerSecond() {
-        return new double[] {
-            mLeftUpperShooterMotorInputs.velocityRadiansPerSecond,
-            mRightUpperShooterMotorInputs.velocityRadiansPerSecond
-        };
-    }
-
-    public double[] getLowerRollerSpeedsRadiansPerSecond() {
-        return new double[] {
-            mLeftLowerShooterMotorInputs.velocityRadiansPerSecond,
-            mRightLowerShooterMotorInputs.velocityRadiansPerSecond
-        };
+    /**
+     * upper, lower
+     */
+    public void setRollerSpeeds(double[] speeds) {
+        setUpperRightRollerSpeed(speeds[0]);
+        setLowerRightRollerSpeed(speeds.length > 0 ? speeds[1] : speeds[0]);
     }
 
     public void setUnifiedRollerSpeed(double radiansPerSecond) {
-        setRightRollerSpeeds(radiansPerSecond);
-        setLeftRollerSpeeds(radiansPerSecond);
-    }
-
-    public void setRightRollerSpeeds(double radiansPerSecond) {
-        setUpperRightRollerSpeed(radiansPerSecond);
-        setLowerRightRollerSpeed(radiansPerSecond);
-    }
-
-    public void setLeftRollerSpeeds(double radiansPerSecond) {
-        setUpperLeftRollerSpeed(radiansPerSecond);
-        setLowerLeftRollerSpeed(radiansPerSecond);
-    }
-
-    public void setUpperRollerSpeeds(double radiansPerSecond) {
-        setUpperLeftRollerSpeed(radiansPerSecond);
-        setUpperRightRollerSpeed(radiansPerSecond);
-    }
-
-    public void setLowerRollerSpeeds(double radiansPerSecond) {
-        setLowerLeftRollerSpeed(radiansPerSecond);
-        setLowerRightRollerSpeed(radiansPerSecond);
+        setRollerSpeeds(new double[] {radiansPerSecond, radiansPerSecond});
     }
 
     public void setUpperRightRollerSpeed(double radiansPerSecond) {

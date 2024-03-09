@@ -15,7 +15,6 @@ import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.Robot;
-import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -23,8 +22,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -43,7 +40,6 @@ public class RobotState {
 
     private Optional<Indexer> mIndexer = Optional.empty();
     private Optional<Intake> mIntake = Optional.empty();
-    private Optional<Shooter> mShooter = Optional.empty();
 
     private ShootingState mShootingState = new ShootingState();
 
@@ -63,7 +59,6 @@ public class RobotState {
     public void addSubsystems(Shooter shooter, Indexer indexer, Intake intake) {
         mIndexer = Optional.of(indexer);
         mIntake = Optional.of(intake);
-        mShooter = Optional.of(shooter);
     }
 
     public void periodic() {
@@ -104,6 +99,13 @@ public class RobotState {
                         Configuration.isBlueAlliance()
                                 ? FieldConstants.kBlueSpeakerOpeningCenter
                                 : FieldConstants.kRedSpeakerOpeningCenter);
+    }
+
+    public double getDistanceToSpeaker(Translation3d expectedTranslation) {
+        return expectedTranslation.getDistance(
+                Configuration.isBlueAlliance()
+                        ? FieldConstants.kBlueSpeakerOpeningCenter
+                        : FieldConstants.kRedSpeakerOpeningCenter);
     }
 
     public Rotation2d getHeading() {
@@ -178,17 +180,28 @@ public class RobotState {
                 .getAngle();
     }
 
-    public Rotation2d getMovingSpeakerHeading(Drive drive) {
-        var projectedTranslation = getPose2d()
-                .getTranslation()
-                .plus(new Translation2d(
-                        drive.getFieldRelativeVelocity().vxMetersPerSecond * Constants.kLoopPeriodSeconds,
-                        drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
-        return getSpeakerPose().toTranslation2d().minus(projectedTranslation).getAngle();
-    }
+    // public Rotation2d getMovingSpeakerHeading(Drive drive) {
+    //     var projectedTranslation = getPose2d()
+    //             .getTranslation()
+    //             .plus(new Translation2d(
+    //                     drive.getFieldRelativeVelocity().vxMetersPerSecond * Constants.kLoopPeriodSeconds,
+    //                     drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
+    //     return getSpeakerPose().toTranslation2d().minus(projectedTranslation).getAngle();
+    // }
 
     public Rotation2d getAmpHeading() {
         return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;
+    }
+
+    public Rotation2d getStationaryTargetHeading() {
+        switch (mScoringMode) {
+            case SPEAKER:
+                return getSpeakerHeading();
+            case AMP:
+                return getSpeakerHeading();
+            default:
+                return GeometryUtil.kRotationIdentity;
+        }
     }
 
     public Pose2d[] getDetectedNotePoses2d() {
@@ -215,23 +228,6 @@ public class RobotState {
         }
         var hasNote = mIntake.get().hasNote() || mIndexer.get().hasNote();
         return mHasNote.update(hasNote, Timer.getFPGATimestamp());
-    }
-
-    @AutoLogOutput
-    public Pose3d getShooterExitPose() {
-        var shooterHingePose = getPose3d().transformBy(Constants.Robot.kRobotToShooterHinge);
-        return new Pose3d(
-                shooterHingePose.getTranslation(),
-                new Rotation3d(
-                        shooterHingePose.getRotation().getX(),
-                        shooterHingePose.getRotation().getY()
-                                - mShooter.get().getAngle().getRadians(),
-                        shooterHingePose.getRotation().getZ()));
-    }
-
-    @AutoLogOutput
-    public Rotation2d calculateShooterAngleTowardsSpeaker() {
-        return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(getDistanceToSpeaker()));
     }
 
     public void setShootingState(ShootingState shootingState) {

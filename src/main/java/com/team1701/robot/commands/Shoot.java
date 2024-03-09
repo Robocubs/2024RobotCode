@@ -1,17 +1,15 @@
 package com.team1701.robot.commands;
 
-import java.util.stream.DoubleStream;
-
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.ShooterUtil;
 import com.team1701.lib.util.TimeLockedBoolean;
+import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
-import com.team1701.robot.states.RobotState.ScoringMode;
 import com.team1701.robot.states.ShootingState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -33,16 +31,12 @@ public class Shoot extends Command {
 
     private TimeLockedBoolean mLockedReadyToShoot;
     private boolean mShooting;
-    private ScoringMode mScoringMode;
 
-    public Shoot(
-            Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForHeading, ScoringMode scoringMode) {
+    public Shoot(Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForHeading) {
         mShooter = shooter;
         mIndexer = indexer;
         mRobotState = robotState;
         mWaitForHeading = waitForHeading;
-
-        mScoringMode = scoringMode;
 
         mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp());
 
@@ -57,43 +51,22 @@ public class Shoot extends Command {
 
     @Override
     public void execute() {
-        Rotation2d desiredShooterAngle;
-        Rotation2d targetHeading;
-
-        double upperTargetSpeed;
-        double lowerTargetSpeed; // if we want to induce spin
-
-        switch (mScoringMode) {
-            case SPEAKER:
-                desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
-
-                upperTargetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker());
-                lowerTargetSpeed = upperTargetSpeed;
-
-                Logger.recordOutput(kLoggingPrefix + "InterpolatedShooterSpeed", upperTargetSpeed);
-
-                targetHeading = mRobotState.getSpeakerHeading();
-                break;
-            case AMP:
-                desiredShooterAngle = Rotation2d.fromDegrees(Constants.Shooter.kShooterAmpAngleDegrees.get());
-                upperTargetSpeed = Constants.Shooter.kUpperAmpSpeed.get();
-                lowerTargetSpeed = Constants.Shooter.kLowerAmpSpeed.get();
-                targetHeading = mRobotState.getAmpHeading();
-                break;
-            default:
-                cancel();
-                return;
+        if (mRobotState.isClimbMode()) {
+            cancel();
+            return;
         }
 
-        // desiredShooterAngle = Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get());
-        var clampedDesiredRotations = MathUtil.clamp(
-                desiredShooterAngle.getRotations(),
+        Rotation2d targetHeading = mRobotState.getStationaryTargetHeading();
+        
+        Rotation2d desiredShooterAngle = GeometryUtil.clampRotation(
+                ShooterUtil.calculateStationaryDesiredAngle(mRobotState),
                 Constants.Shooter.kShooterLowerLimitRotations,
                 Constants.Shooter.kShooterUpperLimitRotations);
 
-        mShooter.setRotationAngle(Rotation2d.fromRotations(clampedDesiredRotations));
-        mShooter.setUpperRollerSpeeds(upperTargetSpeed);
-        mShooter.setLowerRollerSpeeds(lowerTargetSpeed);
+        mShooter.setRotationAngle(desiredShooterAngle);
+
+        var speeds = ShooterUtil.calculateStationaryRollerSpeeds(mRobotState);
+        mShooter.setRollerSpeeds(speeds);
 
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
@@ -104,11 +77,8 @@ public class Shoot extends Command {
                         mRobotState.getHeading(),
                         Rotation2d.fromDegrees(kHeadingToleranceRadians.get()));
 
-        var atSpeed = DoubleStream.of(mShooter.getUpperRollerSpeedsRadiansPerSecond())
-                        .allMatch(actualSpeed ->
-                                MathUtil.isNear(upperTargetSpeed, actualSpeed, kSpeedToleranceRadiansPerSecond.get()))
-                && DoubleStream.of(mShooter.getLowerRollerSpeedsRadiansPerSecond())
-                        .allMatch(actualSpeed -> MathUtil.isNear(lowerTargetSpeed, actualSpeed, 50.0));
+        var atSpeed = Util.sequentiallyMatch(
+                speeds, mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
         if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
             mIndexer.setForwardShoot();
