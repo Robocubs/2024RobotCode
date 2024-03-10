@@ -11,6 +11,7 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -29,6 +30,9 @@ public final class Constants {
         public static final double kRobotBackToCenter = kRobotLength - kRobotFrontToCenter;
         public static final double kRobotSideToCenter = kRobotWidth / 2.0;
 
+        public static final Transform2d kRobotToIntake =
+                new Transform2d(-kRobotWidth / 2, 0.0, GeometryUtil.kRotationIdentity);
+        public static final Transform2d kIntakeToRobot = kRobotToIntake.inverse();
         public static final Transform3d kRobotToShooterHinge = new Transform3d(
                 new Translation3d(Units.inchesToMeters(-3), Units.inchesToMeters(0), Units.inchesToMeters(7.52)),
                 GeometryUtil.kRotation3dIdentity);
@@ -305,11 +309,11 @@ public final class Constants {
                     Units.degreesToRadians(750.0));
             kFastTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.8,
-                    kMaxVelocityMetersPerSecond * 0.8 / 1.5,
+                    kMaxVelocityMetersPerSecond * 1.5,
                     kFastKinematicLimits.maxSteeringVelocity());
             kSlowTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.4,
-                    kMaxVelocityMetersPerSecond * 0.4 / 2.0,
+                    kMaxVelocityMetersPerSecond * 2.0,
                     kFastKinematicLimits.maxSteeringVelocity());
 
             kPathFollowerConfig = new HolonomicPathFollowerConfig(

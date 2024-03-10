@@ -1,6 +1,5 @@
 package com.team1701.robot.commands;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
@@ -15,25 +14,23 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveToPose extends Command {
     private static final String kLoggingPrefix = "Command/DriveToPose/";
+    private static final TrapezoidProfile.State kZeroState = new TrapezoidProfile.State();
     private static final double kModuleRadius = Constants.Drive.kModuleRadius;
     private static final KinematicLimits kMaxKinematicLimits = Constants.Drive.kFastTrapezoidalKinematicLimits;
+
     private static final LoggedTunableNumber kMaxVelocity =
             new LoggedTunableNumber(kLoggingPrefix + "MaxVelocity", kMaxKinematicLimits.maxDriveVelocity());
     private static final LoggedTunableNumber kMaxAcceleration =
-            new LoggedTunableNumber(kLoggingPrefix + "MaxAcceleration", kMaxKinematicLimits.maxDriveVelocity() / 2.0);
+            new LoggedTunableNumber(kLoggingPrefix + "MaxAcceleration", kMaxKinematicLimits.maxDriveAcceleration());
     private static final LoggedTunableNumber kMaxAngularVelocity = new LoggedTunableNumber(
             kLoggingPrefix + "MaxAngularVelocity", kMaxKinematicLimits.maxDriveVelocity() / kModuleRadius);
-    private static final LoggedTunableNumber kMaxAngularAcceleration =
-            new LoggedTunableNumber(kLoggingPrefix + "MaxAngularAcceleration", kMaxAngularVelocity.get() / 2.0);
-    // TODO: Update PID values
+    private static final LoggedTunableNumber kMaxAngularAcceleration = new LoggedTunableNumber(
+            kLoggingPrefix + "MaxAngularAcceleration", kMaxKinematicLimits.maxDriveAcceleration() / kModuleRadius);
     private static final LoggedTunableNumber kTranslationKp =
             new LoggedTunableNumber(kLoggingPrefix + "TranslationKp", 6.0);
     private static final LoggedTunableNumber kTranslationKi =
@@ -62,8 +59,6 @@ public class DriveToPose extends Command {
     private TrapezoidProfile.State mRotationState = new TrapezoidProfile.State();
     private boolean mAtTargetPose = false;
 
-    private Optional<XboxController> mDriverController;
-
     DriveToPose(
             Drive drive,
             Supplier<Pose2d> poseSupplier,
@@ -78,31 +73,18 @@ public class DriveToPose extends Command {
 
         mTranslationController = new PIDController(
                 kTranslationKp.get(), kTranslationKi.get(), kTranslationKd.get(), Constants.kLoopPeriodSeconds);
-        mTranslationProfile =
-                new TrapezoidProfile(new TrapezoidProfile.Constraints(kMaxVelocity.get(), kMaxAcceleration.get()));
+        mTranslationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
+                Math.min(kMaxVelocity.get(), mKinematicLimits.maxDriveVelocity()),
+                Math.min(kMaxAcceleration.get(), mKinematicLimits.maxDriveAcceleration())));
 
         mRotationController = new PIDController(
                 kRotationKp.get(), kRotationKi.get(), kRotationKd.get(), Constants.kLoopPeriodSeconds);
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
-        mRotationProfile = new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
-
-        mDriverController = Optional.empty();
+        mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
+                Math.min(kMaxAngularVelocity.get(), mKinematicLimits.maxDriveVelocity() / kModuleRadius),
+                Math.min(kMaxAngularAcceleration.get(), mKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
 
         addRequirements(drive);
-    }
-
-    public DriveToPose(
-            Drive drive,
-            Supplier<Pose2d> poseSupplier,
-            Supplier<Pose2d> robotPoseSupplier,
-            KinematicLimits kinematicLimits,
-            boolean finishAtPose,
-            CommandXboxController driverController) {
-
-        this(drive, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose);
-
-        mDriverController = Optional.of(driverController.getHID());
     }
 
     @Override
@@ -128,13 +110,6 @@ public class DriveToPose extends Command {
                         targetPose.getRotation().getRadians() + Math.PI),
                 fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
 
-        if (!mDriverController.isEmpty()) {
-            mDriverController.get().setRumble(RumbleType.kRightRumble, 0.2);
-        }
-    }
-
-    @Override
-    public void execute() {
         var hash = hashCode();
         if (kMaxVelocity.hasChanged(hash)
                 || kMaxAcceleration.hasChanged(hash)
@@ -155,7 +130,10 @@ public class DriveToPose extends Command {
             mTranslationController.setPID(kTranslationKp.get(), kTranslationKi.get(), kTranslationKd.get());
             mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
         }
+    }
 
+    @Override
+    public void execute() {
         var currentPose = mRobotPoseSupplier.get();
         var targetPose = mTargetPoseSupplier.get();
         Pose2d setpoint;
@@ -174,14 +152,16 @@ public class DriveToPose extends Command {
 
             // Calculate directional velocity
             var translationPidOutput = mTranslationController.calculate(distanceToTarget, mTranslationState.position);
-            var translationTargetState = new TrapezoidProfile.State(0.0, 0.0);
-            mTranslationState = mTranslationProfile.calculate(
-                    Constants.kLoopPeriodSeconds, mTranslationState, translationTargetState);
+            mTranslationState =
+                    mTranslationProfile.calculate(Constants.kLoopPeriodSeconds, mTranslationState, kZeroState);
             var velocity = new Translation2d(-(mTranslationState.velocity + translationPidOutput), headingToTarget);
 
             // Calculate rotational velocity
-            var rotationPidOutput =
-                    mRotationController.calculate(currentPose.getRotation().getRadians(), mRotationState.position);
+            var currentRotationRadians = MathUtil.inputModulus(
+                    currentPose.getRotation().getRadians(),
+                    targetPose.getRotation().getRadians() - Math.PI,
+                    targetPose.getRotation().getRadians() + Math.PI);
+            var rotationPidOutput = mRotationController.calculate(currentRotationRadians, mRotationState.position);
             var rotationTargetState =
                     new TrapezoidProfile.State(targetPose.getRotation().getRadians(), 0.0);
             mRotationState =
@@ -206,9 +186,6 @@ public class DriveToPose extends Command {
     @Override
     public void end(boolean interrupted) {
         mDrive.stop();
-        if (!mDriverController.isEmpty()) {
-            mDriverController.get().setRumble(RumbleType.kRightRumble, 0);
-        }
     }
 
     @Override
