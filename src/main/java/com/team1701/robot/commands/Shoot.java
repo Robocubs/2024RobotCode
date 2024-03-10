@@ -65,8 +65,7 @@ public class Shoot extends Command {
 
         switch (mScoringMode) {
             case SPEAKER:
-                desiredShooterAngle =
-                        mRobotState.calculateShooterAngleTowardsSpeaker().minus(Rotation2d.fromDegrees(1));
+                desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
 
                 upperTargetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker());
                 lowerTargetSpeed = upperTargetSpeed;

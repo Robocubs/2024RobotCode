@@ -10,6 +10,7 @@ import com.team1701.lib.estimation.PoseEstimator.DriveMeasurement;
 import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
 import com.team1701.lib.estimation.TwistPoseEstimator;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.LoggedTunableBoolean;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
@@ -32,10 +33,14 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
     private static final double kDetectedNoteTimeout = 3.0;
     private static final double kDuplicateNoteDistanceThreshold = Units.inchesToMeters(10.0);
+
+    private static final LoggedTunableBoolean mEnableCameraPoseEstimation =
+            new LoggedTunableBoolean("EnableCameraPoseEstimation", true);
 
     private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
     private final TimeLockedBoolean mOutOfAmpRange = new TimeLockedBoolean(0.25, Timer.getFPGATimestamp(), true, true);
@@ -115,7 +120,10 @@ public class RobotState {
     }
 
     public void addVisionMeasurements(VisionMeasurement... visionMeasurements) {
-        mPoseEstimator.addVisionMeasurements(visionMeasurements);
+        if (mEnableCameraPoseEstimation.get()) {
+            Logger.recordOutput("RobotState/LastVisionMeasurement", Timer.getFPGATimestamp());
+            mPoseEstimator.addVisionMeasurements(visionMeasurements);
+        }
     }
 
     public void resetPose(Pose2d pose) {
