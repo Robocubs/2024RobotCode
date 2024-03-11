@@ -23,6 +23,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -45,6 +46,7 @@ public class RobotState {
 
     private Optional<Indexer> mIndexer = Optional.empty();
     private Optional<Intake> mIntake = Optional.empty();
+    private Optional<Shooter> mShooter = Optional.empty();
 
     private ShootingState mShootingState = new ShootingState();
 
@@ -62,6 +64,7 @@ public class RobotState {
     private final List<DetectedObjectState> mDetectedNotes = new ArrayList<>();
 
     public void addSubsystems(Shooter shooter, Indexer indexer, Intake intake) {
+        mShooter = Optional.of(shooter);
         mIndexer = Optional.of(indexer);
         mIntake = Optional.of(intake);
     }
@@ -188,15 +191,6 @@ public class RobotState {
                 .getAngle();
     }
 
-    // public Rotation2d getMovingSpeakerHeading(Drive drive) {
-    //     var projectedTranslation = getPose2d()
-    //             .getTranslation()
-    //             .plus(new Translation2d(
-    //                     drive.getFieldRelativeVelocity().vxMetersPerSecond * Constants.kLoopPeriodSeconds,
-    //                     drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
-    //     return getSpeakerPose().toTranslation2d().minus(projectedTranslation).getAngle();
-    // }
-
     public Rotation2d getAmpHeading() {
         return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;
     }
@@ -210,6 +204,18 @@ public class RobotState {
             default:
                 return GeometryUtil.kRotationIdentity;
         }
+    }
+
+    @AutoLogOutput
+    public Pose3d getShooterExitPose() {
+        var shooterHingePose = getPose3d().transformBy(Constants.Robot.kRobotToShooterHinge);
+        return new Pose3d(
+                shooterHingePose.getTranslation(),
+                new Rotation3d(
+                        shooterHingePose.getRotation().getX(),
+                        shooterHingePose.getRotation().getY()
+                                - mShooter.get().getAngle().getRadians(),
+                        shooterHingePose.getRotation().getZ()));
     }
 
     public Pose2d[] getDetectedNotePoses2d() {
@@ -228,6 +234,8 @@ public class RobotState {
 
         mDetectedNotes.addAll(notes);
     }
+
+
 
     @AutoLogOutput
     public boolean hasNote() {

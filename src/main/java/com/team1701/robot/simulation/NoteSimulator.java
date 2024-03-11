@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.DoubleStream;
 
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.ShooterUtil;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
@@ -13,6 +12,7 @@ import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -120,7 +120,7 @@ public class NoteSimulator {
 
                     break;
                 case SHOOTER:
-                    var averageRollerSpeed = DoubleStream.of(mShooter.getRollerSpeedsRadiansPerSecond())
+                    var averageRollerSpeed = DoubleStream.of(mShooter.getRollerSpeedsRadiansPerSecond().toArray())
                             .average()
                             .orElse(0);
                     if (MathUtil.isNear(0, averageRollerSpeed, 0.1)) {
@@ -130,7 +130,7 @@ public class NoteSimulator {
                     note.position += averageRollerSpeed * kShooterRollerRadius * Constants.kLoopPeriodSeconds;
 
                     if (averageRollerSpeed > 0 && note.position > kShooterPathLength) {
-                        var shooterExitPose = ShooterUtil.getShooterExitPose(mRobotState, mShooter);
+                        var shooterExitPose = mRobotState.getShooterExitPose();
                         var notePose = shooterExitPose.transformBy(
                                 new Transform3d(kNoteRadius, 0, 0, shooterExitPose.getRotation()));
                         var noteVelocity = new Translation3d(averageRollerSpeed * kShooterRollerRadius, 0, 0);

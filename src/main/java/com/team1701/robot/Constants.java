@@ -336,8 +336,8 @@ public final class Constants {
 
         public static final int kShooterRotationMotorId = 26;
 
-        public static final double kShooterUpperLimitRotations = Units.degreesToRotations(58);
-        public static final double kShooterLowerLimitRotations = Units.degreesToRotations(16);
+        public static final Rotation2d kShooterUpperLimit = Rotation2d.fromDegrees(58);
+        public static final Rotation2d kShooterLowerLimit = Rotation2d.fromDegrees(16);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
 
@@ -350,7 +350,7 @@ public final class Constants {
         public static final LoggedTunableNumber kRollerKd = new LoggedTunableNumber("Shooter/Motor/Roller/Kd");
 
         public static final LoggedTunableNumber kMaxAngleDegrees =
-                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAngleDegrees", 62);
+                new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAngleDegrees", 58);
 
         public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxVelocity", 1.0);

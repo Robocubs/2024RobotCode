@@ -5,15 +5,14 @@ import java.util.function.Supplier;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
-import com.team1701.lib.util.ShooterUtil;
 import com.team1701.lib.util.TimeLockedBoolean;
-import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.states.ShootingState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -148,8 +147,8 @@ public class ShootAndMove extends Command {
 
         var targetShooterAngle = GeometryUtil.clampRotation(
                 ShooterUtil.calculateShooterAngleWithMotion(mRobotState, endTranslation),
-                Constants.Shooter.kShooterLowerLimitRotations,
-                Constants.Shooter.kShooterUpperLimitRotations);
+                Constants.Shooter.kShooterLowerLimit,
+                Constants.Shooter.kShooterUpperLimit);
 
         mShooter.setRotationAngle(targetShooterAngle);
 
@@ -162,8 +161,8 @@ public class ShootAndMove extends Command {
         var atHeading = GeometryUtil.isNear(
                 targetHeading, mRobotState.getHeading(), Rotation2d.fromRadians(kHeadingToleranceRadians.get()));
 
-        var atSpeed = Util.sequentiallyMatch(
-                targetRollerSpeeds, mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
+        var atSpeed = targetRollerSpeeds.allMatch(
+                mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
         if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
             mIndexer.setForwardShoot();

@@ -2,14 +2,13 @@ package com.team1701.robot.commands;
 
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
-import com.team1701.lib.util.ShooterUtil;
 import com.team1701.lib.util.TimeLockedBoolean;
-import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.states.ShootingState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -60,8 +59,8 @@ public class Shoot extends Command {
 
         Rotation2d desiredShooterAngle = GeometryUtil.clampRotation(
                 ShooterUtil.calculateStationaryDesiredAngle(mRobotState),
-                Constants.Shooter.kShooterLowerLimitRotations,
-                Constants.Shooter.kShooterUpperLimitRotations);
+                Constants.Shooter.kShooterLowerLimit,
+                Constants.Shooter.kShooterUpperLimit);
 
         mShooter.setRotationAngle(desiredShooterAngle);
 
@@ -77,8 +76,8 @@ public class Shoot extends Command {
                         mRobotState.getHeading(),
                         Rotation2d.fromDegrees(kHeadingToleranceRadians.get()));
 
-        var atSpeed = Util.sequentiallyMatch(
-                speeds, mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
+        var atSpeed =
+                speeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
         if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
             mIndexer.setForwardShoot();

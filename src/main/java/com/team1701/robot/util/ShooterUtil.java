@@ -1,27 +1,16 @@
-package com.team1701.lib.util;
+package com.team1701.robot.util;
 
+import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
-import com.team1701.robot.subsystems.shooter.Shooter;
-import edu.wpi.first.math.geometry.Pose3d;
+import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import org.littletonrobotics.junction.Logger;
 
 public final class ShooterUtil {
-
-    public static Pose3d getShooterExitPose(RobotState robotState, Shooter shooter) {
-        var shooterHingePose = robotState.getPose3d().transformBy(Constants.Robot.kRobotToShooterHinge);
-        return new Pose3d(
-                shooterHingePose.getTranslation(),
-                new Rotation3d(
-                        shooterHingePose.getRotation().getX(),
-                        shooterHingePose.getRotation().getY()
-                                - shooter.getAngle().getRadians(),
-                        shooterHingePose.getRotation().getZ()));
-    }
 
     public static Rotation2d calculateStationaryDesiredAngle(RobotState robotState) {
         switch (robotState.getScoringMode()) {
@@ -31,7 +20,7 @@ public final class ShooterUtil {
             case AMP:
                 return Rotation2d.fromDegrees(Constants.Shooter.kShooterAmpAngleDegrees.get());
             default:
-                return Rotation2d.fromRotations(Constants.Shooter.kShooterLowerLimitRotations);
+                return Constants.Shooter.kShooterLowerLimit;
         }
     }
 
@@ -40,43 +29,29 @@ public final class ShooterUtil {
                 robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
     }
 
-    /**
-     * @return double[] with upper, then lower speeds
-     */
-    public static double[] calculateShooterSpeedsWithMotion(RobotState robotState, Translation2d expectedTranslation) {
-        var speed = Constants.Shooter.kShooterSpeedInterpolator.get(
-                robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation)));
-        return new double[] {speed, speed};
+    public static ShooterSpeeds calculateShooterSpeedsWithMotion(
+            RobotState robotState, Translation2d expectedTranslation) {
+        return new ShooterSpeeds(Constants.Shooter.kShooterSpeedInterpolator.get(
+                robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
     }
 
-    /**
-     * @return double[] with upper, then lower speeds
-     */
-    public static double[] calculateStationaryRollerSpeeds(RobotState robotState) {
+    public static ShooterSpeeds calculateStationaryRollerSpeeds(RobotState robotState) {
         switch (robotState.getScoringMode()) {
             case SPEAKER:
-                double[] speeds = new double[2];
                 var interpolatedSpeed =
                         Constants.Shooter.kShooterSpeedInterpolator.get(robotState.getDistanceToSpeaker());
-                for (int i = 0; i < speeds.length; i++) {
-                    speeds[i] = interpolatedSpeed;
-                }
                 Logger.recordOutput("Shooter/InterpolatedShooterSpeeds", interpolatedSpeed);
-                return speeds;
+                return new ShooterSpeeds(interpolatedSpeed);
             case AMP:
-                return new double[] {
-                    Constants.Shooter.kUpperAmpSpeed.get(), Constants.Shooter.kLowerAmpSpeed.get(),
-                };
+                return new ShooterSpeeds(
+                        Constants.Shooter.kUpperAmpSpeed.get(), Constants.Shooter.kLowerAmpSpeed.get());
             default:
-                return new double[] {0, 0};
+                return new ShooterSpeeds(0);
         }
     }
 
-    /**
-     * @return double[] with upper, then lower speeds
-     */
-    public static double[] calculateIdleRollerSpeeds(RobotState robotState, Drive drive) {
-        double[] speeds = new double[2];
+    public static ShooterSpeeds calculateIdleRollerSpeeds(RobotState robotState, Drive drive) {
+        ShooterSpeeds speeds;
         switch (robotState.getScoringMode()) {
             case SPEAKER:
                 double speed;
@@ -96,9 +71,7 @@ public final class ShooterUtil {
                         speed = robotState.inNearHalf() ? Constants.Shooter.kIdleSpeedRadiansPerSecond.get() : 0;
                     }
                 }
-                for (int i = 0; i < speeds.length; i++) {
-                    speeds[i] = speed;
-                }
+                speeds = new ShooterSpeeds(speed);
                 break;
             case AMP:
                 if (robotState.hasNote()) {
@@ -108,15 +81,17 @@ public final class ShooterUtil {
                 } else {
                     speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                 }
-                speeds = new double[] {speed, speed};
+                speeds = new ShooterSpeeds(speed);
             case CLIMB:
-                speeds = new double[] {0, 0};
+                speeds = new ShooterSpeeds(0);
             default:
-                speeds = new double[] {
-                    Constants.Shooter.kIdleSpeedRadiansPerSecond.get(),
-                    Constants.Shooter.kIdleSpeedRadiansPerSecond.get(),
-                };
+                speeds = new ShooterSpeeds(Constants.Shooter.kIdleSpeedRadiansPerSecond.get());
         }
-        return Util.clampAll(speeds, 0, 440);
+        return clampSpeeds(speeds, 0, 440);
+    }
+
+    public static ShooterSpeeds clampSpeeds(ShooterSpeeds speeds, double lower, double upper) {
+        return new ShooterSpeeds(
+                MathUtil.clamp(speeds.upperSpeed(), lower, upper), MathUtil.clamp(speeds.lowerSpeed(), lower, upper));
     }
 }

@@ -7,12 +7,11 @@ import com.team1701.lib.drivers.encoders.EncoderIOSim;
 import com.team1701.lib.drivers.encoders.EncoderInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
-import com.team1701.lib.drivers.motors.MotorIOSparkFlex;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
-import com.team1701.robot.Robot;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -75,6 +74,32 @@ public class Shooter extends SubsystemBase {
         createMechanism2d();
     }
 
+    public static record ShooterSpeeds(double upperSpeed, double lowerSpeed) {
+        public ShooterSpeeds(double radiansPerSecond) {
+            this(radiansPerSecond, radiansPerSecond);
+        }
+
+        public boolean allMatch(ShooterSpeeds speeds, double tolerance) {
+            return upperMatches(speeds.upperSpeed, tolerance) && lowerMatches(speeds.lowerSpeed, tolerance);
+        }
+
+        public boolean allMatch(double radiansPerSecond, double tolerance) {
+            return upperMatches(radiansPerSecond, tolerance) && lowerMatches(radiansPerSecond, tolerance);
+        }
+
+        public boolean upperMatches(double radiansPerSecond, double tolerance) {
+            return MathUtil.isNear(radiansPerSecond, upperSpeed, tolerance);
+        }
+
+        public boolean lowerMatches(double radiansPerSecond, double tolerance) {
+            return MathUtil.isNear(radiansPerSecond, lowerSpeed, tolerance);
+        }
+
+        public double[] toArray() {
+            return new double[] {upperSpeed, lowerSpeed};
+        }
+    }
+
     public static MotorIOSim createRollerMotorSim(DCMotor shooterMotor) {
         return new MotorIOSim(shooterMotor, Constants.Shooter.kRollerReduction, 0.0023, Constants.kLoopPeriodSeconds);
     }
@@ -121,16 +146,12 @@ public class Shooter extends SubsystemBase {
 
         Logger.processInputs("Shooter/Encoder", mAngleEncoderInputs);
 
-        if (!Robot.isSimulation()) {
-            Logger.recordOutput(
-                    "Shooter/Motors/UpperRollerWattage",
-                    ((MotorIOSparkFlex) mUpperRollerMotorIO).getAppliedVoltage()
-                            * ((MotorIOSparkFlex) mUpperRollerMotorIO).getOutputCurrent());
-            Logger.recordOutput(
-                    "Shooter/Motors/LowerRollerWattage",
-                    ((MotorIOSparkFlex) mLowerRollerMotorIO).getAppliedVoltage()
-                            * ((MotorIOSparkFlex) mLowerRollerMotorIO).getOutputCurrent());
-        }
+        Logger.recordOutput(
+                "Shooter/Motors/UpperRollerWattage",
+                mUpperRollerMotorIO.getAppliedVoltage() * mUpperRollerMotorIO.getOutputCurrent());
+        Logger.recordOutput(
+                "Shooter/Motors/LowerRollerWattage",
+                mLowerRollerMotorIO.getAppliedVoltage() * mLowerRollerMotorIO.getOutputCurrent());
 
         if (Constants.Shooter.kRollerKff.hasChanged(hash)
                 || Constants.Shooter.kRollerKp.hasChanged(hash)
@@ -183,33 +204,18 @@ public class Shooter extends SubsystemBase {
         return Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians);
     }
 
-    /**
-     * @return double[] with upper, then lower speeds
-     */
-    public double[] getRollerSpeedsRadiansPerSecond() {
-        return new double[] {
-            mUpperShooterMotorInputs.velocityRadiansPerSecond, mLowerShooterMotorInputs.velocityRadiansPerSecond,
-        };
+    public ShooterSpeeds getRollerSpeedsRadiansPerSecond() {
+        return new ShooterSpeeds(
+                mUpperShooterMotorInputs.velocityRadiansPerSecond, mLowerShooterMotorInputs.velocityRadiansPerSecond);
     }
 
-    public double getUpperRollerSpeedRadiansPerSecond() {
-        return mUpperShooterMotorInputs.velocityRadiansPerSecond;
+    public void setRollerSpeeds(ShooterSpeeds shooterSpeeds) {
+        setUpperRollerSpeed(shooterSpeeds.upperSpeed);
+        setLowerRollerSpeed(shooterSpeeds.lowerSpeed);
     }
 
-    public double getLowerRollerSpeedRadiansPerSecond() {
-        return mLowerShooterMotorInputs.velocityRadiansPerSecond;
-    }
-
-    /**
-     * upper, lower
-     */
-    public void setRollerSpeeds(double[] speeds) {
-        setUpperRollerSpeed(speeds.length > 0 ? speeds[0] : Constants.Shooter.kIdleSpeedRadiansPerSecond.get());
-        setLowerRollerSpeed(speeds.length > 1 ? speeds[1] : Constants.Shooter.kIdleSpeedRadiansPerSecond.get());
-    }
-
-    public void setUnifiedRollerSpeed(double radiansPerSecond) {
-        setRollerSpeeds(new double[] {radiansPerSecond, radiansPerSecond});
+    public void setUnifiedSpeed(double radiansPerSecond) {
+        setRollerSpeeds(new ShooterSpeeds(radiansPerSecond));
     }
 
     public void setUpperRollerSpeed(double radiansPerSecond) {
