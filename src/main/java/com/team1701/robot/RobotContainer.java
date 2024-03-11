@@ -151,11 +151,11 @@ public class RobotContainer {
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                             new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
                             new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
-                    climb = Optional.of(new Climb(
-                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                                    Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
-                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                                    Constants.Climb.kRightWinchId, MotorUsage.WINCH, false)));
+                    // climb = Optional.of(new Climb(
+                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                    //                 Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
+                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                    //                 Constants.Climb.kRightWinchId, MotorUsage.WINCH, false)));
                     break;
                 case SIMULATION_BOT:
                     var noteSimulator = new NoteSimulator(mRobotState, Constants.Vision.kLimelightConfig);

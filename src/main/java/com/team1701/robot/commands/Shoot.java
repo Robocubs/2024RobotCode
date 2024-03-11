@@ -67,6 +67,7 @@ public class Shoot extends Command {
             case SPEAKER:
                 desiredShooterAngle = mRobotState.calculateShooterAngleTowardsSpeaker();
 
+                // upperTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
                 upperTargetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker());
                 lowerTargetSpeed = upperTargetSpeed;
 
