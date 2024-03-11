@@ -56,20 +56,14 @@ public final class ShooterUtil {
             case SPEAKER:
                 double speed;
 
-                if (drive.getKinematicLimits().equals(Constants.Drive.kSlowKinematicLimits)) {
-                    speed = Constants.Shooter.kShooterSpeedInterpolator.get(robotState.getDistanceToSpeaker());
-                } else {
-                    if (robotState.hasNote()) {
-                        if (robotState.inNearHalf()) {
-                            speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
-                        } else {
-                            speed = robotState.inOpponentWing()
-                                    ? 0
-                                    : Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
-                        }
+                if (robotState.hasNote()) {
+                    if (robotState.inNearHalf()) {
+                        speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                     } else {
-                        speed = robotState.inNearHalf() ? Constants.Shooter.kIdleSpeedRadiansPerSecond.get() : 0;
+                        speed = robotState.inOpponentWing() ? 0 : Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                     }
+                } else {
+                    speed = robotState.inNearHalf() ? Constants.Shooter.kIdleSpeedRadiansPerSecond.get() : 0;
                 }
                 speeds = new ShooterSpeeds(speed);
                 break;
