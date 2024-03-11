@@ -69,6 +69,10 @@ public final class GeometryUtil {
         return new Twist2d(twist.dx * scalar, twist.dy * scalar, twist.dtheta * scalar);
     }
 
+    public static Translation2d getTranslation2d(Pose3d pose) {
+        return new Translation2d(pose.getX(), pose.getY());
+    }
+
     public static Pose3d toPose3d(Transform3d transform) {
         return new Pose3d(transform.getTranslation(), transform.getRotation());
     }

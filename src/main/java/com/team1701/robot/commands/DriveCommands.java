@@ -1,11 +1,8 @@
 package com.team1701.robot.commands;
 
-import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
-import com.team1701.lib.commands.LoggedCommands;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration;
@@ -74,16 +71,6 @@ public class DriveCommands {
         return new DriveToPose(drive, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose);
     }
 
-    public static Command driveToPose(
-            Drive drive,
-            Supplier<Pose2d> poseSupplier,
-            Supplier<Pose2d> robotPoseSupplier,
-            KinematicLimits kinematicLimits,
-            boolean finishAtPose,
-            CommandXboxController driverController) {
-        return new DriveToPose(drive, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose, driverController);
-    }
-
     public static Command rotateToSpeaker(
             Drive drive, RobotState state, KinematicLimits kinematicLimits, boolean finishAtRotation) {
         return rotateToFieldHeading(
@@ -122,35 +109,19 @@ public class DriveCommands {
             RobotState robotState,
             KinematicLimits kinematicLimits,
             CommandXboxController driverController) {
-        return Commands.defer(
-                () -> {
-                    var robotPose = robotState.getPose2d();
-                    var robotTranslation = robotPose.getTranslation();
-                    var robotRotationReverse = robotPose.getRotation().plus(GeometryUtil.kRotationPi);
-                    return Stream.of(robotState.getDetectedNotePoses2d())
-                            .filter(notePose -> GeometryUtil.isNear(
-                                    robotRotationReverse,
-                                    notePose.getTranslation()
-                                            .minus(robotTranslation)
-                                            .getAngle(),
-                                    Rotation2d.fromDegrees(45)))
-                            .min((notePose1, notePose2) -> Double.compare(
-                                    robotTranslation.getDistance(notePose1.getTranslation()),
-                                    robotTranslation.getDistance(notePose2.getTranslation())))
-                            .map(pose -> LoggedCommands.logged(DriveCommands.driveToPose(
-                                            drive,
-                                            () -> new Pose2d(
-                                                    pose.getTranslation(),
-                                                    pose.getRotation().plus(GeometryUtil.kRotationPi)),
-                                            () -> robotState.getPose2d(),
-                                            kinematicLimits,
-                                            true,
-                                            driverController)
-                                    .withName("DriveToPiecePose")))
-                            .orElse(LoggedCommands.logged(Commands.none().withName("NoneCommand")))
-                            .withName("DriveToPiece");
-                },
-                Set.of(drive));
+        return new DriveToPose(
+                drive,
+                () -> robotState
+                        .getDetectedNoteForPickup()
+                        .map(note -> note.pose().toPose2d())
+                        .map(pose -> new Pose2d(
+                                        pose.getTranslation(),
+                                        pose.getRotation().plus(GeometryUtil.kRotationPi))
+                                .transformBy(Constants.Robot.kIntakeToRobot))
+                        .orElseGet(robotState::getPose2d),
+                robotState::getPose2d,
+                kinematicLimits,
+                true);
     }
 
     public static Command shootAndMoveWithJoysticks(

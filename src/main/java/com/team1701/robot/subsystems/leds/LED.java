@@ -38,7 +38,7 @@ public class LED extends SubsystemBase {
                 mLEDController.setAll(LEDColors.kIdleHasNote);
             }
         } else {
-            if (mRobotState.getDetectedNotePoses3d().length > 0) {
+            if (mRobotState.getDetectedNoteForPickup().isPresent()) {
                 mLEDController.setAll(LEDColors.kSeesNote);
             } else {
                 mLEDController.setAll(LEDColors.kIdleNoNote);
