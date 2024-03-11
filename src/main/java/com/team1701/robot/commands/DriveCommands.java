@@ -17,6 +17,7 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -74,22 +75,6 @@ public class DriveCommands {
                 .withName("SwerveLock");
     }
 
-    public static Command slowlyDriveToSpeaker(
-            Drive drive,
-            Supplier<Rotation2d> targetHeadingSupplier,
-            Supplier<Rotation2d> robotHeadingSupplier,
-            DoubleSupplier throttle,
-            DoubleSupplier strafe) {
-        return new RotateToFieldHeading(
-                drive,
-                targetHeadingSupplier,
-                robotHeadingSupplier,
-                Constants.Drive.kSlowKinematicLimits,
-                Constants.Drive.kSlowKinematicLimits,
-                throttle,
-                strafe);
-    }
-
     public static Command driveToAmp(Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits) {
         return new DriveToPose(
                 drive,
@@ -144,15 +129,15 @@ public class DriveCommands {
             RobotState robotState,
             DoubleSupplier throttle,
             DoubleSupplier strafe) {
+        var maxDriveVelocity = Constants.Drive.kFastSmoothKinematicLimits.maxDriveVelocity();
         return Commands.parallel(
-                new RotateToFieldHeading(
-                        drive,
-                        robotState::getSpeakerHeading,
-                        robotState::getHeading,
-                        Constants.Drive.kFastTrapezoidalKinematicLimits,
-                        Constants.Drive.kFastSmoothKinematicLimits,
-                        throttle,
-                        strafe),
+                new RotateToSpeakerAndMove(drive, robotState, () -> {
+                    var translationSign = Configuration.isBlueAlliance() ? 1.0 : -1.0;
+                    return new Translation2d(
+                                    throttle.getAsDouble() * maxDriveVelocity * translationSign,
+                                    strafe.getAsDouble() * maxDriveVelocity * translationSign)
+                            .rotateBy(drive.getFieldRelativeHeading().unaryMinus());
+                }),
                 ShootCommands.shoot(shooter, indexer, robotState, true));
     }
 

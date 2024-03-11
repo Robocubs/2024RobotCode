@@ -170,7 +170,7 @@ public final class Constants {
                 "limelight",
                 new Transform3d(
                         new Translation3d(0, 0.0, Units.inchesToMeters(24.5)),
-                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-180))),
+                        new Rotation3d(0, Units.degreesToRadians(20), Units.degreesToRadians(-180))),
                 0,
                 VisionCameraConfig.kLimelightConfig);
     }
@@ -356,10 +356,11 @@ public final class Constants {
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
                 new LoggedTunableNumber("Shooter/Motor/Rotation/MaxAcceleration", 1.0);
 
+        public static final Rotation2d kLoadingAngle = Rotation2d.fromDegrees(24);
         public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =
-                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 43);
+                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 55);
         public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 150);
         public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
@@ -419,7 +420,6 @@ public final class Constants {
             {6, 0.4},
             {6.4, 0.385},
             {8.3, 0.33}
-
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
@@ -469,7 +469,7 @@ public final class Constants {
                     kRollerKp.initDefault(0.2);
                     kRollerKd.initDefault(0.0);
 
-                    kRotationKp.initDefault(2.0);
+                    kRotationKp.initDefault(50.0);
                     kRotationKd.initDefault(0.0);
 
                     kShooterAngleEncoderOffset = Rotation2d.fromRotations(Math.random());
