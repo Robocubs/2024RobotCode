@@ -250,7 +250,7 @@ public class Drive extends SubsystemBase {
     }
 
     public ChassisSpeeds getFieldRelativeVelocity() {
-        return ChassisSpeeds.fromRobotRelativeSpeeds(getVelocity(), mFieldRelativeHeading);
+        return ChassisSpeeds.fromRobotRelativeSpeeds(getVelocity(), mRobotState.getHeading());
     }
 
     @AutoLogOutput
