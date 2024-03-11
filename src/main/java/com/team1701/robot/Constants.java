@@ -170,7 +170,7 @@ public final class Constants {
                 "limelight",
                 new Transform3d(
                         new Translation3d(0, 0.0, Units.inchesToMeters(24.5)),
-                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-180))),
+                        new Rotation3d(0, Units.degreesToRadians(20), Units.degreesToRadians(-180))),
                 0,
                 VisionCameraConfig.kLimelightConfig);
     }
@@ -465,7 +465,7 @@ public final class Constants {
                     kRollerKp.initDefault(0.2);
                     kRollerKd.initDefault(0.0);
 
-                    kRotationKp.initDefault(2.0);
+                    kRotationKp.initDefault(50.0);
                     kRotationKd.initDefault(0.0);
 
                     kShooterAngleEncoderOffset = Rotation2d.fromRotations(Math.random());

@@ -228,13 +228,14 @@ public class RobotState {
     @AutoLogOutput
     public Pose3d getShooterExitPose() {
         var shooterHingePose = getPose3d().transformBy(Constants.Robot.kRobotToShooterHinge);
-        return new Pose3d(
+        var rotatedShooterHingePose = new Pose3d(
                 shooterHingePose.getTranslation(),
                 new Rotation3d(
                         shooterHingePose.getRotation().getX(),
                         shooterHingePose.getRotation().getY()
                                 - mShooter.get().getAngle().getRadians(),
                         shooterHingePose.getRotation().getZ()));
+        return rotatedShooterHingePose.transformBy(Constants.Robot.kShooterHingeToShooterExit);
     }
 
     @AutoLogOutput
