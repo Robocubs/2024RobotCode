@@ -40,6 +40,7 @@ public class DriveCommands {
                     var translationVelocities = calculateDriveWithJoysticksVelocities(
                             throttleSupplier.getAsDouble(),
                             strafeSupplier.getAsDouble(),
+                            headingSupplier.get(),
                             kinematicLimits.maxDriveVelocity());
                     var rotation =
                             MathUtil.applyDeadband(rotationSupplier.getAsDouble(), Constants.Controls.kDriverDeadband);
@@ -47,23 +48,21 @@ public class DriveCommands {
                             * kinematicLimits.maxDriveVelocity()
                             / Constants.Drive.kModuleRadius;
 
-                    drive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                            translationVelocities.getX(),
-                            translationVelocities.getY(),
-                            rotationRadiansPerSecond,
-                            headingSupplier.get()));
+                    drive.setVelocity(new ChassisSpeeds(
+                            translationVelocities.getX(), translationVelocities.getY(), rotationRadiansPerSecond));
                 },
                 drive::stop,
                 drive);
     }
 
     private static Translation2d calculateDriveWithJoysticksVelocities(
-            double throttle, double strafe, double maxVelocity) {
+            double throttle, double strafe, Rotation2d heading, double maxVelocity) {
         var translationSign = Configuration.isBlueAlliance() ? 1.0 : -1.0;
         var magnitude = Math.hypot(throttle, strafe);
         return magnitude < Constants.Controls.kDriverDeadband
                 ? GeometryUtil.kTranslationIdentity
-                : new Translation2d(throttle * maxVelocity * translationSign, strafe * maxVelocity * translationSign);
+                : new Translation2d(throttle * maxVelocity * translationSign, strafe * maxVelocity * translationSign)
+                        .rotateBy(heading.unaryMinus());
     }
 
     public static Command driveToPose(
@@ -163,11 +162,12 @@ public class DriveCommands {
             DoubleSupplier strafe) {
         var maxDriveVelocity = Constants.Drive.kFastSmoothKinematicLimits.maxDriveVelocity();
         return Commands.parallel(
-                new RotateToSpeakerAndMove(
-                        drive,
-                        robotState,
-                        () -> calculateDriveWithJoysticksVelocities(
-                                throttle.getAsDouble(), strafe.getAsDouble(), maxDriveVelocity)),
+                new RotateToSpeakerAndMove(drive, robotState, () -> calculateDriveWithJoysticksVelocities(
+                                throttle.getAsDouble(),
+                                strafe.getAsDouble(),
+                                drive.getFieldRelativeHeading(),
+                                maxDriveVelocity)
+                        .rotateBy(robotState.getHeading())),
                 ShootCommands.shoot(shooter, indexer, robotState, true));
     }
 

@@ -32,7 +32,7 @@ public class RotateToSpeakerAndMove extends Command {
 
     private static final LoggedTunableNumber kLoopsLatency =
             new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 2.0);
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 15.0);
+    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
     private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
 
