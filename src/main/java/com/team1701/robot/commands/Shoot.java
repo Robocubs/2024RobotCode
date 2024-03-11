@@ -65,10 +65,12 @@ public class Shoot extends Command {
 
         switch (mScoringMode) {
             case SPEAKER:
-                desiredShooterAngle =
-                        mRobotState.calculateShooterAngleTowardsSpeaker().minus(Rotation2d.fromDegrees(1));
+                desiredShooterAngle = new Rotation2d(Constants.Shooter.kTunableShooterAngleRadians.get());
+                // mRobotState.calculateShooterAngleTowardsSpeaker().minus(Rotation2d.fromDegrees(1));
 
-                upperTargetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker());
+                upperTargetSpeed = Constants.Shooter.kTargetShootSpeedRadiansPerSecond.get();
+                // upperTargetSpeed =
+                // Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker());
                 lowerTargetSpeed = upperTargetSpeed;
 
                 Logger.recordOutput(kLoggingPrefix + "InterpolatedShooterSpeed", upperTargetSpeed);
