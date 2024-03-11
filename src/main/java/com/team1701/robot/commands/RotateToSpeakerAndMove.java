@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
@@ -97,9 +98,10 @@ public class RotateToSpeakerAndMove extends Command {
 
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (MathUtil.isNear(0, headingError.getRadians(), 0.1)) {
-            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), 0);
-            rotationalVelocity = rotationPidOutput;
+        if (MathUtil.isNear(0, headingError.getRadians(), 0.02)
+                && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
+                && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
+            rotationalVelocity = 0;
             mRotationState = kZeroState;
             setpoint = targetHeading;
         } else {

@@ -26,7 +26,7 @@ public class RotateToFieldHeading extends Command {
             kLoggingPrefix + "MaxAngularAcceleration",
             Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveAcceleration() / kModuleRadius);
 
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 15.0);
+    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
     private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
     private static final LoggedTunableNumber kRotationToleranceRadians =
@@ -104,8 +104,7 @@ public class RotateToFieldHeading extends Command {
         mAtTargetRotation = MathUtil.isNear(0, headingError.getRadians(), kRotationToleranceRadians.get());
         double rotationalVelocity;
         if (MathUtil.isNear(0, headingError.getRadians(), 0.1)) {
-            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), 0);
-            rotationalVelocity = rotationPidOutput;
+            rotationalVelocity = 0;
             mRotationState = kZeroState;
             setpoint = targetHeading;
         } else {
