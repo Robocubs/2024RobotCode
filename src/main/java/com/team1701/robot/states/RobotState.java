@@ -17,6 +17,7 @@ import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.Robot;
+import com.team1701.robot.states.RobotState.ScoringMode;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -227,13 +228,14 @@ public class RobotState {
     @AutoLogOutput
     public Pose3d getShooterExitPose() {
         var shooterHingePose = getPose3d().transformBy(Constants.Robot.kRobotToShooterHinge);
-        return new Pose3d(
+        var rotatedShooterHingePose = new Pose3d(
                 shooterHingePose.getTranslation(),
                 new Rotation3d(
                         shooterHingePose.getRotation().getX(),
                         shooterHingePose.getRotation().getY()
                                 - mShooter.get().getAngle().getRadians(),
                         shooterHingePose.getRotation().getZ()));
+        return rotatedShooterHingePose.transformBy(Constants.Robot.kShooterHingeToShooterExit);
     }
 
     public Pose2d[] getDetectedNotePoses2d() {

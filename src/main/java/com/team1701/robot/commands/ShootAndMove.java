@@ -6,6 +6,7 @@ import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.lib.util.TimeLockedBoolean;
+import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.states.ShootingState;
@@ -15,6 +16,7 @@ import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -81,6 +83,8 @@ public class ShootAndMove extends Command {
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
         mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp());
+
+        addRequirements(mDrive, mShooter, mIndexer);
     }
 
     @Override
@@ -127,12 +131,10 @@ public class ShootAndMove extends Command {
 
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (MathUtil.isNear(0, headingError.getRadians(), 0.1)) {
-            var rotationPidOutput = MathUtil.clamp(
-                    mRotationController.calculate(headingError.getRadians(), 0),
-                    -kMaxPAngularVelocity.get(),
-                    kMaxPAngularVelocity.get());
-            rotationalVelocity = rotationPidOutput;
+        if (MathUtil.isNear(0, headingError.getRadians(), 0.1)
+                && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
+                && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
+            rotationalVelocity = 0;
             mRotationState = kZeroState;
             setpoint = targetHeading;
         } else {
@@ -149,19 +151,27 @@ public class ShootAndMove extends Command {
                 ShooterUtil.calculateShooterAngleWithMotion(mRobotState, endTranslation),
                 Constants.Shooter.kShooterLowerLimit,
                 Constants.Shooter.kShooterUpperLimit);
+        var currentExpectedShooterAngle = GeometryUtil.clampRotation(
+                ShooterUtil.calculateStationaryDesiredAngle(mRobotState),
+                Constants.Shooter.kShooterLowerLimit,
+                Constants.Shooter.kShooterUpperLimit);
 
         mShooter.setRotationAngle(targetShooterAngle);
 
         var targetRollerSpeeds = ShooterUtil.calculateShooterSpeedsWithMotion(mRobotState, endTranslation);
+        var currentExpectedRollerSpeeds = ShooterUtil.calculateStationaryRollerSpeeds(mRobotState);
+
         mShooter.setRollerSpeeds(targetRollerSpeeds);
 
         var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(), targetShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(), currentExpectedShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
         var atHeading = GeometryUtil.isNear(
-                targetHeading, mRobotState.getHeading(), Rotation2d.fromRadians(kHeadingToleranceRadians.get()));
+                mRobotState.getSpeakerHeading(),
+                mRobotState.getHeading(),
+                Rotation2d.fromRadians(kHeadingToleranceRadians.get()));
 
-        var atSpeed = targetRollerSpeeds.allMatch(
+        var atSpeed = currentExpectedRollerSpeeds.allMatch(
                 mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
         if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
@@ -178,11 +188,12 @@ public class ShootAndMove extends Command {
         }
         mRobotState.setShootingState(new ShootingState(true, atAngle, atSpeed, atHeading, mShooting));
 
-        Logger.recordOutput(kLoggingPrefix + "Setpoint", setpoint);
+        Logger.recordOutput(kLoggingPrefix + "Setpoint", new Pose2d(endTranslation, setpoint));
         Logger.recordOutput(kLoggingPrefix + "TargetHeading", targetHeading);
         Logger.recordOutput(kLoggingPrefix + "AtAngle", atAngle);
         Logger.recordOutput(kLoggingPrefix + "AtHeading", atHeading);
         Logger.recordOutput(kLoggingPrefix + "AtSpeed", atSpeed);
+        Logger.recordOutput(kLoggingPrefix + "Shooting", mShooting);
     }
 
     @Override

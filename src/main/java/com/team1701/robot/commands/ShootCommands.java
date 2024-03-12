@@ -1,14 +1,10 @@
 package com.team1701.robot.commands;
 
-import java.util.function.DoubleSupplier;
-
-import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -39,22 +35,5 @@ public class ShootCommands {
 
     public static Command scoreInAmp(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
         return Commands.sequence(new Shoot(shooter, indexer, robotState, false)).withName("scoreInAmp");
-    }
-
-    public static Command shootAndMove(
-            Drive drive,
-            Shooter shooter,
-            Indexer indexer,
-            RobotState robotState,
-            DoubleSupplier throttle,
-            DoubleSupplier strafe) {
-        var maxDriveVelocity = Constants.Drive.kFastSmoothKinematicLimits.maxDriveVelocity();
-        return new ShootAndMove(drive, shooter, indexer, robotState, () -> {
-            var translationSign = Configuration.isBlueAlliance() ? 1.0 : -1.0;
-            return new Translation2d(
-                            throttle.getAsDouble() * maxDriveVelocity * translationSign,
-                            strafe.getAsDouble() * maxDriveVelocity * translationSign)
-                    .rotateBy(drive.getFieldRelativeHeading().unaryMinus());
-        });
     }
 }

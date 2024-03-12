@@ -333,7 +333,7 @@ public class RobotContainer {
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-                .whileTrue(ShootCommands.shootAndMove(
+                .whileTrue(DriveCommands.shootAndMove(
                         mDrive,
                         mShooter,
                         mIndexer,

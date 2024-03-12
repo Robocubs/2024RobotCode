@@ -20,7 +20,7 @@ public final class ShooterUtil {
             case AMP:
                 return Rotation2d.fromDegrees(Constants.Shooter.kShooterAmpAngleDegrees.get());
             default:
-                return Constants.Shooter.kShooterLowerLimit;
+                return Constants.Shooter.kLoadingAngle;
         }
     }
 
