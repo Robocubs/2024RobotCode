@@ -31,9 +31,6 @@ public class ShootAndMove extends Command {
     private static final TrapezoidProfile.State kZeroState = new TrapezoidProfile.State(0.0, 0.0);
     private static final KinematicLimits kKinematicLimits = Constants.Drive.kFastKinematicLimits;
 
-    private static final LoggedTunableNumber kMaxPAngularVelocity =
-            new LoggedTunableNumber(kLoggingPrefix + "MaxAngularVelocity", 2.0);
-
     private static final LoggedTunableNumber kMaxAngularVelocity = new LoggedTunableNumber(
             kLoggingPrefix + "MaxAngularVelocity",
             Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity() / kModuleRadius);
@@ -45,10 +42,10 @@ public class ShootAndMove extends Command {
     private static final LoggedTunableNumber kSpeedToleranceRadiansPerSecond =
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 50.0);
     private static final LoggedTunableNumber kHeadingToleranceRadians =
-            new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceDegrees", 2);
+            new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceRadians", 0.02);
 
     private static final LoggedTunableNumber kLoopsLatency =
-            new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 15.0);
+            new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 2.0);
     private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
     private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
@@ -119,8 +116,8 @@ public class ShootAndMove extends Command {
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
         var endTranslation = new Translation2d(
-                currentPose.getX() - fieldRelativeSpeeds.getX() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
-                currentPose.getY() - fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
+                currentPose.getX() + fieldRelativeSpeeds.getX() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
+                currentPose.getY() + fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
 
         var targetHeading = mRobotState
                 .getSpeakerPose()
@@ -131,7 +128,7 @@ public class ShootAndMove extends Command {
 
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (MathUtil.isNear(0, headingError.getRadians(), 0.1)
+        if (MathUtil.isNear(0, headingError.getRadians(), kHeadingToleranceRadians.get() * 0.9)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;
@@ -144,8 +141,8 @@ public class ShootAndMove extends Command {
             setpoint = Rotation2d.fromRadians(targetHeading.getRadians() + mRotationState.position);
         }
 
-        mDrive.setVelocity(
-                new ChassisSpeeds(fieldRelativeSpeeds.getX(), fieldRelativeSpeeds.getY(), rotationalVelocity));
+        mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                fieldRelativeSpeeds.getX(), fieldRelativeSpeeds.getY(), rotationalVelocity, currentPose.getRotation()));
 
         var targetShooterAngle = GeometryUtil.clampRotation(
                 ShooterUtil.calculateShooterAngleWithMotion(mRobotState, endTranslation),
