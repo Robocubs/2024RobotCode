@@ -134,6 +134,7 @@ public class RobotState {
                         : FieldConstants.kRedSpeakerOpeningCenter);
     }
 
+   
     public Rotation2d getHeading() {
         return getPose2d().getRotation();
     }
@@ -198,6 +199,12 @@ public class RobotState {
                 : FieldConstants.kRedSpeakerOpeningCenter;
     }
 
+    public Translation3d getToleranceTranslation() {
+        return Configuration.isBlueAlliance()
+                ? FieldConstants.kBlueSpeakerToleranceTranslation
+                : FieldConstants.kRedSpeakerToleranceTranslation;
+    }
+
     public Translation3d getAmpPose() {
         return Configuration.isBlueAlliance() ? FieldConstants.kBlueAmpPosition : FieldConstants.kRedAmpPosition;
     }
@@ -208,6 +215,16 @@ public class RobotState {
                 .minus(getPose2d().getTranslation())
                 .getAngle();
     }
+
+    @AutoLogOutput
+    public Rotation2d getToleranceHeading() {
+        var heading = getToleranceTranslation().toTranslation2d()
+                .minus(getPose2d().getTranslation())
+                .getAngle();
+
+        return heading.getRadians() > 0.017 ? heading : Rotation2d.fromRadians(.017);
+    }
+
 
     public Rotation2d getAmpHeading() {
         return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;
