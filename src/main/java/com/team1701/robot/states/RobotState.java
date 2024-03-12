@@ -35,7 +35,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
     private static final double kDetectedNoteTimeout = 1.0;
@@ -134,7 +133,7 @@ public class RobotState {
         return expectedTranslation.getDistance(
                 Configuration.isBlueAlliance()
                         ? FieldConstants.kBlueSpeakerOpeningCenter
-                        : FieldConstants.kRedSpeakerOpeningCenter); 
+                        : FieldConstants.kRedSpeakerOpeningCenter);
     }
 
     public double getSpeakerDistanceFromPose(Pose3d pose) {

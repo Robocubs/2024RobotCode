@@ -143,7 +143,7 @@ public class AutonomousCommands {
                         new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose),
                         run(() -> {
                             if (mRobotState.hasNote()) {
-                                mShooter.setUnifiedRollerSpeed(targetSpeed);
+                                mShooter.setUnifiedSpeed(targetSpeed);
                             }
                         }),
                         run(() -> {
