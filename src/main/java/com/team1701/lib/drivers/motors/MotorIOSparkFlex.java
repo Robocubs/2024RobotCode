@@ -179,5 +179,4 @@ public class MotorIOSparkFlex implements MotorIO {
     public double getAppliedVoltage() {
         return mMotor.getBusVoltage() * mMotor.getAppliedOutput();
     }
-
 }

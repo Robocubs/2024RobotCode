@@ -235,8 +235,6 @@ public class RobotState {
         mDetectedNotes.addAll(notes);
     }
 
-
-
     @AutoLogOutput
     public boolean hasNote() {
         if (mIntake.isEmpty() || mIndexer.isEmpty()) {

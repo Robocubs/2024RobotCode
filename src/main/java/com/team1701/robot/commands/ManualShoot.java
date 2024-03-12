@@ -1,12 +1,10 @@
 package com.team1701.robot.commands;
 
-import com.team1701.lib.util.Util;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
 import com.team1701.robot.util.ShooterUtil;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
 

@@ -41,7 +41,11 @@ public interface MotorIO {
 
     public default void stopMotor() {}
 
-    public default double getAppliedVoltage() {return 0;}
+    public default double getAppliedVoltage() {
+        return 0;
+    }
 
-    public default double getOutputCurrent() {return 0;}
+    public default double getOutputCurrent() {
+        return 0;
+    }
 }

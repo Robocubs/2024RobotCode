@@ -12,7 +12,6 @@ import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -120,7 +119,8 @@ public class NoteSimulator {
 
                     break;
                 case SHOOTER:
-                    var averageRollerSpeed = DoubleStream.of(mShooter.getRollerSpeedsRadiansPerSecond().toArray())
+                    var averageRollerSpeed = DoubleStream.of(
+                                    mShooter.getRollerSpeedsRadiansPerSecond().toArray())
                             .average()
                             .orElse(0);
                     if (MathUtil.isNear(0, averageRollerSpeed, 0.1)) {

@@ -39,8 +39,10 @@ public final class GeometryUtil {
         return flippedPoses;
     }
 
-    public static Rotation2d clampRotation(Rotation2d rotation, Rotation2d minimumRotation, Rotation2d maximumRotation) {
-        return Rotation2d.fromRotations(MathUtil.clamp(rotation.getRadians(), minimumRotation.getRadians(), maximumRotation.getRadians()));
+    public static Rotation2d clampRotation(
+            Rotation2d rotation, Rotation2d minimumRotation, Rotation2d maximumRotation) {
+        return Rotation2d.fromRotations(
+                MathUtil.clamp(rotation.getRadians(), minimumRotation.getRadians(), maximumRotation.getRadians()));
     }
 
     public static Rotation2d angleModulus(Rotation2d rotation) {
