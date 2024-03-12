@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Twist2d;
 
 public final class GeometryUtil {
     public static final Pose2d kPoseIdentity = new Pose2d();
+    public static final Translation2d kTranslationIdentity = new Translation2d();
     public static final Rotation2d kRotationIdentity = new Rotation2d();
     public static final Rotation2d kRotationPi = new Rotation2d(Math.PI);
     public static final Rotation2d kRotationMinusPi = new Rotation2d(-Math.PI);

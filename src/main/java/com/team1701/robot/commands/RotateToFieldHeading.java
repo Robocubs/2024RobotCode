@@ -22,8 +22,9 @@ public class RotateToFieldHeading extends Command {
     private static final LoggedTunableNumber kMaxAngularVelocity = new LoggedTunableNumber(
             kLoggingPrefix + "MaxAngularVelocity",
             Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity() / kModuleRadius);
-    private static final LoggedTunableNumber kMaxAngularAcceleration =
-            new LoggedTunableNumber(kLoggingPrefix + "MaxAngularAcceleration", kMaxAngularVelocity.get() / 2.0);
+    private static final LoggedTunableNumber kMaxAngularAcceleration = new LoggedTunableNumber(
+            kLoggingPrefix + "MaxAngularAcceleration",
+            Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveAcceleration() / kModuleRadius);
 
     private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
@@ -57,8 +58,11 @@ public class RotateToFieldHeading extends Command {
         mRotationController = new PIDController(
                 kRotationKp.get(), kRotationKi.get(), kRotationKd.get(), Constants.kLoopPeriodSeconds);
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
-        mRotationProfile = new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
+        mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
+                Math.min(kMaxAngularVelocity.get(), mRotationKinematicLimits.maxDriveVelocity() / kModuleRadius),
+                Math.min(
+                        kMaxAngularAcceleration.get(),
+                        mRotationKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
 
         addRequirements(drive);
     }
@@ -75,10 +79,7 @@ public class RotateToFieldHeading extends Command {
         var headingError = mRobotHeadingSupplier.get().minus(mTargetHeadingSupplier.get());
         mRotationState = new TrapezoidProfile.State(
                 MathUtil.angleModulus(headingError.getRadians()), fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
-    }
 
-    @Override
-    public void execute() {
         var hash = hashCode();
         if (kMaxAngularVelocity.hasChanged(hash)
                 || kMaxAngularAcceleration.hasChanged(hash)
@@ -92,27 +93,28 @@ public class RotateToFieldHeading extends Command {
                             mRotationKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
             mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
         }
+    }
 
+    @Override
+    public void execute() {
         var currentHeading = mRobotHeadingSupplier.get();
         var targetHeading = mTargetHeadingSupplier.get();
         var headingError = currentHeading.minus(targetHeading);
         Rotation2d setpoint;
         mAtTargetRotation = MathUtil.isNear(0, headingError.getRadians(), kRotationToleranceRadians.get());
         double rotationalVelocity;
-        if (MathUtil.isNear(0, headingError.getRadians(), 0.2)) {
-            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), 0);
-            rotationalVelocity = rotationPidOutput;
+        if (MathUtil.isNear(0, headingError.getRadians(), 0.1)) {
+            rotationalVelocity = 0;
             mRotationState = kZeroState;
             setpoint = targetHeading;
         } else {
-            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), 0);
+            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), mRotationState.position);
             mRotationState = mRotationProfile.calculate(Constants.kLoopPeriodSeconds, mRotationState, kZeroState);
             rotationalVelocity = mRotationState.velocity + rotationPidOutput;
             setpoint = Rotation2d.fromRadians(targetHeading.getRadians() + mRotationState.position);
         }
 
-        mDrive.setVelocity(
-                ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, rotationalVelocity, mDrive.getFieldRelativeHeading()));
+        mDrive.setVelocity(new ChassisSpeeds(0, 0, rotationalVelocity));
 
         Logger.recordOutput(
                 kLoggingPrefix + "RotationError", Rotation2d.fromRadians(mRotationController.getPositionError()));
