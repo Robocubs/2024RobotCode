@@ -54,28 +54,10 @@ public class Climb extends SubsystemBase {
 
     public void retractWinch() {
         setPercentOutput(-.9);
-        // var rotations = distanceMeters / Constants.Climb.kWinchCircumference;
-        // mLeftWinchIO.setSmoothPositionControl(
-        //         Rotation2d.fromRotations(rotations),
-        //         Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-        //         Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
-        // mRightWinchIO.setSmoothPositionControl(
-        //         Rotation2d.fromRotations(rotations),
-        //         Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-        //         Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
     }
 
     public void extendWinch() {
         setPercentOutput(.8);
-        // var rotations = -distanceMeters / Constants.Climb.kWinchCircumference;
-        // mLeftWinchIO.setSmoothPositionControl(
-        //         Rotation2d.fromRotations(rotations),
-        //         Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-        //         Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
-        // mRightWinchIO.setSmoothPositionControl(
-        //         Rotation2d.fromRotations(rotations),
-        //         Constants.Arm.kMaxRotationVelocityRadiansPerSecond.get(),
-        //         Constants.Arm.kMaxRotationAccelerationRadiansPerSecondSquared.get());
     }
 
     public void setPercentOutput(double percent) {

@@ -156,7 +156,8 @@ public class NoteSimulator extends SubsystemBase {
 
                     break;
                 case SHOOTER:
-                    var averageRollerSpeed = DoubleStream.of(mShooter.getRollerSpeedsRadiansPerSecond())
+                    var averageRollerSpeed = DoubleStream.of(
+                                    mShooter.getRollerSpeedsRadiansPerSecond().toArray())
                             .average()
                             .orElse(0);
                     if (MathUtil.isNear(0, averageRollerSpeed, 0.1)) {

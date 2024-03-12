@@ -40,6 +40,12 @@ public final class GeometryUtil {
         return flippedPoses;
     }
 
+    public static Rotation2d clampRotation(
+            Rotation2d rotation, Rotation2d minimumRotation, Rotation2d maximumRotation) {
+        return Rotation2d.fromRadians(
+                MathUtil.clamp(rotation.getRadians(), minimumRotation.getRadians(), maximumRotation.getRadians()));
+    }
+
     public static Rotation2d angleModulus(Rotation2d rotation) {
         return Rotation2d.fromRadians(MathUtil.angleModulus(rotation.getRadians()));
     }
@@ -79,5 +85,9 @@ public final class GeometryUtil {
 
     public static Rotation3d toRotation3d(Rotation2d rotation) {
         return new Rotation3d(0, 0, rotation.getRadians());
+    }
+
+    public static Translation3d toTranslation3d(Translation2d translation) {
+        return new Translation3d(translation.getX(), translation.getY(), 0);
     }
 }

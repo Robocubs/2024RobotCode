@@ -7,12 +7,11 @@ import com.team1701.lib.drivers.encoders.EncoderIOSim;
 import com.team1701.lib.drivers.encoders.EncoderInputsAutoLogged;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
-import com.team1701.lib.drivers.motors.MotorIOSparkFlex;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
-import com.team1701.robot.Robot;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -26,15 +25,15 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
-    private final MotorIO mRightUpperRollerMotorIO;
-    private final MotorIO mRightLowerRollerMotorIO;
+    private final MotorIO mUpperRollerMotorIO;
+    private final MotorIO mLowerRollerMotorIO;
 
     private final MotorIO mRotationMotorIO;
 
     private final EncoderIO mAngleEncoderIO;
 
-    private final MotorInputsAutoLogged mRightUpperShooterMotorInputs = new MotorInputsAutoLogged();
-    private final MotorInputsAutoLogged mRightLowerShooterMotorInputs = new MotorInputsAutoLogged();
+    private final MotorInputsAutoLogged mUpperShooterMotorInputs = new MotorInputsAutoLogged();
+    private final MotorInputsAutoLogged mLowerShooterMotorInputs = new MotorInputsAutoLogged();
 
     private final MotorInputsAutoLogged mRotationShooterMotorInputs = new MotorInputsAutoLogged();
 
@@ -46,21 +45,19 @@ public class Shooter extends SubsystemBase {
     private MechanismRoot2d mShooterRoot;
     private Rotation2d mAngle;
 
-    private final SlewRateLimiter mRightUpperRollerSlewRateLimiter =
-            new SlewRateLimiter(Constants.Shooter.kRollerRampRate);
-    private final SlewRateLimiter mRightLowerRollerSlewRateLimiter =
-            new SlewRateLimiter(Constants.Shooter.kRollerRampRate);
+    private final SlewRateLimiter mUpperRollerSlewRateLimiter = new SlewRateLimiter(Constants.Shooter.kRollerRampRate);
+    private final SlewRateLimiter mLowerRollerSlewRateLimiter = new SlewRateLimiter(Constants.Shooter.kRollerRampRate);
 
     private Optional<Rotation2d> mRotationMotorOffset = Optional.empty();
 
-    public Shooter(MotorIO rightUpperMotor, MotorIO rightLowerMotor, MotorIO rotationMotor, EncoderIO angleEncoder) {
-        mRightUpperRollerMotorIO = rightUpperMotor;
-        mRightLowerRollerMotorIO = rightLowerMotor;
+    public Shooter(MotorIO upperMotor, MotorIO lowerMotor, MotorIO rotationMotor, EncoderIO angleEncoder) {
+        mUpperRollerMotorIO = upperMotor;
+        mLowerRollerMotorIO = lowerMotor;
 
         mRotationMotorIO = rotationMotor;
 
-        mRightUpperRollerMotorIO.setBrakeMode(false);
-        mRightLowerRollerMotorIO.setBrakeMode(false);
+        mUpperRollerMotorIO.setBrakeMode(false);
+        mLowerRollerMotorIO.setBrakeMode(false);
 
         mRotationMotorIO.setBrakeMode(true);
 
@@ -75,6 +72,32 @@ public class Shooter extends SubsystemBase {
         mAngleEncoderIO = angleEncoder;
 
         createMechanism2d();
+    }
+
+    public static record ShooterSpeeds(double upperSpeed, double lowerSpeed) {
+        public ShooterSpeeds(double radiansPerSecond) {
+            this(radiansPerSecond, radiansPerSecond);
+        }
+
+        public boolean allMatch(ShooterSpeeds speeds, double tolerance) {
+            return upperMatches(speeds.upperSpeed, tolerance) && lowerMatches(speeds.lowerSpeed, tolerance);
+        }
+
+        public boolean allMatch(double radiansPerSecond, double tolerance) {
+            return upperMatches(radiansPerSecond, tolerance) && lowerMatches(radiansPerSecond, tolerance);
+        }
+
+        public boolean upperMatches(double radiansPerSecond, double tolerance) {
+            return MathUtil.isNear(radiansPerSecond, upperSpeed, tolerance);
+        }
+
+        public boolean lowerMatches(double radiansPerSecond, double tolerance) {
+            return MathUtil.isNear(radiansPerSecond, lowerSpeed, tolerance);
+        }
+
+        public double[] toArray() {
+            return new double[] {upperSpeed, lowerSpeed};
+        }
     }
 
     public static MotorIOSim createRollerMotorSim(DCMotor shooterMotor) {
@@ -109,30 +132,26 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         var hash = hashCode();
-        mRightUpperRollerMotorIO.updateInputs(mRightUpperShooterMotorInputs);
-        mRightLowerRollerMotorIO.updateInputs(mRightLowerShooterMotorInputs);
+        mUpperRollerMotorIO.updateInputs(mUpperShooterMotorInputs);
+        mLowerRollerMotorIO.updateInputs(mLowerShooterMotorInputs);
 
         mRotationMotorIO.updateInputs(mRotationShooterMotorInputs);
 
         mAngleEncoderIO.updateInputs(mAngleEncoderInputs);
 
-        Logger.processInputs("Shooter/Motors/RightUpperRoller", mRightUpperShooterMotorInputs);
-        Logger.processInputs("Shooter/Motors/RightLowerRoller", mRightLowerShooterMotorInputs);
+        Logger.processInputs("Shooter/Motors/UpperRoller", mUpperShooterMotorInputs);
+        Logger.processInputs("Shooter/Motors/LowerRoller", mLowerShooterMotorInputs);
 
         Logger.processInputs("Shooter/Motors/Rotation", mRotationShooterMotorInputs);
 
         Logger.processInputs("Shooter/Encoder", mAngleEncoderInputs);
 
-        if (!Robot.isSimulation()) {
-            Logger.recordOutput(
-                    "Shooter/Motors/RightUpperRollerWattage",
-                    ((MotorIOSparkFlex) mRightUpperRollerMotorIO).getAppliedVoltage()
-                            * ((MotorIOSparkFlex) mRightUpperRollerMotorIO).getOutputCurrent());
-            Logger.recordOutput(
-                    "Shooter/Motors/RightLowerRollerWattage",
-                    ((MotorIOSparkFlex) mRightLowerRollerMotorIO).getAppliedVoltage()
-                            * ((MotorIOSparkFlex) mRightLowerRollerMotorIO).getOutputCurrent());
-        }
+        Logger.recordOutput(
+                "Shooter/Motors/UpperRollerWattage",
+                mUpperRollerMotorIO.getAppliedVoltage() * mUpperRollerMotorIO.getOutputCurrent());
+        Logger.recordOutput(
+                "Shooter/Motors/LowerRollerWattage",
+                mLowerRollerMotorIO.getAppliedVoltage() * mLowerRollerMotorIO.getOutputCurrent());
 
         if (Constants.Shooter.kRollerKff.hasChanged(hash)
                 || Constants.Shooter.kRollerKp.hasChanged(hash)
@@ -168,8 +187,8 @@ public class Shooter extends SubsystemBase {
     }
 
     private void setRollerPID(double ff, double p, double i, double d) {
-        mRightUpperRollerMotorIO.setPID(ff, p, i, d);
-        mRightLowerRollerMotorIO.setPID(ff, p, i, d);
+        mUpperRollerMotorIO.setPID(ff, p, i, d);
+        mLowerRollerMotorIO.setPID(ff, p, i, d);
     }
 
     private void setRotationPID(double ff, double p, double i, double d) {
@@ -185,58 +204,32 @@ public class Shooter extends SubsystemBase {
         return Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians);
     }
 
-    public double[] getRollerSpeedsRadiansPerSecond() {
-        // left motor speeds inverted for comparison in Shoot commands
-        return new double[] {
-            mRightUpperShooterMotorInputs.velocityRadiansPerSecond,
-            mRightLowerShooterMotorInputs.velocityRadiansPerSecond
-        };
+    public ShooterSpeeds getRollerSpeedsRadiansPerSecond() {
+        return new ShooterSpeeds(
+                mUpperShooterMotorInputs.velocityRadiansPerSecond, mLowerShooterMotorInputs.velocityRadiansPerSecond);
     }
 
-    public double[] getRightRollerSpeedsRadiansPerSecond() {
-        return new double[] {
-            mRightUpperShooterMotorInputs.velocityRadiansPerSecond,
-            mRightLowerShooterMotorInputs.velocityRadiansPerSecond
-        };
+    public void setRollerSpeeds(ShooterSpeeds shooterSpeeds) {
+        setUpperRollerSpeed(shooterSpeeds.upperSpeed);
+        setLowerRollerSpeed(shooterSpeeds.lowerSpeed);
     }
 
-    public double[] getUpperRollerSpeedsRadiansPerSecond() {
-        return new double[] {mRightUpperShooterMotorInputs.velocityRadiansPerSecond};
+    public void setUnifiedSpeed(double radiansPerSecond) {
+        setRollerSpeeds(new ShooterSpeeds(radiansPerSecond));
     }
 
-    public double[] getLowerRollerSpeedsRadiansPerSecond() {
-        return new double[] {mRightLowerShooterMotorInputs.velocityRadiansPerSecond};
-    }
-
-    public void setUnifiedRollerSpeed(double radiansPerSecond) {
-        setRightRollerSpeeds(radiansPerSecond);
-    }
-
-    public void setRightRollerSpeeds(double radiansPerSecond) {
-        setUpperRightRollerSpeed(radiansPerSecond);
-        setLowerRightRollerSpeed(radiansPerSecond);
-    }
-
-    public void setUpperRollerSpeeds(double radiansPerSecond) {
-        setUpperRightRollerSpeed(radiansPerSecond);
-    }
-
-    public void setLowerRollerSpeeds(double radiansPerSecond) {
-        setLowerRightRollerSpeed(radiansPerSecond);
-    }
-
-    public void setUpperRightRollerSpeed(double radiansPerSecond) {
-        var calculatedSlew = mRightUpperRollerSlewRateLimiter.calculate(radiansPerSecond);
+    public void setUpperRollerSpeed(double radiansPerSecond) {
+        var calculatedSlew = mUpperRollerSlewRateLimiter.calculate(radiansPerSecond);
         var velocity = radiansPerSecond == 0 ? 0 : calculatedSlew;
         Logger.recordOutput("Shooter/Motors/Rollers/UpperRightDemandRadiansPerSecond", velocity);
-        mRightUpperRollerMotorIO.setVelocityControl(velocity);
+        mUpperRollerMotorIO.setVelocityControl(velocity);
     }
 
-    public void setLowerRightRollerSpeed(double radiansPerSecond) {
-        var calculatedSlew = mRightLowerRollerSlewRateLimiter.calculate(radiansPerSecond);
+    public void setLowerRollerSpeed(double radiansPerSecond) {
+        var calculatedSlew = mLowerRollerSlewRateLimiter.calculate(radiansPerSecond);
         var velocity = radiansPerSecond == 0 ? 0 : calculatedSlew;
         Logger.recordOutput("Shooter/Motors/Rollers/LowerRightDemandRadiansPerSecond", velocity);
-        mRightLowerRollerMotorIO.setVelocityControl(velocity);
+        mLowerRollerMotorIO.setVelocityControl(velocity);
     }
 
     public void setRotationAngle(Rotation2d rotation) {
@@ -244,11 +237,6 @@ public class Shooter extends SubsystemBase {
             mRotationMotorIO.setPercentOutput(0.0);
             return;
         }
-
-        // mRotationShooterMotorIO.setSmoothPositionControl(
-        //         rotation,
-        //         Constants.Shooter.kMaxRotationVelocityRadiansPerSecond.get(),
-        //         Constants.Shooter.kMaxRotationAccelerationRadiansPerSecondSquared.get());
         mRotationMotorIO.setPositionControl(rotation);
 
         mShooterLigament.setAngle(rotation.getDegrees() - 90);
@@ -264,10 +252,10 @@ public class Shooter extends SubsystemBase {
     }
 
     public void stopRollers() {
-        mRightUpperRollerMotorIO.setPercentOutput(0);
-        mRightLowerRollerMotorIO.setPercentOutput(0);
-        mRightUpperRollerMotorIO.stopMotor();
-        mRightLowerRollerMotorIO.stopMotor();
+        mUpperRollerMotorIO.setPercentOutput(0);
+        mLowerRollerMotorIO.setPercentOutput(0);
+        mUpperRollerMotorIO.stopMotor();
+        mLowerRollerMotorIO.stopMotor();
     }
 
     public void stopRotation() {

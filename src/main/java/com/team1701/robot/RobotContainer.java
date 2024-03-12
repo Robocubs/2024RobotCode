@@ -32,7 +32,6 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
-import com.team1701.robot.commands.IndexCommand;
 import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.StreamDeck;
@@ -301,9 +300,9 @@ public class RobotContainer {
                         ? Constants.Drive.kSlowKinematicLimits
                         : Constants.Drive.kFastKinematicLimits));
 
-        mIndexer.setDefaultCommand(new IndexCommand(mIndexer, () -> true));
+        mIndexer.setDefaultCommand(IntakeCommands.idleIndexer(mIndexer, () -> true));
 
-        mIntake.setDefaultCommand(IntakeCommands.defaultCommand(mIntake, mIndexer, mRobotState));
+        mIntake.setDefaultCommand(IntakeCommands.idleIntake(mIntake, mIndexer));
 
         mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
 
@@ -331,21 +330,10 @@ public class RobotContainer {
                 .whileTrue(DriveCommands.driveToPiece(
                         mDrive, mRobotState, Constants.Drive.kFastTrapezoidalKinematicLimits, mDriverController));
 
-        // Drive while Rotating to Speaker - note, this Trigger is also used for the shoot while moving command
-        // mDriverController
-        //         .leftBumper()
-        //         .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-        //         .whileTrue(DriveCommands.slowlyDriveToSpeaker(
-        //                 mDrive,
-        //                 mRobotState::getSpeakerHeading,
-        //                 mRobotState::getHeading,
-        //                 () -> -mDriverController.getLeftY(),
-        //                 () -> -mDriverController.getLeftX()));
-
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-                .whileTrue(DriveCommands.shootAndMoveWithJoysticks(
+                .whileTrue(DriveCommands.shootAndMove(
                         mDrive,
                         mShooter,
                         mIndexer,
@@ -367,13 +355,6 @@ public class RobotContainer {
                 .rightTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
                 .whileTrue(ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState));
-
-        // Shoot while Slowly Rotating - combo trigger
-        // mDriverController
-        //         .rightTrigger()
-        //         .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-        //         .and(mDriverController.leftBumper())
-        //         .whileTrue(ShootCommands.shoot(mShooter, mIndexer, mRobotState));
 
         // Amp Shot
         mDriverController
@@ -428,7 +409,8 @@ public class RobotContainer {
                         },
                         mShooter)
                 .withName("StreamDeckShooterDownCommand");
-        var manualShootCommand = ShootCommands.manualShoot(mShooter, mIndexer).withName("StreamDeckShootCommand");
+        var manualShootCommand =
+                ShootCommands.manualShoot(mShooter, mIndexer, mRobotState).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
                         () -> {
                             mClimb.extendWinch();

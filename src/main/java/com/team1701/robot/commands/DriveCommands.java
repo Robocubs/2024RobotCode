@@ -95,13 +95,14 @@ public class DriveCommands {
 
     public static Command driveToAmp(Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits) {
         return new DriveToPose(
-                drive,
-                Configuration.isBlueAlliance()
-                        ? () -> FieldConstants.kBlueAmpDrivePose
-                        : () -> FieldConstants.kRedAmpDrivePose,
-                poseSupplier,
-                kinematicLimits,
-                true);
+                        drive,
+                        () -> Configuration.isBlueAlliance()
+                                ? FieldConstants.kBlueAmpDrivePose
+                                : FieldConstants.kRedAmpDrivePose,
+                        poseSupplier,
+                        kinematicLimits,
+                        true)
+                .withName("DriveToAmp");
     }
 
     public static Command driveToPiece(
@@ -124,6 +125,7 @@ public class DriveCommands {
                 true);
     }
 
+    // v2
     public static Command shootAndMoveWithJoysticks(
             Drive drive,
             Shooter shooter,
@@ -140,6 +142,20 @@ public class DriveCommands {
                                 maxDriveVelocity)
                         .rotateBy(robotState.getHeading())),
                 ShootCommands.shoot(shooter, indexer, robotState, true));
+    }
+
+    // v3
+    public static Command shootAndMove(
+            Drive drive,
+            Shooter shooter,
+            Indexer indexer,
+            RobotState robotState,
+            DoubleSupplier throttle,
+            DoubleSupplier strafe) {
+        var maxDriveVelocity = Constants.Drive.kFastSmoothKinematicLimits.maxDriveVelocity();
+        return new ShootAndMove(drive, shooter, indexer, robotState, () -> calculateDriveWithJoysticksVelocities(
+                        throttle.getAsDouble(), strafe.getAsDouble(), drive.getFieldRelativeHeading(), maxDriveVelocity)
+                .rotateBy(robotState.getHeading()));
     }
 
     public static Command driveWithVelocity(Supplier<ChassisSpeeds> velocity, Drive drive) {

@@ -2,7 +2,6 @@ package com.team1701.robot.commands;
 
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
-import com.team1701.robot.states.RobotState.ScoringMode;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -15,26 +14,26 @@ public class ShootCommands {
     }
 
     public static Command shoot(Shooter shooter, Indexer indexer, RobotState robotState) {
-        return new Shoot(shooter, indexer, robotState, false, robotState.getScoringMode());
+        return new Shoot(shooter, indexer, robotState, false);
     }
 
     public static Command shoot(Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForHeading) {
-        return new Shoot(shooter, indexer, robotState, waitForHeading, robotState.getScoringMode());
+        return new Shoot(shooter, indexer, robotState, waitForHeading);
     }
 
-    public static Command manualShoot(Shooter shooter, Indexer indexer) {
-        return new ManualShoot(shooter, indexer);
+    public static Command manualShoot(Shooter shooter, Indexer indexer, RobotState robotState) {
+        return new ManualShoot(shooter, indexer, robotState);
     }
 
     public static Command aimAndShootInSpeaker(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
         return Commands.race(
-                        new Shoot(shooter, indexer, robotState, true, ScoringMode.SPEAKER),
+                        new Shoot(shooter, indexer, robotState, true),
                         DriveCommands.rotateToSpeaker(
                                 drive, robotState, Constants.Drive.kFastTrapezoidalKinematicLimits, false))
                 .withName("AimAndShootInSpeaker");
     }
 
     public static Command scoreInAmp(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
-        return new Shoot(shooter, indexer, robotState, false, ScoringMode.AMP).withName("scoreInAmp");
+        return Commands.sequence(new Shoot(shooter, indexer, robotState, false)).withName("scoreInAmp");
     }
 }
