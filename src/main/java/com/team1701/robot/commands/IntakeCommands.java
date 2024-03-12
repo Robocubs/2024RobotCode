@@ -1,8 +1,8 @@
 package com.team1701.robot.commands;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
@@ -64,7 +64,33 @@ public class IntakeCommands {
                 .withName("StopIntaking");
     }
 
-    public static Command defaultCommand(Intake intake, Indexer indexer, RobotState mRobotState) {
-        return new IntakeCommand(intake, indexer, mRobotState);
+    public static Command idleIntake(Intake intake, Indexer indexer) {
+        return Commands.run(
+                        () -> {
+                            if (indexer.hasNoteAtExit()) {
+                                intake.stop();
+                            } else {
+                                intake.setForward();
+                            }
+                        },
+                        intake)
+                .finallyDo(intake::stop)
+                .withName("IdleIntake");
+    }
+
+    public static Command idleIndexer(Indexer indexer, BooleanSupplier shouldLoad) {
+        return Commands.run(
+                        () -> {
+                            if (indexer.hasNoteAtExit() || !shouldLoad.getAsBoolean()) {
+                                indexer.stop();
+                            } else if (indexer.hasNoteAtEntrance()) {
+                                indexer.setSlowLoad();
+                            } else {
+                                indexer.setForwardLoad();
+                            }
+                        },
+                        indexer)
+                .finallyDo(indexer::stop)
+                .withName("IdleIndexer");
     }
 }
