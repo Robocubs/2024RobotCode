@@ -17,9 +17,9 @@ import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOCubVision;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOPhotonCamera;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOLimelight;
+import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOSim;
 import com.team1701.lib.drivers.digitalinputs.DigitalIO;
 import com.team1701.lib.drivers.digitalinputs.DigitalIOSensor;
-import com.team1701.lib.drivers.digitalinputs.DigitalIOSim;
 import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.encoders.EncoderIOAnalog;
 import com.team1701.lib.drivers.encoders.EncoderIORevThroughBore;
@@ -36,6 +36,7 @@ import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.StreamDeck;
 import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
+import com.team1701.robot.simulation.NoteSimulator;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.states.RobotState.ScoringMode;
 import com.team1701.robot.subsystems.climb.Climb;
@@ -149,13 +150,16 @@ public class RobotContainer {
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
                             new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
                             new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
-                    climb = Optional.of(new Climb(
-                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                                    Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
-                            SparkMotorFactory.createArmClimbMotorIOSparkFlex(
-                                    Constants.Climb.kRightWinchId, MotorUsage.WINCH, false)));
+                    // climb = Optional.of(new Climb(
+                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                    //                 Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
+                    //         SparkMotorFactory.createArmClimbMotorIOSparkFlex(
+                    //                 Constants.Climb.kRightWinchId, MotorUsage.WINCH, false)));
                     break;
                 case SIMULATION_BOT:
+                    var noteSimulator = new NoteSimulator(mRobotState, Constants.Vision.kLimelightConfig);
+                    var noteSimulatorSensors = noteSimulator.getSensors();
+
                     var gyroIO = new GyroIOSim(mRobotState::getHeading);
                     var simDrive = new Drive(
                             gyroIO,
@@ -177,7 +181,10 @@ public class RobotContainer {
                                 new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackRightCameraConfig),
                                 new AprilTagCameraIOPhotonCamera(Constants.Vision.kSniperCameraConfig)
                             },
-                            new DetectorCameraIO[] {() -> Constants.Vision.kLimelightConfig}));
+                            new DetectorCameraIO[] {
+                                new DetectorCameraIOSim(
+                                        Constants.Vision.kLimelightConfig, noteSimulator::getDetectedObjects)
+                            }));
 
                     var rotationMotor = Shooter.createRotationMotorSim(DCMotor.getNeoVortex(1));
                     shooter = Optional.of(new Shooter(
@@ -192,19 +199,24 @@ public class RobotContainer {
                                     Constants.Indexer.kIndexerReduction,
                                     0.001,
                                     Constants.kLoopPeriodSeconds),
-                            new DigitalIOSim(() -> false),
-                            new DigitalIOSim(() -> false)));
+                            noteSimulatorSensors.indexerEntranceSensor(),
+                            noteSimulatorSensors.indexerExitSensor()));
+
                     intake = Optional.of(new Intake(
                             new MotorIOSim(
                                     DCMotor.getNeoVortex(1),
                                     Constants.Intake.kReduction,
                                     0.001,
                                     Constants.kLoopPeriodSeconds),
-                            new DigitalIOSim(() -> false),
-                            new DigitalIOSim(() -> false)));
+                            noteSimulatorSensors.intakeEntranceSensor(),
+                            noteSimulatorSensors.intakeExitSensor()));
+
                     climb = Optional.of(new Climb(
                             Climb.createWinchMotorIOSim(DCMotor.getNeoVortex(1)),
                             Climb.createWinchMotorIOSim(DCMotor.getNeoVortex(1))));
+
+                    noteSimulator.bindSubsystems(intake.get(), indexer.get(), shooter.get());
+
                     break;
                 case SIMULATION_VISION:
                     vision = Optional.of(new Vision(

@@ -49,7 +49,7 @@ public class DetectorCamera {
 
         // (TargetHeight - CameraHeight) / tan(CameraPitch + TargetPitch)
         var x = ((FieldConstants.kNoteHeight - robotToCamPose.getZ())
-                        / Math.tan(robotToCamPose.getRotation().getY() + detectedObject.pitch.getRadians()))
+                        / Math.tan(-robotToCamPose.getRotation().getY() + detectedObject.pitch.getRadians()))
                 * kScalarOffset.get();
         var y = x * Math.tan(detectedObject.yaw.getRadians());
 

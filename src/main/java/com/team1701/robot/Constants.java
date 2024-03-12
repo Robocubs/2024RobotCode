@@ -11,6 +11,7 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -30,6 +31,9 @@ public final class Constants {
         public static final double kRobotSideToCenter = kRobotWidth / 2.0;
         public static final double kRobotFrontToCenterWithBumpers = kRobotWidthWithBumpers / 2.0;
 
+        public static final Transform2d kRobotToIntake =
+                new Transform2d(-kRobotWidth / 2, 0.0, GeometryUtil.kRotationIdentity);
+        public static final Transform2d kIntakeToRobot = kRobotToIntake.inverse();
         public static final Transform3d kRobotToShooterHinge = new Transform3d(
                 new Translation3d(Units.inchesToMeters(-3), Units.inchesToMeters(0), Units.inchesToMeters(7.52)),
                 GeometryUtil.kRotation3dIdentity);
@@ -171,7 +175,7 @@ public final class Constants {
                 "limelight",
                 new Transform3d(
                         new Translation3d(0, 0.0, Units.inchesToMeters(24.5)),
-                        new Rotation3d(0, Units.degreesToRadians(-20), Units.degreesToRadians(-180))),
+                        new Rotation3d(0, Units.degreesToRadians(20), Units.degreesToRadians(-180))),
                 0,
                 VisionCameraConfig.kLimelightConfig);
     }
@@ -306,11 +310,11 @@ public final class Constants {
                     Units.degreesToRadians(750.0));
             kFastTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.8,
-                    kMaxVelocityMetersPerSecond * 0.8 / 1.5,
+                    kMaxVelocityMetersPerSecond * 1.5,
                     kFastKinematicLimits.maxSteeringVelocity());
             kSlowTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.4,
-                    kMaxVelocityMetersPerSecond * 0.4 / 2.0,
+                    kMaxVelocityMetersPerSecond * 2.0,
                     kFastKinematicLimits.maxSteeringVelocity());
 
             kPathFollowerConfig = new HolonomicPathFollowerConfig(
@@ -412,24 +416,28 @@ public final class Constants {
 
         public static final double[][] kShooterDistanceToAngleValues = {
             {2.3, 1},
-            {2.75, 0.785},
-            {3.5, 0.6}, // .49
-            {3.78, 0.545},
+            {2.75, 0.79},
+            {3.5, 0.6},
+            {3.78, 0.56}, // last tested value
             {4.25, 0.52},
-            {4.9, 0.45},
-            {5.5, 0.43},
-            {6.38, 0.37}
+            {4.89, 0.48},
+            {5.49, 0.43},
+            {6, 0.4},
+            {6.4, 0.385},
+            {8.3, 0.33}
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
             {2.3, 250},
-            {2.75, 275},
-            {3.5, 330},
-            {3.78, 400},
-            {4.25, 440},
-            {4.9, 500},
-            {5.55, 570},
-            {6.38, 620}
+            {2.75, 320},
+            {3.5, 385},
+            {3.78, 425}, // last tested value
+            {4.25, 450},
+            {4.89, 500},
+            {5.49, 550},
+            {6, 600},
+            {6.4, 620},
+            {8.3, 660}
         };
 
         static {
@@ -445,7 +453,7 @@ public final class Constants {
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kRollerKff.initDefault(0.00017);
+                    kRollerKff.initDefault(0.00015);
                     kRollerKp.initDefault(0.0002);
                     kRollerKd.initDefault(0.0);
 
@@ -466,7 +474,7 @@ public final class Constants {
                     kRollerKp.initDefault(0.2);
                     kRollerKd.initDefault(0.0);
 
-                    kRotationKp.initDefault(2.0);
+                    kRotationKp.initDefault(50.0);
                     kRotationKd.initDefault(0.0);
 
                     kShooterAngleEncoderOffset = Rotation2d.fromRotations(Math.random());
