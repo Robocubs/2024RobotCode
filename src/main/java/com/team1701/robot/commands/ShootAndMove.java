@@ -78,7 +78,7 @@ public class ShootAndMove extends Command {
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
-        mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp());
+        mLockedReadyToShoot = new TimeLockedBoolean(.2, Timer.getFPGATimestamp());
 
         addRequirements(mDrive, mShooter, mIndexer);
     }

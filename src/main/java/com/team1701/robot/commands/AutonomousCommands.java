@@ -141,9 +141,9 @@ public class AutonomousCommands {
         var targetAngle = Constants.Shooter.kShooterAngleInterpolator.get(
                 mRobotState.getSpeakerDistanceFromPose(new Pose3d(autoFlipPose(trajectory.getFinalPose()))));
 
-        return Commands.parallel(
+        return Commands.deadline(
                         new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose),
-                        run(
+                        Commands.run(
                                 () -> {
                                     if (mRobotState.hasNote()) {
                                         mShooter.setUnifiedSpeed(targetSpeed);
@@ -151,7 +151,7 @@ public class AutonomousCommands {
                                     }
                                 },
                                 mShooter))
-                .withName("FollowAndPremove");
+                .withName("FollowAndPreWarm");
     }
 
     private Command aimAndShoot() {

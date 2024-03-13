@@ -3,6 +3,7 @@ package com.team1701.robot.commands;
 import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
+import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.Constants;
 import com.team1701.robot.subsystems.drive.Drive;
@@ -43,10 +44,13 @@ public class RotateToFieldHeading extends Command {
     private TrapezoidProfile.State mRotationState = new TrapezoidProfile.State();
     private boolean mAtTargetRotation = false;
 
+    private Supplier<Rotation2d> mHeadingToleranceSupplier;
+
     RotateToFieldHeading(
             Drive drive,
             Supplier<Rotation2d> targetHeadingSupplier,
             Supplier<Rotation2d> robotHeadingSupplier,
+            Supplier<Rotation2d> headingToleranceSupplier,
             KinematicLimits kinematicLimits,
             boolean finishAtRotation) {
         mDrive = drive;
@@ -54,6 +58,7 @@ public class RotateToFieldHeading extends Command {
         mRobotHeadingSupplier = robotHeadingSupplier;
         mRotationKinematicLimits = kinematicLimits;
         mFinishAtRotation = finishAtRotation;
+        mHeadingToleranceSupplier = headingToleranceSupplier;
 
         mRotationController = new PIDController(
                 kRotationKp.get(), kRotationKi.get(), kRotationKd.get(), Constants.kLoopPeriodSeconds);
@@ -103,7 +108,7 @@ public class RotateToFieldHeading extends Command {
         Rotation2d setpoint;
         mAtTargetRotation = MathUtil.isNear(0, headingError.getRadians(), kRotationToleranceRadians.get());
         double rotationalVelocity;
-        if (MathUtil.isNear(0, headingError.getRadians(), 0.1)) {
+        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, mHeadingToleranceSupplier.get())) {
             rotationalVelocity = 0;
             mRotationState = kZeroState;
             setpoint = targetHeading;

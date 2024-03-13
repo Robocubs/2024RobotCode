@@ -30,26 +30,29 @@ public class DriveCommands {
             DoubleSupplier rotationSupplier,
             Supplier<KinematicLimits> kinematicLimitsSupplier) {
         return Commands.runEnd(
-                () -> {
-                    var kinematicLimits = kinematicLimitsSupplier.get();
-                    drive.setKinematicLimits(kinematicLimits);
+                        () -> {
+                            var kinematicLimits = kinematicLimitsSupplier.get();
+                            drive.setKinematicLimits(kinematicLimits);
 
-                    var translationVelocities = calculateDriveWithJoysticksVelocities(
-                            throttleSupplier.getAsDouble(),
-                            strafeSupplier.getAsDouble(),
-                            headingSupplier.get(),
-                            kinematicLimits.maxDriveVelocity());
-                    var rotation =
-                            MathUtil.applyDeadband(rotationSupplier.getAsDouble(), Constants.Controls.kDriverDeadband);
-                    var rotationRadiansPerSecond = Math.copySign(rotation * rotation, rotation)
-                            * kinematicLimits.maxDriveVelocity()
-                            / Constants.Drive.kModuleRadius;
+                            var translationVelocities = calculateDriveWithJoysticksVelocities(
+                                    throttleSupplier.getAsDouble(),
+                                    strafeSupplier.getAsDouble(),
+                                    headingSupplier.get(),
+                                    kinematicLimits.maxDriveVelocity());
+                            var rotation = MathUtil.applyDeadband(
+                                    rotationSupplier.getAsDouble(), Constants.Controls.kDriverDeadband);
+                            var rotationRadiansPerSecond = Math.copySign(rotation * rotation, rotation)
+                                    * kinematicLimits.maxDriveVelocity()
+                                    / Constants.Drive.kModuleRadius;
 
-                    drive.setVelocity(new ChassisSpeeds(
-                            translationVelocities.getX(), translationVelocities.getY(), rotationRadiansPerSecond));
-                },
-                drive::stop,
-                drive);
+                            drive.setVelocity(new ChassisSpeeds(
+                                    translationVelocities.getX(),
+                                    translationVelocities.getY(),
+                                    rotationRadiansPerSecond));
+                        },
+                        drive::stop,
+                        drive)
+                .withName("DriveWithJoysticks");
     }
 
     private static Translation2d calculateDriveWithJoysticksVelocities(
@@ -74,17 +77,23 @@ public class DriveCommands {
     public static Command rotateToSpeaker(
             Drive drive, RobotState state, KinematicLimits kinematicLimits, boolean finishAtRotation) {
         return rotateToFieldHeading(
-                drive, state::getSpeakerHeading, state::getHeading, kinematicLimits, finishAtRotation);
+                drive,
+                state::getSpeakerHeading,
+                state::getHeading,
+                state::getToleranceSpeakerHeading,
+                kinematicLimits,
+                finishAtRotation);
     }
 
     public static Command rotateToFieldHeading(
             Drive drive,
             Supplier<Rotation2d> targetFieldHeading,
             Supplier<Rotation2d> robotHeadingSupplier,
+            Supplier<Rotation2d> headingTolerance,
             KinematicLimits kinematicLimits,
             boolean finishAtRotation) {
         return new RotateToFieldHeading(
-                drive, targetFieldHeading, robotHeadingSupplier, kinematicLimits, finishAtRotation);
+                drive, targetFieldHeading, robotHeadingSupplier, headingTolerance, kinematicLimits, finishAtRotation);
     }
 
     public static Command swerveLock(Drive drive) {

@@ -21,6 +21,7 @@ import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -210,10 +211,11 @@ public class RobotState {
                 : FieldConstants.kRedSpeakerOpeningCenter;
     }
 
-    public Translation3d getToleranceTranslation() {
+    @AutoLogOutput
+    public Pose3d getTolerancePose() {
         return Configuration.isBlueAlliance()
-                ? FieldConstants.kBlueSpeakerToleranceTranslation
-                : FieldConstants.kRedSpeakerToleranceTranslation;
+                ? new Pose3d(FieldConstants.kBlueSpeakerToleranceTranslation, GeometryUtil.kRotation3dIdentity)
+                : new Pose3d(FieldConstants.kRedSpeakerToleranceTranslation, GeometryUtil.kRotation3dIdentity);
     }
 
     public Translation3d getAmpPose() {
@@ -222,10 +224,7 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d getSpeakerHeading() {
-        return getSpeakerPose()
-                .toTranslation2d()
-                .minus(getPose2d().getTranslation())
-                .getAngle();
+        return getSpeakerHeading(getPose2d().getTranslation());
     }
 
     public Rotation2d getSpeakerHeading(Translation2d translation) {
@@ -238,24 +237,25 @@ public class RobotState {
                 .plus(new Translation2d(
                         drive.getFieldRelativeVelocity().vxMetersPerSecond * Constants.kLoopPeriodSeconds,
                         drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
-        return getSpeakerPose().toTranslation2d().minus(projectedTranslation).getAngle();
+        return getSpeakerHeading(projectedTranslation);
     }
 
     @AutoLogOutput
     public Rotation2d getToleranceSpeakerHeading() {
-        var heading = getToleranceTranslation()
-                .toTranslation2d()
-                .minus(getPose2d().getTranslation())
-                .getAngle();
-
-        return heading.getRadians() > 0.017 ? heading : Rotation2d.fromRadians(.017);
+        return getToleranceSpeakerHeading(getPose2d().getTranslation());
     }
 
     public Rotation2d getToleranceSpeakerHeading(Translation2d translation) {
-        var heading =
-                getToleranceTranslation().toTranslation2d().minus(translation).getAngle();
+        var heading = getTolerancePose()
+                .getTranslation()
+                .toTranslation2d()
+                .minus(translation)
+                .getAngle();
 
-        return heading.getRadians() > 0.017 ? heading : Rotation2d.fromRadians(.017);
+        var toleranceRadians = Math.abs(
+                MathUtil.angleModulus(heading.getRadians() - getSpeakerHeading().getRadians()));
+
+        return Rotation2d.fromRadians(Math.max(0.017, toleranceRadians));
     }
 
     public Rotation2d getAmpHeading() {
