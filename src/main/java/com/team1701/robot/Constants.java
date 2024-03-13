@@ -62,7 +62,6 @@ public final class Constants {
          */
         public static final boolean kUseInterpolatedVisionStdDevValues = true;
 
-        // TODO: Collect values
         public static final double[][] kMeasuredDistanceToXStdDevValues = {
             {2.13, 0.006},
             {2.286, 0.008},
@@ -107,17 +106,18 @@ public final class Constants {
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                double scalar = 1.5;
+                double coordScalar = 1.5;
+                double angleScalar = 10;
                 for (double[] pair : kMeasuredDistanceToXStdDevValues) {
-                    kVisionXStdDevInterpolater.put(pair[0], pair[1] * scalar);
+                    kVisionXStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
                 }
 
                 for (double[] pair : kMeasuredDistanceToYStdDevValues) {
-                    kVisionYStdDevInterpolater.put(pair[0], pair[1] * scalar);
+                    kVisionYStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
                 }
 
                 for (double[] pair : kMeasuredDistanceToAngleStdDevValues) {
-                    kVisionThetaStdDevInterpolater.put(pair[0], pair[1] * scalar);
+                    kVisionThetaStdDevInterpolater.put(pair[0], pair[1] * angleScalar);
                 }
             }
         }

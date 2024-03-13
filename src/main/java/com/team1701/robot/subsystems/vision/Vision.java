@@ -15,12 +15,14 @@ import com.team1701.lib.drivers.cameras.neural.DetectorCamera;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
 import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
 import com.team1701.robot.Constants;
+import com.team1701.robot.FieldConstants;
 import com.team1701.robot.Robot;
 import com.team1701.robot.states.RobotState;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -79,6 +81,7 @@ public class Vision extends SubsystemBase {
         mAprilTagCameras.forEach(camera -> {
             camera.addEstimatedPoseConsumer(mEstimatedRobotPoses::add);
             camera.addTargetFilter(target -> target.ambiguity < Constants.Vision.kAmbiguityThreshold);
+            camera.addPoseFilter(pose -> poseIsInField(pose));
         });
 
         for (DetectorCameraIO cameraIO : detectorCameraIOs) {
@@ -86,6 +89,15 @@ public class Vision extends SubsystemBase {
             cam.addDetectedObjectConsumer(mRobotState::addDetectedNotes);
             mDetectorCameras.add(cam);
         }
+    }
+
+    // This doesn't account for the Source's weird shape and the bumpers, but that's fine for now.
+    private boolean poseIsInField(Pose3d pose) {
+        var y = pose.getY();
+        var x = pose.getX();
+
+        return (y >= 0 && y <= FieldConstants.kFieldShortLengthMeters)
+                && (x >= 0 && x <= FieldConstants.kFieldLongLengthMeters);
     }
 
     private Vector<N3> interpolateStdDevForDistance(double distance) {

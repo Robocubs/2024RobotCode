@@ -35,7 +35,6 @@ public class AprilTagCamera {
     private final List<Predicate<Pose3d>> mPoseFilters = new ArrayList<>();
     private final Alert mDisconnectedAlert;
 
-    // TODO: Add std devs
     public static record EstimatedRobotPose(Pose3d estimatedPose, double timestamp, Vector<N3> stdDevs) {}
 
     public AprilTagCamera(
@@ -148,6 +147,9 @@ public class AprilTagCamera {
 
         var stdDevs = mStdDevsFunction.apply(
                 lowestAmbiguityTarget.bestCameraToTarget.getTranslation().getNorm());
+
+        // Don't trust single-target rotations at all
+        stdDevs.set(0, 2, Double.POSITIVE_INFINITY);
 
         Logger.recordOutput(mLoggingPrefix + "StdDev", stdDevs.getData());
 
