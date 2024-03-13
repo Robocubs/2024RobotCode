@@ -136,6 +136,7 @@ public class RobotState {
                         : FieldConstants.kRedSpeakerOpeningCenter);
     }
 
+
     public double getSpeakerDistanceFromPose(Pose3d pose) {
         var distance = pose.getTranslation()
                 .getDistance(
@@ -210,6 +211,12 @@ public class RobotState {
                 : FieldConstants.kRedSpeakerOpeningCenter;
     }
 
+    public Translation3d getToleranceTranslation() {
+        return Configuration.isBlueAlliance()
+                ? FieldConstants.kBlueSpeakerToleranceTranslation
+                : FieldConstants.kRedSpeakerToleranceTranslation;
+    }
+
     public Translation3d getAmpPose() {
         return Configuration.isBlueAlliance() ? FieldConstants.kBlueAmpPosition : FieldConstants.kRedAmpPosition;
     }
@@ -230,7 +237,15 @@ public class RobotState {
         return getSpeakerPose().toTranslation2d().minus(projectedTranslation).getAngle();
     }
 
-    // public Rotation2d getSpeakerHeadingWithVelocity(Drive drive) {}
+    @AutoLogOutput
+    public Rotation2d getToleranceHeading() {
+        var heading = getToleranceTranslation().toTranslation2d()
+                .minus(getPose2d().getTranslation())
+                .getAngle();
+
+        return heading.getRadians() > 0.017 ? heading : Rotation2d.fromRadians(.017);
+    }
+
 
     public Rotation2d getAmpHeading() {
         return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;
