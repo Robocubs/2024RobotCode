@@ -134,7 +134,6 @@ public class RobotState {
                         : FieldConstants.kRedSpeakerOpeningCenter);
     }
 
-   
     public Rotation2d getHeading() {
         return getPose2d().getRotation();
     }
@@ -218,13 +217,13 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d getToleranceHeading() {
-        var heading = getToleranceTranslation().toTranslation2d()
+        var heading = getToleranceTranslation()
+                .toTranslation2d()
                 .minus(getPose2d().getTranslation())
                 .getAngle();
 
         return heading.getRadians() > 0.017 ? heading : Rotation2d.fromRadians(.017);
     }
-
 
     public Rotation2d getAmpHeading() {
         return Configuration.isBlueAlliance() ? GeometryUtil.kRotationHalfPi : GeometryUtil.kRotationMinusHalfPi;

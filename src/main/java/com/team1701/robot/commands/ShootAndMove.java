@@ -164,10 +164,8 @@ public class ShootAndMove extends Command {
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), currentExpectedShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        var atHeading = GeometryUtil.isNear(
-                mRobotState.getSpeakerHeading(),
-                mRobotState.getHeading(),
-                headingTolerance);
+        var atHeading =
+                GeometryUtil.isNear(mRobotState.getSpeakerHeading(), mRobotState.getHeading(), headingTolerance);
 
         var atSpeed = currentExpectedRollerSpeeds.allMatch(
                 mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
