@@ -9,6 +9,7 @@ public final class FieldConstants {
     public static final double kFieldLongLengthMeters = (Units.inchesToMeters((54 * 12) + 3.25));
     public static final double kFieldShortLengthMeters = (Units.inchesToMeters((26 * 12) + 11.25));
     public static final double kCenterLine = kFieldLongLengthMeters / 2.0;
+    public static final double kShortLengthMidLine = kFieldShortLengthMeters / 2.0;
     public static final double kWingLength = Units.inchesToMeters(231.2);
     public static final double kNoteHeight = Units.inchesToMeters(2);
     public static final double kHalfNoteHeight = kNoteHeight / 2;

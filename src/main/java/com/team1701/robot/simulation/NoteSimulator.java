@@ -27,7 +27,10 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.Logger;
 
 public class NoteSimulator extends SubsystemBase {
@@ -44,6 +47,62 @@ public class NoteSimulator extends SubsystemBase {
             new Pose3d(1.0, 1.0, kNoteThickness / 2, GeometryUtil.kRotation3dIdentity);
     private static final Pose3d kRedNoteSpawn = new Pose3d(
             FieldConstants.kFieldLongLengthMeters - 1.0, 1.0, kNoteThickness / 2, GeometryUtil.kRotation3dIdentity);
+    private static final Pose3d[] kStartingNotePoses = {
+        /* Blue Trio */
+        new Pose3d(2.8956, FieldConstants.kShortLengthMidLine, kNoteThickness / 2, GeometryUtil.kRotation3dIdentity),
+        new Pose3d(
+                2.8956,
+                FieldConstants.kShortLengthMidLine + 1.4478,
+                kNoteThickness / 2,
+                GeometryUtil.kRotation3dIdentity),
+        new Pose3d(
+                2.8956,
+                FieldConstants.kShortLengthMidLine + (1.4478 * 2.0),
+                kNoteThickness / 2,
+                GeometryUtil.kRotation3dIdentity),
+        /* Red Trio */
+        new Pose3d(
+                FieldConstants.kFieldLongLengthMeters - 2.8956,
+                FieldConstants.kShortLengthMidLine,
+                kNoteThickness / 2,
+                GeometryUtil.kRotation3dIdentity),
+        new Pose3d(
+                FieldConstants.kFieldLongLengthMeters - 2.8956,
+                FieldConstants.kShortLengthMidLine + 1.4478,
+                kNoteThickness / 2,
+                GeometryUtil.kRotation3dIdentity),
+        new Pose3d(
+                FieldConstants.kFieldLongLengthMeters - 2.8956,
+                FieldConstants.kShortLengthMidLine + (1.4478 * 2.0),
+                kNoteThickness / 2,
+                GeometryUtil.kRotation3dIdentity),
+        /* Center Five */
+        new Pose3d(
+                FieldConstants.kCenterLine,
+                FieldConstants.kShortLengthMidLine + 3.3528,
+                kNoteThickness / 2,
+                GeometryUtil.kRotation3dIdentity),
+        new Pose3d(
+                FieldConstants.kCenterLine,
+                FieldConstants.kShortLengthMidLine + 1.6764,
+                kNoteThickness / 2,
+                GeometryUtil.kRotation3dIdentity),
+        new Pose3d(
+                FieldConstants.kCenterLine,
+                FieldConstants.kShortLengthMidLine,
+                kNoteThickness / 2,
+                GeometryUtil.kRotation3dIdentity),
+        new Pose3d(
+                FieldConstants.kCenterLine,
+                FieldConstants.kShortLengthMidLine - 1.6764,
+                kNoteThickness / 2,
+                GeometryUtil.kRotation3dIdentity),
+        new Pose3d(
+                FieldConstants.kCenterLine,
+                FieldConstants.kShortLengthMidLine - 3.3528,
+                kNoteThickness / 2,
+                GeometryUtil.kRotation3dIdentity)
+    };
 
     private final RobotState mRobotState;
     private final VisionConfig mDetectorVisionConfig;
@@ -64,8 +123,8 @@ public class NoteSimulator extends SubsystemBase {
         mRobotState = robotState;
         mDetectorVisionConfig = detectorVisionConfig;
 
-        // TODO: Place starting notes on the field
         mNotesInRobot.add(new NoteInRobot(kIndexerPathLength / 2, NoteLocation.INTAKE));
+        new Trigger(DriverStation::isAutonomous).onTrue(Commands.runOnce(this::placeAutonNotes));
     }
 
     public NoteSimulatorSensors getSensors() {
@@ -218,6 +277,13 @@ public class NoteSimulator extends SubsystemBase {
                 mNotesInRobot.stream()
                         .mapToDouble(NoteInRobot::getTotalPosition)
                         .toArray());
+    }
+
+    public void placeAutonNotes() {
+        mNotesOnField.clear();
+        for (var note : kStartingNotePoses) {
+            mNotesOnField.add(new NoteOnField(note));
+        }
     }
 
     public Pose3d[] getNotePosesOnField() {

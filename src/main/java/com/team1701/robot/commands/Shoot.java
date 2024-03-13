@@ -20,8 +20,7 @@ public class Shoot extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
     private static final LoggedTunableNumber kSpeedToleranceRadiansPerSecond =
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 50.0);
-    private static final LoggedTunableNumber kHeadingToleranceRadians =
-            new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceDegrees", 2);
+    private Rotation2d headingTolerance;
 
     private final Shooter mShooter;
     private final Indexer mIndexer;
@@ -56,6 +55,7 @@ public class Shoot extends Command {
         }
 
         Rotation2d targetHeading = mRobotState.getStationaryTargetHeading();
+        headingTolerance = mRobotState.getToleranceSpeakerHeading();
 
         Rotation2d desiredShooterAngle = GeometryUtil.clampRotation(
                 ShooterUtil.calculateStationaryDesiredAngle(mRobotState),
@@ -70,11 +70,8 @@ public class Shoot extends Command {
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        var atHeading = !mWaitForHeading
-                || GeometryUtil.isNear(
-                        targetHeading,
-                        mRobotState.getHeading(),
-                        Rotation2d.fromDegrees(kHeadingToleranceRadians.get()));
+        var atHeading =
+                !mWaitForHeading || GeometryUtil.isNear(targetHeading, mRobotState.getHeading(), headingTolerance);
 
         var atSpeed =
                 speeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());

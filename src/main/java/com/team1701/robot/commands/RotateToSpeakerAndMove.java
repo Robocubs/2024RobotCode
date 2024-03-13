@@ -3,6 +3,7 @@ package com.team1701.robot.commands;
 import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
+import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
@@ -91,16 +92,13 @@ public class RotateToSpeakerAndMove extends Command {
         var endTranslation = new Translation2d(
                 currentPose.getX() + fieldRelativeSpeeds.getX() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
                 currentPose.getY() + fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
-        var targetHeading = mRobotState
-                .getSpeakerPose()
-                .toTranslation2d()
-                .minus(endTranslation)
-                .getAngle();
+        var targetHeading = mRobotState.getSpeakerHeading(endTranslation);
         var headingError = currentPose.getRotation().minus(targetHeading);
+        var headingTolerance = mRobotState.getToleranceSpeakerHeading(endTranslation);
 
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (MathUtil.isNear(0, headingError.getRadians(), 0.02)
+        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;

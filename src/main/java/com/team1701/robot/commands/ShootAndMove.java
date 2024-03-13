@@ -125,7 +125,7 @@ public class ShootAndMove extends Command {
                 .getAngle();
         var headingError = currentPose.getRotation().minus(targetHeading);
 
-        headingTolerance = mRobotState.getToleranceHeading();
+        headingTolerance = mRobotState.getToleranceSpeakerHeading();
 
         Rotation2d setpoint;
         double rotationalVelocity;
@@ -164,10 +164,8 @@ public class ShootAndMove extends Command {
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), currentExpectedShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        var atHeading = GeometryUtil.isNear(
-                mRobotState.getSpeakerHeading(),
-                mRobotState.getHeading(),
-                headingTolerance);
+        var atHeading =
+                GeometryUtil.isNear(mRobotState.getSpeakerHeading(), mRobotState.getHeading(), headingTolerance);
 
         var atSpeed = currentExpectedRollerSpeeds.allMatch(
                 mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());

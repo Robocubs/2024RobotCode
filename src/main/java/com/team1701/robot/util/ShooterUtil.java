@@ -58,7 +58,7 @@ public final class ShooterUtil {
 
                 if (robotState.hasNote()) {
                     if (robotState.inNearHalf()) {
-                        speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
+                        speed = Constants.Shooter.kShooterSpeedInterpolator.get(robotState.getDistanceToSpeaker());
                     } else {
                         speed = robotState.inOpponentWing() ? 0 : Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                     }
