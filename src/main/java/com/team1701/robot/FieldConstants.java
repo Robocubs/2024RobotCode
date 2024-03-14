@@ -1,7 +1,9 @@
 package com.team1701.robot;
 
+import com.team1701.lib.util.GeometryUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
@@ -47,4 +49,9 @@ public final class FieldConstants {
             Units.inchesToMeters(578.77),
             Units.inchesToMeters(323.0) - Constants.Robot.kRobotFrontToCenterWithBumpers,
             Rotation2d.fromDegrees(90));
+
+    public static final Pose2d kBluePassingTarget =
+            new Pose2d(new Translation2d(1.37, 7.146), GeometryUtil.kRotationIdentity);
+    public static final Pose2d kRedPassingTarget =
+            new Pose2d(new Translation2d(kFieldLongLengthMeters - 1.37, 7.146), GeometryUtil.kRotationIdentity);
 }

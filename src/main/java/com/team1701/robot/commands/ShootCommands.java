@@ -1,5 +1,7 @@
 package com.team1701.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
@@ -22,7 +24,7 @@ public class ShootCommands {
     }
 
     public static Command manualShoot(Shooter shooter, Indexer indexer, RobotState robotState) {
-        return new ManualShoot(shooter, indexer, robotState);
+        return new ManualShoot(shooter, indexer, robotState).withName("ManualShoot");
     }
 
     public static Command aimAndShootInSpeaker(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
@@ -35,5 +37,23 @@ public class ShootCommands {
 
     public static Command scoreInAmp(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
         return Commands.sequence(new Shoot(shooter, indexer, robotState, false)).withName("scoreInAmp");
+    }
+
+    public static Command passANote(
+            Drive drive,
+            Shooter shooter,
+            Indexer indexer,
+            RobotState robotState,
+            DoubleSupplier throttleSupplier,
+            DoubleSupplier strafeSupplier) {
+        return Commands.deadline(
+                        new PassANote(shooter, indexer, robotState),
+                        DriveCommands.rotateToPassTarget(
+                                drive,
+                                throttleSupplier,
+                                strafeSupplier,
+                                robotState,
+                                Constants.Drive.kFastTrapezoidalKinematicLimits))
+                .withName("PassANote");
     }
 }

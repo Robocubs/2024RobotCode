@@ -24,6 +24,8 @@ public final class Constants {
     public static final class Robot {
         public static final double kRobotWidth = Units.inchesToMeters(23);
         public static final double kRobotLength = Units.inchesToMeters(28.5);
+        public static final double kDriveTrainWidth = .465; // using wheelbase from drive
+        public static final double kDriveTrainLength = kDriveTrainWidth; // using wheelbase from drive
         public static final double kRobotWidthWithBumpers = kRobotWidth + Units.inchesToMeters(8);
         public static final double kRobotLengthWithBumpers = kRobotLength + Units.inchesToMeters(8);
         public static final double kRobotFrontToCenter = Units.inchesToMeters(23.0 / 2.0);
@@ -40,6 +42,8 @@ public final class Constants {
         public static final Transform3d kShooterHingeToShooterExit = new Transform3d(
                 new Translation3d(Units.inchesToMeters(10.0), 0.0, Units.inchesToMeters(1.9)),
                 GeometryUtil.kRotation3dIdentity);
+        public static final double kLongDistanceFromDriveCenterToCorner =
+                Math.hypot(kRobotWidthWithBumpers / 2.0, kRobotLength - (kDriveTrainLength / 2.0));
     }
 
     public static final class Vision {
@@ -221,6 +225,8 @@ public final class Constants {
         public static final KinematicLimits kFastTrapezoidalKinematicLimits;
         public static final KinematicLimits kSlowTrapezoidalKinematicLimits;
         public static final KinematicLimits kFastSmoothKinematicLimits;
+        public static final KinematicLimits kShootMoveKinematicLimits;
+        public static final KinematicLimits kMediumTrapezoidalKinematicLimits;
 
         public static final LoggedTunableNumber kDriveKff = new LoggedTunableNumber("Drive/Module/DriveKff");
         public static final LoggedTunableNumber kDriveKp = new LoggedTunableNumber("Drive/Module/DriveKp");
@@ -300,9 +306,13 @@ public final class Constants {
                     new KinematicLimits(kMaxVelocityMetersPerSecond, Double.MAX_VALUE, Double.MAX_VALUE);
             kFastKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond, kMaxVelocityMetersPerSecond / 0.2, Units.degreesToRadians(1000.0));
+            kShootMoveKinematicLimits = new KinematicLimits(
+                    kMaxVelocityMetersPerSecond * .8,
+                    kMaxVelocityMetersPerSecond / 0.2,
+                    kFastKinematicLimits.maxSteeringVelocity());
             kFastSmoothKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond / 2.0,
-                    kMaxVelocityMetersPerSecond / 2.0,
+                    kMaxVelocityMetersPerSecond / 0.4,
                     kFastKinematicLimits.maxSteeringVelocity());
             kSlowKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.5,
@@ -311,6 +321,10 @@ public final class Constants {
             kFastTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.8,
                     kMaxVelocityMetersPerSecond * 1.5,
+                    kFastKinematicLimits.maxSteeringVelocity());
+            kMediumTrapezoidalKinematicLimits = new KinematicLimits(
+                    kMaxVelocityMetersPerSecond * 0.8,
+                    kMaxVelocityMetersPerSecond * 2.0,
                     kFastKinematicLimits.maxSteeringVelocity());
             kSlowTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.4,
@@ -343,7 +357,10 @@ public final class Constants {
         public static final Rotation2d kShooterUpperLimit = Rotation2d.fromDegrees(58);
         public static final Rotation2d kShooterLowerLimit = Rotation2d.fromDegrees(16);
 
+        public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.2);
+
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
+        public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-1);
 
         public static final Rotation2d kShooterAngleEncoderOffset;
 
@@ -390,6 +407,11 @@ public final class Constants {
         public static final InterpolatingDoubleTreeMap kShooterSpeedInterpolator =
                 new InterpolatingDoubleTreeMap(); // Radians/sec
 
+        public static final InterpolatingDoubleTreeMap kPassingAngleInterpolator =
+                new InterpolatingDoubleTreeMap(); // Radians
+        public static final InterpolatingDoubleTreeMap kPassingSpeedInterpolator =
+                new InterpolatingDoubleTreeMap(); // Radians/sec
+
         public static final double kRollerRampRate = 450;
 
         // public static final double[][] kShooterDistanceToAngleValues = {
@@ -418,7 +440,7 @@ public final class Constants {
             {2.3, 1},
             {2.75, 0.79},
             {3.5, 0.6},
-            {3.78, 0.56}, // last tested value
+            {3.78, 0.56},
             {4.25, 0.52},
             {4.89, 0.48},
             {5.49, 0.43},
@@ -431,13 +453,21 @@ public final class Constants {
             {2.3, 250},
             {2.75, 320},
             {3.5, 385},
-            {3.78, 425}, // last tested value
+            {3.78, 425},
             {4.25, 450},
             {4.89, 500},
             {5.49, 550},
             {6, 600},
             {6.4, 620},
             {8.3, 660}
+        };
+
+        public static final double[][] kPassingDistanceToAngleValues = {
+            {11.53, .7}, {10.3, .75}, {9.02, .8}, {7.15, .9}, {5, .9}, {0, 1}
+        };
+
+        public static final double[][] kPassingDistanceToSpeedValues = {
+            {11.53, 325}, {10.3, .315}, {9.02, 300}, {7.15, 275}, {5, 200}, {0, 100}
         };
 
         static {
@@ -447,6 +477,14 @@ public final class Constants {
 
             for (double[] pair : kShooterDistanceToSpeedValues) {
                 kShooterSpeedInterpolator.put(pair[0], pair[1]);
+            }
+
+            for (double[] pair : kPassingDistanceToAngleValues) {
+                kPassingAngleInterpolator.put(pair[0], pair[1]);
+            }
+
+            for (double[] pair : kPassingDistanceToSpeedValues) {
+                kPassingSpeedInterpolator.put(pair[0], pair[1]);
             }
         }
 

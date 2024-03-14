@@ -50,6 +50,12 @@ public final class ShooterUtil {
         }
     }
 
+    public static ShooterSpeeds calculatePassingShooterSpeeds(RobotState robotState) {
+        var interpolatedSpeed = Constants.Shooter.kPassingSpeedInterpolator.get(robotState.getPassingDistance());
+        Logger.recordOutput("Shooter/InterpolatedPassingSpeeds", interpolatedSpeed);
+        return new ShooterSpeeds(interpolatedSpeed);
+    }
+
     public static ShooterSpeeds calculateIdleRollerSpeeds(RobotState robotState, Drive drive) {
         ShooterSpeeds speeds;
         switch (robotState.getScoringMode()) {
