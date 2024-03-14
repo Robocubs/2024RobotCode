@@ -86,14 +86,23 @@ public class DriveCommands {
     }
 
     public static Command rotateToPassTarget(
-            Drive drive, RobotState state, KinematicLimits kinematicLimits, boolean finishAtRotation) {
-        return rotateToFieldHeading(
+            Drive drive,
+            DoubleSupplier throttle,
+            DoubleSupplier strafe,
+            RobotState state,
+            KinematicLimits kinematicLimits) {
+        return new RotateToFieldHeading(
                         drive,
+                        () -> calculateDriveWithJoysticksVelocities(
+                                throttle.getAsDouble(),
+                                strafe.getAsDouble(),
+                                drive.getFieldRelativeHeading(),
+                                kinematicLimits.maxDriveVelocity()),
                         state::getPassingHeading,
                         state::getHeading,
                         () -> new Rotation2d(.01),
                         kinematicLimits,
-                        finishAtRotation)
+                        false)
                 .withName("RotateToPassTarget");
     }
 

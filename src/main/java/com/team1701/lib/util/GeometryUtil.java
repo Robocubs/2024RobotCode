@@ -23,6 +23,7 @@ public final class GeometryUtil {
     public static final Transform3d kTransform3dIdentity = new Transform3d();
     public static final Translation3d kTranslation3dIdentity = new Translation3d();
     public static final Rotation3d kRotation3dIdentity = new Rotation3d();
+    public static final Rotation2d kOneDegree = Rotation2d.fromDegrees(1);
 
     public static Rotation2d flipX(Rotation2d rotation) {
         return kRotationPi.minus(rotation);

@@ -29,7 +29,7 @@ public class ShootAndMove extends Command {
     private static final String kLoggingPrefix = "Command/ShootAndMove/";
     private static final double kModuleRadius = Constants.Drive.kModuleRadius;
     private static final TrapezoidProfile.State kZeroState = new TrapezoidProfile.State(0.0, 0.0);
-    private static final KinematicLimits kKinematicLimits = Constants.Drive.kShootMoveKinematicLimits;
+    private static final KinematicLimits kKinematicLimits = Constants.Drive.kFastSmoothKinematicLimits;
 
     private static final LoggedTunableNumber kMaxAngularVelocity = new LoggedTunableNumber(
             kLoggingPrefix + "MaxAngularVelocity",

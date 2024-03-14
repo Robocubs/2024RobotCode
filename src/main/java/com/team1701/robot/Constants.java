@@ -24,6 +24,8 @@ public final class Constants {
     public static final class Robot {
         public static final double kRobotWidth = Units.inchesToMeters(23);
         public static final double kRobotLength = Units.inchesToMeters(28.5);
+        public static final double kDriveTrainWidth = .465; // using wheelbase from drive
+        public static final double kDriveTrainLength = kDriveTrainWidth; // using wheelbase from drive
         public static final double kRobotWidthWithBumpers = kRobotWidth + Units.inchesToMeters(8);
         public static final double kRobotLengthWithBumpers = kRobotLength + Units.inchesToMeters(8);
         public static final double kRobotFrontToCenter = Units.inchesToMeters(23.0 / 2.0);
@@ -40,6 +42,8 @@ public final class Constants {
         public static final Transform3d kShooterHingeToShooterExit = new Transform3d(
                 new Translation3d(Units.inchesToMeters(10.0), 0.0, Units.inchesToMeters(1.9)),
                 GeometryUtil.kRotation3dIdentity);
+        public static final double kLongDistanceFromDriveCenterToCorner =
+                Math.hypot(kRobotWidthWithBumpers / 2.0, kRobotLength - (kDriveTrainLength / 2.0));
     }
 
     public static final class Vision {
@@ -352,6 +356,8 @@ public final class Constants {
 
         public static final Rotation2d kShooterUpperLimit = Rotation2d.fromDegrees(58);
         public static final Rotation2d kShooterLowerLimit = Rotation2d.fromDegrees(16);
+
+        public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.2);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
 

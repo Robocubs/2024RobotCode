@@ -2,6 +2,7 @@ package com.team1701.robot.commands;
 
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -52,7 +53,12 @@ public class PassANote extends Command {
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), targetAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        if (atSpeed && atAngle) {
+        var atHeading = GeometryUtil.isNear(
+                mRobotState.getPassingHeading(), mRobotState.getHeading(), Constants.Shooter.kPassingHeadingTolerance);
+
+        var atPose = mRobotState.getPassingDistance() > 6 && !mRobotState.inOpponentWing();
+
+        if (atSpeed && atAngle && atHeading && atPose) {
             mIndexer.setForwardShoot();
             mShooting = true;
         }
@@ -66,6 +72,8 @@ public class PassANote extends Command {
         }
 
         Logger.recordOutput(kLoggingPrefix + "AtAngle", atAngle);
+        Logger.recordOutput(kLoggingPrefix + "AtHeading", atHeading);
+        Logger.recordOutput(kLoggingPrefix + "AtPose", atPose);
         Logger.recordOutput(kLoggingPrefix + "Shooting", mShooting);
         Logger.recordOutput(kLoggingPrefix + "AtSpeed", atSpeed);
     }
