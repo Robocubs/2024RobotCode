@@ -9,7 +9,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-public class Climb extends SubsystemBase {
+public class Climb extends SubsystemBase {  
     private final MotorIO mLeftWinchIO;
     private final MotorIO mRightWinchIO;
 
