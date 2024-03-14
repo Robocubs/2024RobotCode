@@ -5,11 +5,13 @@ import java.util.function.Supplier;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -40,6 +42,8 @@ public class RotateToFieldHeading extends Command {
     private final boolean mFinishAtRotation;
     private final PIDController mRotationController;
 
+    private Supplier<Translation2d> mFieldRelativeSupplier;
+
     private TrapezoidProfile mRotationProfile;
     private TrapezoidProfile.State mRotationState = new TrapezoidProfile.State();
     private boolean mAtTargetRotation = false;
@@ -69,7 +73,28 @@ public class RotateToFieldHeading extends Command {
                         kMaxAngularAcceleration.get(),
                         mRotationKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
 
+        mFieldRelativeSupplier = () -> new Translation2d(0, 0);
+
         addRequirements(drive);
+    }
+
+    RotateToFieldHeading(
+            Drive drive,
+            Supplier<Translation2d> fieldRelativeSpeeds,
+            Supplier<Rotation2d> targetHeadingSupplier,
+            Supplier<Rotation2d> robotHeadingSupplier,
+            Supplier<Rotation2d> headingToleranceSupplier,
+            KinematicLimits kinematicLimits,
+            boolean finishAtRotation) {
+        this(
+                drive,
+                targetHeadingSupplier,
+                robotHeadingSupplier,
+                headingToleranceSupplier,
+                kinematicLimits,
+                finishAtRotation);
+
+        mFieldRelativeSupplier = fieldRelativeSpeeds;
     }
 
     @Override
@@ -102,13 +127,16 @@ public class RotateToFieldHeading extends Command {
 
     @Override
     public void execute() {
+        var fieldRelativeSpeeds = mFieldRelativeSupplier.get();
         var currentHeading = mRobotHeadingSupplier.get();
         var targetHeading = mTargetHeadingSupplier.get();
         var headingError = currentHeading.minus(targetHeading);
         Rotation2d setpoint;
         mAtTargetRotation = MathUtil.isNear(0, headingError.getRadians(), kRotationToleranceRadians.get());
         double rotationalVelocity;
-        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, mHeadingToleranceSupplier.get())) {
+        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, mHeadingToleranceSupplier.get())
+                && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
+                && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;
             mRotationState = kZeroState;
             setpoint = targetHeading;
@@ -119,7 +147,8 @@ public class RotateToFieldHeading extends Command {
             setpoint = Rotation2d.fromRadians(targetHeading.getRadians() + mRotationState.position);
         }
 
-        mDrive.setVelocity(new ChassisSpeeds(0, 0, rotationalVelocity));
+        mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                fieldRelativeSpeeds.getX(), fieldRelativeSpeeds.getY(), rotationalVelocity, currentHeading));
 
         Logger.recordOutput(
                 kLoggingPrefix + "RotationError", Rotation2d.fromRadians(mRotationController.getPositionError()));

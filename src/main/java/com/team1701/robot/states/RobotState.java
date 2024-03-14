@@ -176,15 +176,17 @@ public class RobotState {
 
     @AutoLogOutput
     public boolean inOpponentWing() {
-        var poseX = getPose2d().getX();
+        var translationX = getPose2d().getX();
         return Configuration.isBlueAlliance()
-                ? poseX > FieldConstants.kFieldLongLengthMeters - FieldConstants.kWingLength
-                : poseX < FieldConstants.kWingLength;
+                ? translationX + Constants.Robot.kLongDistanceFromDriveCenterToCorner + .15
+                        > FieldConstants.kFieldLongLengthMeters - FieldConstants.kWingLength
+                : translationX - Constants.Robot.kLongDistanceFromDriveCenterToCorner - .15
+                        < FieldConstants.kWingLength;
     }
 
     @AutoLogOutput
     public boolean inNearHalf() {
-        var poseX = getPose2d().getX();
+        var poseX = getPose2d().getTranslation().getX();
         return Configuration.isBlueAlliance()
                 ? poseX < FieldConstants.kFieldLongLengthMeters / 2.0
                 : poseX > FieldConstants.kFieldLongLengthMeters / 2.0;
@@ -249,7 +251,11 @@ public class RobotState {
     }
 
     public Rotation2d getSpeakerHeading(Translation2d translation) {
-        return getSpeakerPose().toTranslation2d().minus(translation).getAngle().plus(Rotation2d.fromDegrees(1));
+        return getSpeakerPose()
+                .toTranslation2d()
+                .minus(translation)
+                .getAngle()
+                .minus(Constants.Shooter.kShooterReleaseAngle);
     }
 
     public Rotation2d getMovingSpeakerHeading(Drive drive) {
@@ -271,7 +277,8 @@ public class RobotState {
                 .getTranslation()
                 .toTranslation2d()
                 .minus(translation)
-                .getAngle();
+                .getAngle()
+                .minus(Constants.Shooter.kShooterReleaseAngle);
 
         var toleranceRadians = Math.abs(
                 MathUtil.angleModulus(heading.getRadians() - getSpeakerHeading().getRadians()));

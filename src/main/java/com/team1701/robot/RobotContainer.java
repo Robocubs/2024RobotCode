@@ -334,12 +334,19 @@ public class RobotContainer {
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-                .whileTrue(ShootCommands.passANote(mDrive, mShooter, mIndexer, mRobotState));
+                .whileTrue(ShootCommands.passANote(
+                        mDrive,
+                        mShooter,
+                        mIndexer,
+                        mRobotState,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX()));
 
         // Drive to Amp
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
+                .and(() -> mRobotState.inWing() || mRobotState.getPose2d().getY() > 6.4)
                 .whileTrue(DriveCommands.driveToAmp(
                         mDrive, mRobotState::getPose2d, Constants.Drive.kMediumTrapezoidalKinematicLimits));
 
