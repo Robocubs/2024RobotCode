@@ -519,6 +519,10 @@ public final class Constants {
         public static final int kLeftWinchId = 40;
         public static final int kRightWinchId = 41;
 
+        public static final Rotation2d kMaxSetpoint = Rotation2d.fromRadians(32);
+        public static final Rotation2d kLeftMiddleSetpoint = Rotation2d.fromRadians(28.125);
+        public static final Rotation2d kRightMiddleSetpoint = Rotation2d.fromRadians(27.139);
+
         public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
         public static final double lowerLimitRotations = Units.radiansToRotations(0) / kWinchReduction;
 
