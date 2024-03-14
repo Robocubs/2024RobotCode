@@ -68,17 +68,16 @@ public class Climb extends SubsystemBase {
 
     public void setLeftClimbPosition() {
         mLeftWinchIO.setPositionControl(Constants.Climb.kMaxSetpoint);
-        mRightWinchIO.setPositionControl(Constants.Climb.kRightMiddleSetpoint);
+        mRightWinchIO.setPositionControl(Constants.Climb.kMiddleSetpoint);
     }
 
     public void setRightClimbPosition() {
-        mLeftWinchIO.setPositionControl(Constants.Climb.kLeftMiddleSetpoint);
+        mLeftWinchIO.setPositionControl(Constants.Climb.kMiddleSetpoint);
         mRightWinchIO.setPositionControl(Constants.Climb.kMaxSetpoint);
     }
 
     public void setMidClimbPosition() {
-        mLeftWinchIO.setPositionControl(Constants.Climb.kLeftMiddleSetpoint);
-        mRightWinchIO.setPositionControl(Constants.Climb.kRightMiddleSetpoint);
+        setPosition(Constants.Climb.kMiddleSetpoint);
     }
 
     public void setPercentOutput(double percent) {
@@ -89,8 +88,6 @@ public class Climb extends SubsystemBase {
 
     public void stop() {
         Logger.recordOutput("Climb/PercentOutput", 0);
-        mLeftWinchIO.setPercentOutput(0);
-        mRightWinchIO.setPercentOutput(0);
         mLeftWinchIO.stopMotor();
         mRightWinchIO.stopMotor();
     }

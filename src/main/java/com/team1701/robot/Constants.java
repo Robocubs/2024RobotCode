@@ -520,15 +520,14 @@ public final class Constants {
         public static final int kRightWinchId = 41;
 
         public static final Rotation2d kMaxSetpoint = Rotation2d.fromRadians(32);
-        public static final Rotation2d kLeftMiddleSetpoint = Rotation2d.fromRadians(28.125);
-        public static final Rotation2d kRightMiddleSetpoint = Rotation2d.fromRadians(27.139);
+        public static final Rotation2d kMiddleSetpoint = Rotation2d.fromRadians(28);
 
         public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
         public static final double lowerLimitRotations = Units.radiansToRotations(0) / kWinchReduction;
 
-        public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Arm/Winch/Kff");
-        public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Arm/Winch/Kp");
-        public static final LoggedTunableNumber kWinchKd = new LoggedTunableNumber("Arm/Winch/Kd");
+        public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Climb/Winch/Kff");
+        public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Climb/Winch/Kp");
+        public static final LoggedTunableNumber kWinchKd = new LoggedTunableNumber("Climb/Winch/Kd");
 
         public static final double kWinchCircumference =
                 Math.PI * Units.inchesToMeters(1.5); // idk, TODO: update diameter

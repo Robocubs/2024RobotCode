@@ -457,18 +457,9 @@ public class RobotContainer {
         mStreamDeck.button(StreamDeckButton.kRejectButton).whileTrue(rejectCommand);
         mStreamDeck.button(StreamDeckButton.kForwardButton).whileTrue(forwardCommand);
 
-        mStreamDeck
-                .button(StreamDeckButton.kLeftClimbButton)
-                .whileTrue(leftClimbCommand)
-                .onFalse(Commands.idle(mClimb));
-        mStreamDeck
-                .button(StreamDeckButton.kRightClimbButton)
-                .whileTrue(rightClimbCommand)
-                .onFalse(Commands.idle(mClimb));
-        mStreamDeck
-                .button(StreamDeckButton.kCenterClimbButton)
-                .whileTrue(centerClimbCommand)
-                .onFalse(Commands.idle(mClimb));
+        mStreamDeck.button(StreamDeckButton.kLeftClimbButton).onTrue(leftClimbCommand);
+        mStreamDeck.button(StreamDeckButton.kRightClimbButton).onTrue(rightClimbCommand);
+        mStreamDeck.button(StreamDeckButton.kCenterClimbButton).onTrue(centerClimbCommand);
 
         mStreamDeck
                 .button(StreamDeckButton.kShooterUpButton)
