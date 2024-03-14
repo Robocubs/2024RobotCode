@@ -455,9 +455,12 @@ public final class Constants {
             {8.3, 660}
         };
 
-        public static final double[][] kPassingDistanceToAngleValues = {{10, .8}};
+        public static final double[][] kPassingDistanceToAngleValues = {{11.53, .7}, {10.3, .75}, {9.02, .8}, {7.15, .9}
+        };
 
-        public static final double[][] kPassingDistanceToSpeedValues = {{10, 300}};
+        public static final double[][] kPassingDistanceToSpeedValues = {
+            {11.53, 325}, {10.3, .315}, {9.02, 300}, {7.15, 275}
+        };
 
         static {
             for (double[] pair : kShooterDistanceToAngleValues) {
