@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
@@ -126,13 +127,16 @@ public class RotateToFieldHeading extends Command {
 
     @Override
     public void execute() {
+        var fieldRelativeSpeeds = mFieldRelativeSupplier.get();
         var currentHeading = mRobotHeadingSupplier.get();
         var targetHeading = mTargetHeadingSupplier.get();
         var headingError = currentHeading.minus(targetHeading);
         Rotation2d setpoint;
         mAtTargetRotation = MathUtil.isNear(0, headingError.getRadians(), kRotationToleranceRadians.get());
         double rotationalVelocity;
-        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, mHeadingToleranceSupplier.get())) {
+        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, mHeadingToleranceSupplier.get())
+                && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
+                && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;
             mRotationState = kZeroState;
             setpoint = targetHeading;
@@ -143,10 +147,8 @@ public class RotateToFieldHeading extends Command {
             setpoint = Rotation2d.fromRadians(targetHeading.getRadians() + mRotationState.position);
         }
 
-        mDrive.setVelocity(new ChassisSpeeds(
-                mFieldRelativeSupplier.get().getX(),
-                mFieldRelativeSupplier.get().getX(),
-                rotationalVelocity));
+        mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+                fieldRelativeSpeeds.getX(), fieldRelativeSpeeds.getY(), rotationalVelocity, currentHeading));
 
         Logger.recordOutput(
                 kLoggingPrefix + "RotationError", Rotation2d.fromRadians(mRotationController.getPositionError()));

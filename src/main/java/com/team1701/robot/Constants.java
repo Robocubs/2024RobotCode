@@ -312,7 +312,7 @@ public final class Constants {
                     kFastKinematicLimits.maxSteeringVelocity());
             kFastSmoothKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond / 2.0,
-                    kMaxVelocityMetersPerSecond / 2.0,
+                    kMaxVelocityMetersPerSecond / 0.4,
                     kFastKinematicLimits.maxSteeringVelocity());
             kSlowKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.5,
@@ -360,6 +360,7 @@ public final class Constants {
         public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.2);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
+        public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-1);
 
         public static final Rotation2d kShooterAngleEncoderOffset;
 

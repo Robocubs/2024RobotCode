@@ -251,7 +251,11 @@ public class RobotState {
     }
 
     public Rotation2d getSpeakerHeading(Translation2d translation) {
-        return getSpeakerPose().toTranslation2d().minus(translation).getAngle().plus(GeometryUtil.kOneDegree);
+        return getSpeakerPose()
+                .toTranslation2d()
+                .minus(translation)
+                .getAngle()
+                .minus(Constants.Shooter.kShooterReleaseAngle);
     }
 
     public Rotation2d getMovingSpeakerHeading(Drive drive) {
@@ -274,7 +278,7 @@ public class RobotState {
                 .toTranslation2d()
                 .minus(translation)
                 .getAngle()
-                .plus(GeometryUtil.kOneDegree);
+                .minus(Constants.Shooter.kShooterReleaseAngle);
 
         var toleranceRadians = Math.abs(
                 MathUtil.angleModulus(heading.getRadians() - getSpeakerHeading().getRadians()));

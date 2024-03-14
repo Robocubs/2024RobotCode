@@ -94,10 +94,11 @@ public class DriveCommands {
         return new RotateToFieldHeading(
                         drive,
                         () -> calculateDriveWithJoysticksVelocities(
-                                throttle.getAsDouble(),
-                                strafe.getAsDouble(),
-                                drive.getFieldRelativeHeading(),
-                                kinematicLimits.maxDriveVelocity()),
+                                        throttle.getAsDouble(),
+                                        strafe.getAsDouble(),
+                                        drive.getFieldRelativeHeading(),
+                                        kinematicLimits.maxDriveVelocity())
+                                .rotateBy(state.getHeading()),
                         state::getPassingHeading,
                         state::getHeading,
                         () -> new Rotation2d(.01),
