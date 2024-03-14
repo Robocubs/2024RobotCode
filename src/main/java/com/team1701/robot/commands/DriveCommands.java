@@ -85,6 +85,18 @@ public class DriveCommands {
                 finishAtRotation);
     }
 
+    public static Command rotateToPassTarget(
+            Drive drive, RobotState state, KinematicLimits kinematicLimits, boolean finishAtRotation) {
+        return rotateToFieldHeading(
+                        drive,
+                        state::getPassingHeading,
+                        state::getHeading,
+                        () -> new Rotation2d(.01),
+                        kinematicLimits,
+                        finishAtRotation)
+                .withName("RotateToPassTarget");
+    }
+
     public static Command rotateToFieldHeading(
             Drive drive,
             Supplier<Rotation2d> targetFieldHeading,

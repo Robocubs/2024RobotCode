@@ -201,13 +201,24 @@ public class RobotState {
     }
 
     @AutoLogOutput
+    public Pose2d getPassingPose() {
+        return new Pose2d(getPassingTarget(), GeometryUtil.kRotationIdentity);
+    }
+
+    public Translation2d getPassingTarget() {
+        return Configuration.isBlueAlliance()
+                ? FieldConstants.kBluePassingTarget.getTranslation()
+                : FieldConstants.kRedPassingTarget.getTranslation();
+    }
+
+    @AutoLogOutput
     public double getPassingDistance() {
-        return getPose2d()
-                .getTranslation()
-                .getDistance(
-                        Configuration.isBlueAlliance()
-                                ? FieldConstants.kBluePassingTarget.getTranslation()
-                                : FieldConstants.kRedPassingTarget.getTranslation());
+        return getPose2d().getTranslation().getDistance(getPassingTarget());
+    }
+
+    @AutoLogOutput
+    public Rotation2d getPassingHeading() {
+        return getPassingTarget().minus(getPose2d().getTranslation()).getAngle();
     }
 
     @AutoLogOutput
@@ -238,7 +249,7 @@ public class RobotState {
     }
 
     public Rotation2d getSpeakerHeading(Translation2d translation) {
-        return getSpeakerPose().toTranslation2d().minus(translation).getAngle();
+        return getSpeakerPose().toTranslation2d().minus(translation).getAngle().plus(Rotation2d.fromDegrees(1));
     }
 
     public Rotation2d getMovingSpeakerHeading(Drive drive) {

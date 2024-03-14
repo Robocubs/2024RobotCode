@@ -221,6 +221,8 @@ public final class Constants {
         public static final KinematicLimits kFastTrapezoidalKinematicLimits;
         public static final KinematicLimits kSlowTrapezoidalKinematicLimits;
         public static final KinematicLimits kFastSmoothKinematicLimits;
+        public static final KinematicLimits kShootMoveKinematicLimits;
+        public static final KinematicLimits kMediumTrapezoidalKinematicLimits;
 
         public static final LoggedTunableNumber kDriveKff = new LoggedTunableNumber("Drive/Module/DriveKff");
         public static final LoggedTunableNumber kDriveKp = new LoggedTunableNumber("Drive/Module/DriveKp");
@@ -300,6 +302,10 @@ public final class Constants {
                     new KinematicLimits(kMaxVelocityMetersPerSecond, Double.MAX_VALUE, Double.MAX_VALUE);
             kFastKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond, kMaxVelocityMetersPerSecond / 0.2, Units.degreesToRadians(1000.0));
+            kShootMoveKinematicLimits = new KinematicLimits(
+                    kMaxVelocityMetersPerSecond * .8,
+                    kMaxVelocityMetersPerSecond / 0.2,
+                    kFastKinematicLimits.maxSteeringVelocity());
             kFastSmoothKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond / 2.0,
                     kMaxVelocityMetersPerSecond / 2.0,
@@ -311,6 +317,10 @@ public final class Constants {
             kFastTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.8,
                     kMaxVelocityMetersPerSecond * 1.5,
+                    kFastKinematicLimits.maxSteeringVelocity());
+            kMediumTrapezoidalKinematicLimits = new KinematicLimits(
+                    kMaxVelocityMetersPerSecond * 0.8,
+                    kMaxVelocityMetersPerSecond * 2.0,
                     kFastKinematicLimits.maxSteeringVelocity());
             kSlowTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.4,
@@ -445,13 +455,9 @@ public final class Constants {
             {8.3, 660}
         };
 
-        public static final double[][] kPassingDistanceToAngleValues = {
-            {10, .8}
-        };
+        public static final double[][] kPassingDistanceToAngleValues = {{10, .8}};
 
-        public static final double[][] kPassingDistanceToSpeedValues = {
-            {10, 300}
-        };
+        public static final double[][] kPassingDistanceToSpeedValues = {{10, 300}};
 
         static {
             for (double[] pair : kShooterDistanceToAngleValues) {

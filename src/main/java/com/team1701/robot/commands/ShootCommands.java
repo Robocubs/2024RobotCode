@@ -37,7 +37,11 @@ public class ShootCommands {
         return Commands.sequence(new Shoot(shooter, indexer, robotState, false)).withName("scoreInAmp");
     }
 
-    public static Command passANote(Shooter shooter, Indexer indexer, RobotState robotState) {
-        return new PassANote(shooter, indexer, robotState);
+    public static Command passANote(Drive drive, Shooter shooter, Indexer indexer, RobotState robotState) {
+        return Commands.parallel(
+                        new PassANote(shooter, indexer, robotState),
+                        DriveCommands.rotateToPassTarget(
+                                drive, robotState, Constants.Drive.kFastTrapezoidalKinematicLimits, false))
+                .withName("PassANote");
     }
 }

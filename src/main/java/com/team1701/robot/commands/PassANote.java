@@ -5,7 +5,6 @@ import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
-import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
 import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -51,7 +50,7 @@ public class PassANote extends Command {
         var atSpeed = targetSpeeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), 50.0);
 
         var atAngle = GeometryUtil.isNear(
-                    mShooter.getAngle(), targetAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(), targetAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
         if (atSpeed && atAngle) {
             mIndexer.setForwardShoot();
