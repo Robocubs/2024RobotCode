@@ -9,6 +9,7 @@ public final class FieldConstants {
     public static final double kFieldLongLengthMeters = (Units.inchesToMeters((54 * 12) + 3.25));
     public static final double kFieldShortLengthMeters = (Units.inchesToMeters((26 * 12) + 11.25));
     public static final double kCenterLine = kFieldLongLengthMeters / 2.0;
+    public static final double kShortLengthMidLine = kFieldShortLengthMeters / 2.0;
     public static final double kWingLength = Units.inchesToMeters(231.2);
     public static final double kNoteHeight = Units.inchesToMeters(2);
     public static final double kHalfNoteHeight = kNoteHeight / 2;
@@ -19,6 +20,13 @@ public final class FieldConstants {
     public static final Translation3d kRedSpeakerOpeningCenter = new Translation3d(
             kFieldLongLengthMeters - kBlueSpeakerOpeningCenter.getX(),
             kBlueSpeakerOpeningCenter.getY(),
+            kSpeakerHeight);
+
+    public static final Translation3d kBlueSpeakerToleranceTranslation =
+            new Translation3d(Units.inchesToMeters(8), Units.inchesToMeters(230.42), kSpeakerHeight);
+    public static final Translation3d kRedSpeakerToleranceTranslation = new Translation3d(
+            kFieldLongLengthMeters - kBlueSpeakerToleranceTranslation.getX(),
+            kBlueSpeakerToleranceTranslation.getY(),
             kSpeakerHeight);
 
     public static final Translation3d kBlueSource =

@@ -41,8 +41,7 @@ public class ShootAndMove extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
     private static final LoggedTunableNumber kSpeedToleranceRadiansPerSecond =
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 50.0);
-    private static final LoggedTunableNumber kHeadingToleranceRadians =
-            new LoggedTunableNumber(kLoggingPrefix + "HeadingToleranceRadians", 0.02);
+    private Rotation2d headingTolerance;
 
     private static final LoggedTunableNumber kLoopsLatency =
             new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 2.0);
@@ -79,7 +78,7 @@ public class ShootAndMove extends Command {
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
-        mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp());
+        mLockedReadyToShoot = new TimeLockedBoolean(.2, Timer.getFPGATimestamp());
 
         addRequirements(mDrive, mShooter, mIndexer);
     }
@@ -126,9 +125,11 @@ public class ShootAndMove extends Command {
                 .getAngle();
         var headingError = currentPose.getRotation().minus(targetHeading);
 
+        headingTolerance = mRobotState.getToleranceSpeakerHeading();
+
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (MathUtil.isNear(0, headingError.getRadians(), kHeadingToleranceRadians.get() * 0.9)
+        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;
@@ -163,10 +164,8 @@ public class ShootAndMove extends Command {
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), currentExpectedShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        var atHeading = GeometryUtil.isNear(
-                mRobotState.getSpeakerHeading(),
-                mRobotState.getHeading(),
-                Rotation2d.fromRadians(kHeadingToleranceRadians.get()));
+        var atHeading =
+                GeometryUtil.isNear(mRobotState.getSpeakerHeading(), mRobotState.getHeading(), headingTolerance);
 
         var atSpeed = currentExpectedRollerSpeeds.allMatch(
                 mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());

@@ -56,14 +56,12 @@ public final class ShooterUtil {
             case SPEAKER:
                 double speed;
 
-                if (robotState.hasNote()) {
-                    if (robotState.inNearHalf()) {
-                        speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
-                    } else {
-                        speed = robotState.inOpponentWing() ? 0 : Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
-                    }
+                if (!robotState.inNearHalf()) {
+                    speed = 0;
+                } else if (robotState.hasNote()) {
+                    speed = Constants.Shooter.kShooterSpeedInterpolator.get(robotState.getDistanceToSpeaker());
                 } else {
-                    speed = robotState.inNearHalf() ? Constants.Shooter.kIdleSpeedRadiansPerSecond.get() : 0;
+                    speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                 }
                 speeds = new ShooterSpeeds(speed);
                 break;

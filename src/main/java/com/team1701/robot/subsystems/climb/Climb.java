@@ -61,11 +61,13 @@ public class Climb extends SubsystemBase {
     }
 
     public void setPercentOutput(double percent) {
+        Logger.recordOutput("Climb/PercentOutput", percent);
         mLeftWinchIO.setPercentOutput(percent);
         mRightWinchIO.setPercentOutput(percent);
     }
 
     public void stop() {
+        Logger.recordOutput("Climb/PercentOutput", 0);
         mLeftWinchIO.setPercentOutput(0);
         mRightWinchIO.setPercentOutput(0);
     }

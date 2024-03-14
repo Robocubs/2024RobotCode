@@ -17,14 +17,17 @@ import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.Robot;
+import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -134,6 +137,16 @@ public class RobotState {
                         : FieldConstants.kRedSpeakerOpeningCenter);
     }
 
+    public double getSpeakerDistanceFromPose(Pose3d pose) {
+        var distance = pose.getTranslation()
+                .getDistance(
+                        Configuration.isBlueAlliance()
+                                ? FieldConstants.kBlueSpeakerOpeningCenter
+                                : FieldConstants.kRedSpeakerOpeningCenter);
+        Logger.recordOutput("DistanceFromProjectedPose", distance);
+        return distance;
+    }
+
     public Rotation2d getHeading() {
         return getPose2d().getRotation();
     }
@@ -198,15 +211,51 @@ public class RobotState {
                 : FieldConstants.kRedSpeakerOpeningCenter;
     }
 
+    @AutoLogOutput
+    public Pose3d getTolerancePose() {
+        return Configuration.isBlueAlliance()
+                ? new Pose3d(FieldConstants.kBlueSpeakerToleranceTranslation, GeometryUtil.kRotation3dIdentity)
+                : new Pose3d(FieldConstants.kRedSpeakerToleranceTranslation, GeometryUtil.kRotation3dIdentity);
+    }
+
     public Translation3d getAmpPose() {
         return Configuration.isBlueAlliance() ? FieldConstants.kBlueAmpPosition : FieldConstants.kRedAmpPosition;
     }
 
+    @AutoLogOutput
     public Rotation2d getSpeakerHeading() {
-        return getSpeakerPose()
+        return getSpeakerHeading(getPose2d().getTranslation());
+    }
+
+    public Rotation2d getSpeakerHeading(Translation2d translation) {
+        return getSpeakerPose().toTranslation2d().minus(translation).getAngle();
+    }
+
+    public Rotation2d getMovingSpeakerHeading(Drive drive) {
+        var projectedTranslation = getPose2d()
+                .getTranslation()
+                .plus(new Translation2d(
+                        drive.getFieldRelativeVelocity().vxMetersPerSecond * Constants.kLoopPeriodSeconds,
+                        drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
+        return getSpeakerHeading(projectedTranslation);
+    }
+
+    @AutoLogOutput
+    public Rotation2d getToleranceSpeakerHeading() {
+        return getToleranceSpeakerHeading(getPose2d().getTranslation());
+    }
+
+    public Rotation2d getToleranceSpeakerHeading(Translation2d translation) {
+        var heading = getTolerancePose()
+                .getTranslation()
                 .toTranslation2d()
-                .minus(getPose2d().getTranslation())
+                .minus(translation)
                 .getAngle();
+
+        var toleranceRadians = Math.abs(
+                MathUtil.angleModulus(heading.getRadians() - getSpeakerHeading().getRadians()));
+
+        return Rotation2d.fromRadians(Math.max(0.017, toleranceRadians));
     }
 
     public Rotation2d getAmpHeading() {
