@@ -148,8 +148,10 @@ public class AprilTagCamera {
         var stdDevs = mStdDevsFunction.apply(
                 lowestAmbiguityTarget.bestCameraToTarget.getTranslation().getNorm());
 
-        // Don't trust single-target rotations at all
-        stdDevs.set(0, 2, Double.POSITIVE_INFINITY);
+        if (pipelineResult.targets.length == 1) {
+            // Don't trust single-target rotations at all
+            stdDevs.set(2, 0, Double.POSITIVE_INFINITY);
+        }
 
         Logger.recordOutput(mLoggingPrefix + "StdDev", stdDevs.getData());
 
