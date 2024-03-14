@@ -4,6 +4,7 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.robot.Constants;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
@@ -60,6 +61,25 @@ public class Climb extends SubsystemBase {
         setPercentOutput(.8);
     }
 
+    public void setPosition(Rotation2d rotation) {
+        mLeftWinchIO.setPositionControl(rotation);
+        mRightWinchIO.setPositionControl(rotation);
+    }
+
+    public void setLeftClimbPosition() {
+        mLeftWinchIO.setPositionControl(Constants.Climb.kMaxSetpoint);
+        mRightWinchIO.setPositionControl(Constants.Climb.kMiddleSetpoint);
+    }
+
+    public void setRightClimbPosition() {
+        mLeftWinchIO.setPositionControl(Constants.Climb.kMiddleSetpoint);
+        mRightWinchIO.setPositionControl(Constants.Climb.kMaxSetpoint);
+    }
+
+    public void setMidClimbPosition() {
+        setPosition(Constants.Climb.kMiddleSetpoint);
+    }
+
     public void setPercentOutput(double percent) {
         Logger.recordOutput("Climb/PercentOutput", percent);
         mLeftWinchIO.setPercentOutput(percent);
@@ -67,8 +87,8 @@ public class Climb extends SubsystemBase {
     }
 
     public void stop() {
-        Logger.recordOutput("Climb/PercentOutput", 0.0);
-        mLeftWinchIO.setPercentOutput(0);
-        mRightWinchIO.setPercentOutput(0);
+        Logger.recordOutput("Climb/PercentOutput", 0);
+        mLeftWinchIO.stopMotor();
+        mRightWinchIO.stopMotor();
     }
 }

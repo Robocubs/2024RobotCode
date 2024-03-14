@@ -530,12 +530,15 @@ public final class Constants {
         public static final int kLeftWinchId = 40;
         public static final int kRightWinchId = 41;
 
+        public static final Rotation2d kMaxSetpoint = Rotation2d.fromRadians(32);
+        public static final Rotation2d kMiddleSetpoint = Rotation2d.fromRadians(25);
+
         public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
         public static final double lowerLimitRotations = Units.radiansToRotations(0) / kWinchReduction;
 
-        public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Arm/Winch/Kff");
-        public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Arm/Winch/Kp");
-        public static final LoggedTunableNumber kWinchKd = new LoggedTunableNumber("Arm/Winch/Kd");
+        public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Climb/Winch/Kff");
+        public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Climb/Winch/Kp");
+        public static final LoggedTunableNumber kWinchKd = new LoggedTunableNumber("Climb/Winch/Kd");
 
         public static final double kWinchCircumference =
                 Math.PI * Units.inchesToMeters(1.5); // idk, TODO: update diameter
@@ -544,7 +547,7 @@ public final class Constants {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
                     kWinchKff.initDefault(0.0);
-                    kWinchKp.initDefault(0.0);
+                    kWinchKp.initDefault(0.1);
                     kWinchKd.initDefault(0.0);
                     break;
                 case SIMULATION_BOT:

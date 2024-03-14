@@ -390,8 +390,12 @@ public class RobotContainer {
                         mIntake,
                         mIndexer)
                 .withName("StreamDeckForwardButton");
-        var armUpCommand = Commands.runOnce(() -> {});
-        var armDownCommand = Commands.runOnce(() -> {});
+        var leftClimbCommand = Commands.runEnd(() -> mClimb.setLeftClimbPosition(), () -> mClimb.stop(), mClimb)
+                .withName("StreamDeckLeftClimbCommand");
+        var rightClimbCommand = Commands.runEnd(() -> mClimb.setRightClimbPosition(), () -> mClimb.stop(), mClimb)
+                .withName("StreamDeckRightClimbCommand");
+        var centerClimbCommand = Commands.runEnd(() -> mClimb.setMidClimbPosition(), () -> mClimb.stop(), mClimb)
+                .withName("StreamDeckCenterClimbCommand");
         var setSpeakerModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.SPEAKER))
                 .ignoringDisable(true)
                 .withName("SetSpeakerScoringMode");
@@ -401,7 +405,6 @@ public class RobotContainer {
         var setClimbModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB))
                 .ignoringDisable(true)
                 .withName("SetClimbScoringMode");
-        var stopArmCommand = Commands.runOnce(() -> {});
         var shooterUpCommand = run(
                         () -> {
                             mShooter.setShooterUp();
@@ -446,9 +449,9 @@ public class RobotContainer {
                 .add(StreamDeckButton.kStopIntakeButton, stopIntakingCommand::isScheduled)
                 .add(StreamDeckButton.kRejectButton, rejectCommand::isScheduled)
                 .add(StreamDeckButton.kForwardButton, forwardCommand::isScheduled)
-                .add(StreamDeckButton.kArmUpButton, armUpCommand::isScheduled)
-                .add(StreamDeckButton.kArmDownButton, armDownCommand::isScheduled)
-                .add(StreamDeckButton.kArmStopButton, stopArmCommand::isScheduled)
+                .add(StreamDeckButton.kLeftClimbButton, leftClimbCommand::isScheduled)
+                .add(StreamDeckButton.kRightClimbButton, rightClimbCommand::isScheduled)
+                .add(StreamDeckButton.kCenterClimbButton, centerClimbCommand::isScheduled)
                 .add(StreamDeckButton.kShooterUpButton, shooterUpCommand::isScheduled)
                 .add(StreamDeckButton.kShooterDownButton, shooterDownCommand::isScheduled)
                 .add(StreamDeckButton.kShootButton, manualShootCommand::isScheduled)
@@ -461,15 +464,9 @@ public class RobotContainer {
         mStreamDeck.button(StreamDeckButton.kRejectButton).whileTrue(rejectCommand);
         mStreamDeck.button(StreamDeckButton.kForwardButton).whileTrue(forwardCommand);
 
-        mStreamDeck
-                .button(StreamDeckButton.kArmUpButton)
-                .whileTrue(armUpCommand)
-                .onFalse(stopArmCommand);
-        mStreamDeck
-                .button(StreamDeckButton.kArmDownButton)
-                .whileTrue(armDownCommand)
-                .onFalse(stopArmCommand);
-        mStreamDeck.button(StreamDeckButton.kArmStopButton).toggleOnTrue(stopArmCommand);
+        mStreamDeck.button(StreamDeckButton.kLeftClimbButton).onTrue(leftClimbCommand);
+        mStreamDeck.button(StreamDeckButton.kRightClimbButton).onTrue(rightClimbCommand);
+        mStreamDeck.button(StreamDeckButton.kCenterClimbButton).onTrue(centerClimbCommand);
 
         mStreamDeck
                 .button(StreamDeckButton.kShooterUpButton)
