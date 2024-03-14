@@ -433,7 +433,7 @@ public final class Constants {
             {2.3, 1},
             {2.75, 0.79},
             {3.5, 0.6},
-            {3.78, 0.56}, // last tested value
+            {3.78, 0.56},
             {4.25, 0.52},
             {4.89, 0.48},
             {5.49, 0.43},
@@ -446,7 +446,7 @@ public final class Constants {
             {2.3, 250},
             {2.75, 320},
             {3.5, 385},
-            {3.78, 425}, // last tested value
+            {3.78, 425},
             {4.25, 450},
             {4.89, 500},
             {5.49, 550},
@@ -455,11 +455,12 @@ public final class Constants {
             {8.3, 660}
         };
 
-        public static final double[][] kPassingDistanceToAngleValues = {{11.53, .7}, {10.3, .75}, {9.02, .8}, {7.15, .9}
+        public static final double[][] kPassingDistanceToAngleValues = {
+            {11.53, .7}, {10.3, .75}, {9.02, .8}, {7.15, .9}, {5, .9}, {0, 1}
         };
 
         public static final double[][] kPassingDistanceToSpeedValues = {
-            {11.53, 325}, {10.3, .315}, {9.02, 300}, {7.15, 275}
+            {11.53, 325}, {10.3, .315}, {9.02, 300}, {7.15, 275}, {5, 200}, {0, 100}
         };
 
         static {
