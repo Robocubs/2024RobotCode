@@ -22,7 +22,7 @@ public class ShootCommands {
     }
 
     public static Command manualShoot(Shooter shooter, Indexer indexer, RobotState robotState) {
-        return new ManualShoot(shooter, indexer, robotState);
+        return new ManualShoot(shooter, indexer, robotState).withName("ManualShoot");
     }
 
     public static Command aimAndShootInSpeaker(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
@@ -35,5 +35,9 @@ public class ShootCommands {
 
     public static Command scoreInAmp(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
         return Commands.sequence(new Shoot(shooter, indexer, robotState, false)).withName("scoreInAmp");
+    }
+
+    public static Command passANote(Shooter shooter, Indexer indexer, RobotState robotState) {
+        return new PassANote(shooter, indexer, robotState);
     }
 }

@@ -330,6 +330,12 @@ public class RobotContainer {
                 .whileTrue(DriveCommands.driveToPiece(
                         mDrive, mRobotState, Constants.Drive.kFastTrapezoidalKinematicLimits, mDriverController));
 
+        // Passing
+        mDriverController
+                .leftBumper()
+                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
+                .whileTrue(ShootCommands.passANote(mShooter, mIndexer, mRobotState));
+
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))

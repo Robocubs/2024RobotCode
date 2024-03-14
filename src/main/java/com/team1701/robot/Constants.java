@@ -390,6 +390,11 @@ public final class Constants {
         public static final InterpolatingDoubleTreeMap kShooterSpeedInterpolator =
                 new InterpolatingDoubleTreeMap(); // Radians/sec
 
+        public static final InterpolatingDoubleTreeMap kPassingAngleInterpolator =
+                new InterpolatingDoubleTreeMap(); // Radians
+        public static final InterpolatingDoubleTreeMap kPassingSpeedInterpolator =
+                new InterpolatingDoubleTreeMap(); // Radians/sec
+
         public static final double kRollerRampRate = 450;
 
         // public static final double[][] kShooterDistanceToAngleValues = {
@@ -440,6 +445,14 @@ public final class Constants {
             {8.3, 660}
         };
 
+        public static final double[][] kPassingDistanceToAngleValues = {
+            {10, .8}
+        };
+
+        public static final double[][] kPassingDistanceToSpeedValues = {
+            {10, 300}
+        };
+
         static {
             for (double[] pair : kShooterDistanceToAngleValues) {
                 kShooterAngleInterpolator.put(pair[0], pair[1]);
@@ -447,6 +460,14 @@ public final class Constants {
 
             for (double[] pair : kShooterDistanceToSpeedValues) {
                 kShooterSpeedInterpolator.put(pair[0], pair[1]);
+            }
+
+            for (double[] pair : kPassingDistanceToAngleValues) {
+                kPassingAngleInterpolator.put(pair[0], pair[1]);
+            }
+
+            for (double[] pair : kPassingDistanceToSpeedValues) {
+                kPassingSpeedInterpolator.put(pair[0], pair[1]);
             }
         }
 

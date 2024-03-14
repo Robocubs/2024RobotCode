@@ -201,6 +201,16 @@ public class RobotState {
     }
 
     @AutoLogOutput
+    public double getPassingDistance() {
+        return getPose2d()
+                .getTranslation()
+                .getDistance(
+                        Configuration.isBlueAlliance()
+                                ? FieldConstants.kBluePassingTarget.getTranslation()
+                                : FieldConstants.kRedPassingTarget.getTranslation());
+    }
+
+    @AutoLogOutput
     public boolean outOfAmpRange() {
         return mOutOfAmpRange.getValue();
     }
