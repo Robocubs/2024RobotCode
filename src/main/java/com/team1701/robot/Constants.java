@@ -520,7 +520,7 @@ public final class Constants {
         public static final int kRightWinchId = 41;
 
         public static final Rotation2d kMaxSetpoint = Rotation2d.fromRadians(32);
-        public static final Rotation2d kMiddleSetpoint = Rotation2d.fromRadians(28);
+        public static final Rotation2d kMiddleSetpoint = Rotation2d.fromRadians(25);
 
         public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
         public static final double lowerLimitRotations = Units.radiansToRotations(0) / kWinchReduction;
@@ -536,7 +536,7 @@ public final class Constants {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
                     kWinchKff.initDefault(0.0);
-                    kWinchKp.initDefault(0.0);
+                    kWinchKp.initDefault(0.1);
                     kWinchKd.initDefault(0.0);
                     break;
                 case SIMULATION_BOT:
