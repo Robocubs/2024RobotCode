@@ -13,13 +13,11 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 
 public class StreamDeck {
     private final Map<StreamDeckButton, Button> buttons = new HashMap<>();
 
-    private static record Button(
-            LoggedDashboardBoolean pressed, BooleanSupplier selected, BooleanPublisher activePub) {}
+    private static record Button(BooleanDashboardInput pressed, BooleanSupplier selected, BooleanPublisher activePub) {}
 
     public StreamDeck() {
         CommandScheduler.getInstance()
@@ -37,11 +35,11 @@ public class StreamDeck {
         var deckTable = nt.getTable("StreamDeck");
         configuration.buttonConfigurations.forEach((button, selected) -> {
             var table = deckTable.getSubTable("Button/" + button.index);
-            table.getStringTopic("Key").publish().set("/SmartDashboard/" + button.key);
+            table.getStringTopic("Key").publish().set("/Dashboard/" + button.key);
             table.getStringTopic("Icon").publish().set(button.icon);
             table.getStringTopic("Label").publish().set(button.label);
 
-            var dashboardBoolean = new LoggedDashboardBoolean(button.key, false);
+            var dashboardBoolean = new BooleanDashboardInput(button.key, false);
             buttons.put(
                     button,
                     new Button(
