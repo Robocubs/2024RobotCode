@@ -85,6 +85,23 @@ public class AutonomousCommands {
                 mDrive, () -> autoFlipPose(pose), mRobotState::getPose2d, kinematicLimits, finishAtPose);
     }
 
+    private Command driveToPoseAndPreWarm(Pose2d pose, KinematicLimits kinematicLimits) {
+        var targetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(
+                mRobotState.getSpeakerDistanceFromPose(new Pose3d(pose)));
+
+        var targetAngle = Constants.Shooter.kShooterAngleInterpolator.get(
+                mRobotState.getSpeakerDistanceFromPose(new Pose3d(pose)));
+
+        return Commands.deadline(
+                driveToPose(pose, kinematicLimits),
+                Commands.run(
+                        () -> {
+                            mShooter.setUnifiedSpeed(targetSpeed);
+                            mShooter.setRotationAngle(Rotation2d.fromRadians(targetAngle));
+                        },
+                        mShooter));
+    }
+
     private Command followPath(String pathName) {
         return followPath(pathName, false);
     }
@@ -122,11 +139,16 @@ public class AutonomousCommands {
         return new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose);
     }
 
-    private Command followChoreoPathAndPreWarm(String pathName) {
-        return followChoreoPathAndPreWarm(pathName, false);
+    private Pose2d getFirstPose(String pathName) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        return trajectory.getInitialPose();
     }
 
-    private Command followChoreoPathAndPreWarm(String pathName, boolean resetPose) {
+    private Command followChoreoPathAndPreWarm(String pathName) {
+        return followChoreoPathAndPreWarm(pathName, false, false);
+    }
+
+    private Command followChoreoPathAndPreWarm(String pathName, boolean resetPose, boolean waitForNote) {
         var trajectory = Choreo.getTrajectory(pathName);
         if (trajectory == null) {
             return idle().withName(
@@ -145,7 +167,7 @@ public class AutonomousCommands {
                         new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose),
                         Commands.run(
                                 () -> {
-                                    if (mRobotState.hasNote()) {
+                                    if (mRobotState.hasNote() || !waitForNote) {
                                         mShooter.setUnifiedSpeed(targetSpeed);
                                         mShooter.setRotationAngle(Rotation2d.fromRadians(targetAngle));
                                     }
@@ -189,13 +211,13 @@ public class AutonomousCommands {
     public AutonomousCommand fourPiece() {
         var command = loggedSequence(
                         print("Started four piece auto"),
-                        followChoreoPathAndPreWarm("FourPiece.1", true),
+                        followChoreoPathAndPreWarm("FourPiece.1", true, false),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("FourPiece.2"),
+                        followChoreoPathAndPreWarm("FourPiece.2", false, false),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("FourPiece.3"),
+                        followChoreoPathAndPreWarm("FourPiece.3", false, false),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("FourPiece.4"),
+                        followChoreoPathAndPreWarm("FourPiece.4", false, false),
                         aimAndShoot())
                 .withName("FourPieceAuto");
 
@@ -205,7 +227,7 @@ public class AutonomousCommands {
     public AutonomousCommand fourPieceAmp() {
         var command = loggedSequence(
                         print("Started four piece near amp auto"),
-                        followChoreoPathAndPreWarm("FourPieceAmp.1", true),
+                        followChoreoPathAndPreWarm("FourPieceAmp.1", true, false),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("FourPieceAmp.2"),
                         aimAndShoot(),
@@ -220,9 +242,11 @@ public class AutonomousCommands {
     public AutonomousCommand sourceFourPieceTwoOne() {
         var command = loggedSequence(
                         print("Started source four piece two one auto"),
-                        driveToPose(new Pose2d(
-                                new Translation2d(2.46260666847229, 2.526517391204834),
-                                new Rotation2d(2.2091161460921795))),
+                        driveToPoseAndPreWarm(
+                                new Pose2d(
+                                        new Translation2d(2.46260666847229, 2.526517391204834),
+                                        new Rotation2d(2.2091161460921795)),
+                                Constants.Drive.kFastTrapezoidalKinematicLimits),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("SourceFourPieceTwoOne.1"),
                         aimAndShoot(),
@@ -237,7 +261,7 @@ public class AutonomousCommands {
     public AutonomousCommand middleToMiddle() {
         var command = loggedSequence(
                         print("Started middle to middle auto"),
-                        followChoreoPathAndPreWarm("MiddleToMiddle.1", true),
+                        followChoreoPathAndPreWarm("MiddleToMiddle.1", true, false),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("MiddleToMiddle.2"),
                         aimAndShoot(),
@@ -249,8 +273,8 @@ public class AutonomousCommands {
 
     public AutonomousCommand fiveMiddleToMiddle() {
         var command = loggedSequence(
-                        print("Started middle to middle auto"),
-                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.1", true),
+                        print("Started five middle to middle auto"),
+                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.1", true, false),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("FiveMiddleToMiddle.2"),
                         aimAndShoot(),
@@ -261,6 +285,77 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("FiveMiddleToMiddle.5"),
                         aimAndShoot())
                 .withName("FiveMiddleToMiddleAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand greedyMiddle() {
+        var command = loggedSequence(
+                        print("Started greedy middle auto"),
+                        followChoreoPathAndPreWarm("GreedyMiddle.1", true, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("GreedyMiddle.2", false, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("GreedyMiddle.3", false, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("GreedyMiddle.4"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("GreedyMiddle.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("GreedyMiddle.6"),
+                        aimAndShoot(),
+                        followChoreoPath("GreedyMiddle.7"))
+                .withName("GreedyMiddleAuto");
+
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand sourceSideMiddleThree() {
+        var command = loggedSequence(
+                        print("Started source side middle three auto"),
+                        driveToPoseAndPreWarm(
+                                getFirstPose("SourceSideMiddleThree.1"),
+                                Constants.Drive.kFastTrapezoidalKinematicLimits),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("SourceSideMiddleThree.1"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("SourceSideMiddleThree.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("SourceSideMiddleThree.3"),
+                        aimAndShoot())
+                .withName("SourceThreeMiddleAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand fivePieceAmp() {
+        var command = loggedSequence(
+                        print("Started five piece near amp auto"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("FiveAmp.1", false, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("FiveAmp.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("FiveAmp.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("FiveAmp.4"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("FiveAmp.5"),
+                        aimAndShoot())
+                .withName("FivePieceAmpAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand straightToMiddle() {
+        var command = loggedSequence(
+                        print("Started straight to middle auto"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("StraightToMiddle.1", false, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("StraightToMiddle.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("StraightToMiddle.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("StraightToMiddle.4"))
+                .withName("StraightToMiddleAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }

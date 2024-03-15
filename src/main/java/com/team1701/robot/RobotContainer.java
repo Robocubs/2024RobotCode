@@ -529,13 +529,21 @@ public class RobotContainer {
         var shootAndBackupCommand = commands.shootAndBackup();
         var middleToMiddleCommand = commands.middleToMiddle();
         var fiveMiddleToMiddleCommand = commands.fiveMiddleToMiddle();
-        mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
+        var greedyMiddleCommand = commands.greedyMiddle();
+        var sourceMiddleThreeCommand = commands.sourceSideMiddleThree();
+        var fivePieceAmpCommand = commands.fivePieceAmp();
+        var straightToMiddleCommand = commands.straightToMiddle();
+
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
         mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
         mAutonomousPaths.put("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.path());
         mAutonomousPaths.put("Middle To Middle Auto", middleToMiddleCommand.path());
         mAutonomousPaths.put("Five Middle To Middle Auto", fiveMiddleToMiddleCommand.path());
+        mAutonomousPaths.put("Greedy Middle Auto", greedyMiddleCommand.path());
+        mAutonomousPaths.put("Source Middle Three Auto", sourceMiddleThreeCommand.path());
+        mAutonomousPaths.put("Five Piece Amp Auto", fivePieceAmpCommand.path());
+        mAutonomousPaths.put("Straight To Middle", straightToMiddleCommand.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
@@ -543,6 +551,10 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.command());
         autonomousModeChooser.addOption("Middle To Middle Auto", middleToMiddleCommand.command());
         autonomousModeChooser.addOption("Five Middle To Middle Auto", fiveMiddleToMiddleCommand.command());
+        autonomousModeChooser.addOption("Greedy Middle Auto", greedyMiddleCommand.command());
+        autonomousModeChooser.addOption("Source Middle Three Auto", sourceMiddleThreeCommand.command());
+        autonomousModeChooser.addOption("Five Piece Amp Auto", fivePieceAmpCommand.command());
+        autonomousModeChooser.addOption("Straight To Middle", straightToMiddleCommand.command());
 
         if (Configuration.getMode() == Mode.SIMULATION) {
             mAutonomousPaths.put("Demo", demoCommand.path());
