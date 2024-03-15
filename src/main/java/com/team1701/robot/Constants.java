@@ -438,7 +438,8 @@ public final class Constants {
 
         public static final double[][] kShooterDistanceToAngleValues = {
             {2.3, 1.01},
-            {2.75, 0.84},
+            {2.75, 0.83},
+            {3.125, .715},
             {3.5, 0.62},
             {3.78, 0.56},
             {4.25, 0.52},
