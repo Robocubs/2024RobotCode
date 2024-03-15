@@ -56,6 +56,10 @@ public final class ShooterUtil {
         return new ShooterSpeeds(interpolatedSpeed);
     }
 
+    public static Rotation2d calculatePassingShooterAngle(RobotState robotState) {
+        return Rotation2d.fromRadians(Constants.Shooter.kPassingAngleInterpolator.get(robotState.getPassingDistance()));
+    }
+
     public static ShooterSpeeds calculateIdleRollerSpeeds(RobotState robotState, Drive drive) {
         ShooterSpeeds speeds;
         switch (robotState.getScoringMode()) {

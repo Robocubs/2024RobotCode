@@ -40,7 +40,7 @@ public class ShootAndMove extends Command {
     private static final LoggedTunableNumber kAngleToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
     private static final LoggedTunableNumber kSpeedToleranceRadiansPerSecond =
-            new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 50.0);
+            new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 25.0);
     private Rotation2d headingTolerance;
 
     private static final LoggedTunableNumber kLoopsLatency =
