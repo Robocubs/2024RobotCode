@@ -360,7 +360,7 @@ public final class Constants {
         public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.1);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
-        public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-1);
+        public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-2);
 
         public static final Rotation2d kShooterAngleEncoderOffset;
 
@@ -442,8 +442,8 @@ public final class Constants {
             {3.125, .715},
             {3.5, 0.62},
             {3.78, 0.55},
-            {4.25, 0.51},
-            {4.89, 0.48},
+            {4.25, 0.5},
+            {4.89, 0.47},
             {5.49, 0.43},
             {6, 0.4},
             {6.4, 0.36},
