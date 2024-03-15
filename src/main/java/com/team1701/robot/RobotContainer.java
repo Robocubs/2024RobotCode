@@ -528,18 +528,21 @@ public class RobotContainer {
         var sourceFourPieceTwoOneCommand = commands.sourceFourPieceTwoOne();
         var shootAndBackupCommand = commands.shootAndBackup();
         var middleToMiddleCommand = commands.middleToMiddle();
+        var fiveMiddleToMiddleCommand = commands.fiveMiddleToMiddle();
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
         mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
         mAutonomousPaths.put("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.path());
         mAutonomousPaths.put("Middle To Middle Auto", middleToMiddleCommand.path());
+        mAutonomousPaths.put("Five Middle To Middle Auto", fiveMiddleToMiddleCommand.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
         autonomousModeChooser.addOption("Four Piece Amp Side", fourPieceAmpSideCommand.command());
         autonomousModeChooser.addOption("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.command());
         autonomousModeChooser.addOption("Middle To Middle Auto", middleToMiddleCommand.command());
+        autonomousModeChooser.addOption("Five Middle To Middle Auto", fiveMiddleToMiddleCommand.command());
 
         if (Configuration.getMode() == Mode.SIMULATION) {
             mAutonomousPaths.put("Demo", demoCommand.path());

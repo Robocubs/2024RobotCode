@@ -77,9 +77,7 @@ public final class ShooterUtil {
                 break;
             case AMP:
                 if (robotState.hasNote()) {
-                    speed = robotState.getDistanceToAmp() <= 1
-                            ? Constants.Shooter.kAmpRollerSpeedRadiansPerSecond.get()
-                            : 250;
+                    speed = robotState.getDistanceToAmp() <= 1 ? Constants.Shooter.kUpperAmpSpeed.get() : 250;
                 } else {
                     speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                 }
