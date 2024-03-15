@@ -337,8 +337,6 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("FiveAmp.3"),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("FiveAmp.4"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveAmp.5"),
                         aimAndShoot())
                 .withName("FivePieceAmpAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());

@@ -438,7 +438,7 @@ public final class Constants {
 
         public static final double[][] kShooterDistanceToAngleValues = {
             {2.3, 1.01},
-            {2.75, 0.81},
+            {2.75, 0.84},
             {3.5, 0.62},
             {3.78, 0.56},
             {4.25, 0.52},
@@ -534,7 +534,7 @@ public final class Constants {
         public static final Rotation2d kMiddleSetpoint = Rotation2d.fromRadians(25);
 
         public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
-        public static final double lowerLimitRotations = Units.radiansToRotations(0) / kWinchReduction;
+        public static final double lowerLimitRotations = Units.radiansToRotations(-2) / kWinchReduction;
 
         public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Climb/Winch/Kff");
         public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Climb/Winch/Kp");
