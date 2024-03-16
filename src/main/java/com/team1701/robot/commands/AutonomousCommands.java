@@ -360,12 +360,13 @@ public class AutonomousCommands {
     public AutonomousCommand sourceFourUnderStage() {
         var command = loggedSequence(
                         print("Started source four under stage auto"),
-                        aimAndShoot(),
                         followChoreoPathAndPreWarm("SourceFourUnderStage.1"),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("SourceFourUnderStage.2"),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("SourceFourUnderStage.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("SourceFourUnderStage.4"),
                         aimAndShoot())
                 .withName("SourceFourUnderStageAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
