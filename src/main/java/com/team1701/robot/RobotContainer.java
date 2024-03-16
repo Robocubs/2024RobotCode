@@ -533,6 +533,7 @@ public class RobotContainer {
         var sourceMiddleThreeCommand = commands.sourceSideMiddleThree();
         var fivePieceAmpCommand = commands.fivePieceAmp();
         var straightToMiddleCommand = commands.straightToMiddle();
+        var sourceFourUnderStage = commands.sourceFourUnderStage();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
@@ -544,6 +545,7 @@ public class RobotContainer {
         mAutonomousPaths.put("Source Middle Three Auto", sourceMiddleThreeCommand.path());
         mAutonomousPaths.put("Five Piece Amp Auto", fivePieceAmpCommand.path());
         mAutonomousPaths.put("Straight To Middle", straightToMiddleCommand.path());
+        mAutonomousPaths.put("Source Four Under Stage", sourceFourUnderStage.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
@@ -555,6 +557,7 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Source Middle Three Auto", sourceMiddleThreeCommand.command());
         autonomousModeChooser.addOption("Five Piece Amp Auto", fivePieceAmpCommand.command());
         autonomousModeChooser.addOption("Straight To Middle", straightToMiddleCommand.command());
+        autonomousModeChooser.addOption("Source Four Under Stage", sourceFourUnderStage.command());
 
         if (Configuration.getMode() == Mode.SIMULATION) {
             mAutonomousPaths.put("Demo", demoCommand.path());

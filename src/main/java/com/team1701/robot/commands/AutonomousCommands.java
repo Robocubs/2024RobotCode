@@ -356,4 +356,19 @@ public class AutonomousCommands {
                 .withName("StraightToMiddleAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
+
+    public AutonomousCommand sourceFourUnderStage() {
+        var command = loggedSequence(
+                        print("Started source four under stage auto"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("SourceFourUnderStage.1"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("SourceFourUnderStage.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("SourceFourUnderStage.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("SourceFourUnderStage.4"))
+                .withName("SourceFourUnderStageAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
 }
