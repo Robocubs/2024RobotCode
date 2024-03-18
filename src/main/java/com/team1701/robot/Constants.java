@@ -387,8 +387,8 @@ public final class Constants {
                 new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 150);
         public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/TrapRollerSpeedRadiansPerSecond", 200);
-        public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Roller/TargetShootSpeedRadiansPerSecond", 450);
+        public static final LoggedTunableNumber kTunableShooterSpeedRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Roller/TunableSpeedRadiansPerSecond", 450);
 
         public static final LoggedTunableNumber kTunableShooterAngleRadians =
                 new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
@@ -499,7 +499,7 @@ public final class Constants {
                     kRotationKp.initDefault(0.3);
                     kRotationKd.initDefault(0.0);
 
-                    kTargetShootSpeedRadiansPerSecond.initDefault(450);
+                    kTunableShooterSpeedRadiansPerSecond.initDefault(450);
 
                     kShooterAngleEncoderOffset = Rotation2d.fromRadians(1.011)
                             .plus(Rotation2d.fromDegrees(12.3 / kEncoderToShooterReduction)); // hard stop is 12.3º

@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.LoggedTunableBoolean;
 import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.lib.util.Util;
@@ -13,6 +14,7 @@ import com.team1701.robot.states.ShootingState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
 import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -61,6 +63,11 @@ public class ShootAndMove extends Command {
 
     private TimeLockedBoolean mLockedReadyToShoot;
     private boolean mShooting;
+
+    private LoggedTunableBoolean mTuningEnabled = new LoggedTunableBoolean(kLoggingPrefix + "TuningEnabled", false);
+
+    private LoggedTunableNumber mTunableSpeed = new LoggedTunableNumber(kLoggingPrefix + "TunableSpeedRPS", 300);
+    private LoggedTunableNumber mTunableAngle = new LoggedTunableNumber(kLoggingPrefix + "TunableAngleRadians", .8);
 
     ShootAndMove(
             Drive drive,
@@ -145,10 +152,19 @@ public class ShootAndMove extends Command {
         mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
                 fieldRelativeSpeeds.getX(), fieldRelativeSpeeds.getY(), rotationalVelocity, currentPose.getRotation()));
 
-        var targetShooterAngle = GeometryUtil.clampRotation(
-                ShooterUtil.calculateShooterAngleWithMotion(mRobotState, endTranslation),
-                Constants.Shooter.kShooterLowerLimit,
-                Constants.Shooter.kShooterUpperLimit);
+        Rotation2d targetShooterAngle;
+        ShooterSpeeds targetRollerSpeeds;
+        if (mTuningEnabled.get()) {
+            targetShooterAngle = Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get());
+            targetRollerSpeeds = new ShooterSpeeds(Constants.Shooter.kTunableShooterSpeedRadiansPerSecond.get());
+        } else {
+            targetShooterAngle = GeometryUtil.clampRotation(
+                    ShooterUtil.calculateShooterAngleWithMotion(mRobotState, endTranslation),
+                    Constants.Shooter.kShooterLowerLimit,
+                    Constants.Shooter.kShooterUpperLimit);
+            targetRollerSpeeds = ShooterUtil.calculateShooterSpeedsWithMotion(mRobotState, endTranslation);
+        }
+
         var currentExpectedShooterAngle = GeometryUtil.clampRotation(
                 ShooterUtil.calculateStationaryDesiredAngle(mRobotState),
                 Constants.Shooter.kShooterLowerLimit,
@@ -156,7 +172,6 @@ public class ShootAndMove extends Command {
 
         mShooter.setRotationAngle(targetShooterAngle);
 
-        var targetRollerSpeeds = ShooterUtil.calculateShooterSpeedsWithMotion(mRobotState, endTranslation);
         var currentExpectedRollerSpeeds = ShooterUtil.calculateStationaryRollerSpeeds(mRobotState);
 
         mShooter.setRollerSpeeds(targetRollerSpeeds);
