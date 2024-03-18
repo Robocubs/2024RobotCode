@@ -320,15 +320,15 @@ public final class Constants {
                     Units.degreesToRadians(750.0));
             kFastTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.8,
-                    kMaxVelocityMetersPerSecond * 1.5,
+                    kMaxVelocityMetersPerSecond / 1.0,
                     kFastKinematicLimits.maxSteeringVelocity());
             kMediumTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.8,
-                    kMaxVelocityMetersPerSecond * 2.0,
+                    kMaxVelocityMetersPerSecond / 1.5,
                     kFastKinematicLimits.maxSteeringVelocity());
             kSlowTrapezoidalKinematicLimits = new KinematicLimits(
                     kMaxVelocityMetersPerSecond * 0.4,
-                    kMaxVelocityMetersPerSecond * 2.0,
+                    kMaxVelocityMetersPerSecond / 2.0,
                     kFastKinematicLimits.maxSteeringVelocity());
 
             kPathFollowerConfig = new HolonomicPathFollowerConfig(
@@ -357,10 +357,10 @@ public final class Constants {
         public static final Rotation2d kShooterUpperLimit = Rotation2d.fromDegrees(58);
         public static final Rotation2d kShooterLowerLimit = Rotation2d.fromDegrees(16);
 
-        public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.2);
+        public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.1);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
-        public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-1);
+        public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-2);
 
         public static final Rotation2d kShooterAngleEncoderOffset;
 
@@ -437,20 +437,21 @@ public final class Constants {
         // };
 
         public static final double[][] kShooterDistanceToAngleValues = {
-            {2.3, 1},
-            {2.75, 0.79},
-            {3.5, 0.6},
+            {2.3, 1.01},
+            {2.75, 0.83},
+            {3.125, .715},
+            {3.5, 0.62},
             {3.78, 0.56},
-            {4.25, 0.52},
-            {4.89, 0.48},
+            {4.25, 0.5},
+            {4.89, 0.47},
             {5.49, 0.43},
             {6, 0.4},
-            {6.4, 0.385},
-            {8.3, 0.33}
+            {6.4, 0.36},
+            {8.3, 0.31}
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
-            {2.3, 250},
+            {2.3, 275},
             {2.75, 320},
             {3.5, 385},
             {3.78, 425},
@@ -467,7 +468,7 @@ public final class Constants {
         };
 
         public static final double[][] kPassingDistanceToSpeedValues = {
-            {11.53, 325}, {10.3, .315}, {9.02, 300}, {7.15, 275}, {5, 200}, {0, 100}
+            {11.53, 325}, {10.3, 315}, {9.02, 300}, {7.15, 275}, {5, 200}, {0, 100}
         };
 
         static {
@@ -534,7 +535,7 @@ public final class Constants {
         public static final Rotation2d kMiddleSetpoint = Rotation2d.fromRadians(25);
 
         public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
-        public static final double lowerLimitRotations = Units.radiansToRotations(0) / kWinchReduction;
+        public static final double lowerLimitRotations = Units.radiansToRotations(-2) / kWinchReduction;
 
         public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Climb/Winch/Kff");
         public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Climb/Winch/Kp");

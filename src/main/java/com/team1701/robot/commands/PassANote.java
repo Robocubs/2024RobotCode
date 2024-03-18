@@ -45,7 +45,7 @@ public class PassANote extends Command {
         var targetSpeeds = ShooterUtil.calculatePassingShooterSpeeds(mRobotState);
         mShooter.setRollerSpeeds(targetSpeeds);
 
-        var targetAngle = new Rotation2d(kPassingTunableAngleRadians.get());
+        var targetAngle = ShooterUtil.calculatePassingShooterAngle(mRobotState);
         mShooter.setRotationAngle(targetAngle);
 
         var atSpeed = targetSpeeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), 50.0);

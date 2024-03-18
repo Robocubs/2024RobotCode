@@ -134,7 +134,10 @@ public class RotateToFieldHeading extends Command {
         Rotation2d setpoint;
         mAtTargetRotation = MathUtil.isNear(0, headingError.getRadians(), kRotationToleranceRadians.get());
         double rotationalVelocity;
-        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, mHeadingToleranceSupplier.get())
+        if (GeometryUtil.isNear(
+                        GeometryUtil.kRotationIdentity,
+                        headingError,
+                        mHeadingToleranceSupplier.get().times(0.98))
                 && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;

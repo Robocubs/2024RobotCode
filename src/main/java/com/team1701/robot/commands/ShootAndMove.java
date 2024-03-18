@@ -40,7 +40,7 @@ public class ShootAndMove extends Command {
     private static final LoggedTunableNumber kAngleToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
     private static final LoggedTunableNumber kSpeedToleranceRadiansPerSecond =
-            new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 50.0);
+            new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 25.0);
     private Rotation2d headingTolerance;
 
     private static final LoggedTunableNumber kLoopsLatency =
@@ -129,7 +129,7 @@ public class ShootAndMove extends Command {
 
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance)
+        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance.times(0.95))
                 && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;

@@ -56,6 +56,10 @@ public final class ShooterUtil {
         return new ShooterSpeeds(interpolatedSpeed);
     }
 
+    public static Rotation2d calculatePassingShooterAngle(RobotState robotState) {
+        return Rotation2d.fromRadians(Constants.Shooter.kPassingAngleInterpolator.get(robotState.getPassingDistance()));
+    }
+
     public static ShooterSpeeds calculateIdleRollerSpeeds(RobotState robotState, Drive drive) {
         ShooterSpeeds speeds;
         switch (robotState.getScoringMode()) {
@@ -73,9 +77,7 @@ public final class ShooterUtil {
                 break;
             case AMP:
                 if (robotState.hasNote()) {
-                    speed = robotState.getDistanceToAmp() <= 1
-                            ? Constants.Shooter.kAmpRollerSpeedRadiansPerSecond.get()
-                            : 250;
+                    speed = robotState.getDistanceToAmp() <= 1 ? Constants.Shooter.kUpperAmpSpeed.get() : 250;
                 } else {
                     speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                 }
