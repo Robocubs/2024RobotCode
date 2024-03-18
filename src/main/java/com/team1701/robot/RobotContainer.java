@@ -351,7 +351,7 @@ public class RobotContainer {
                         mDrive, mRobotState::getPose2d, Constants.Drive.kMediumTrapezoidalKinematicLimits, false));
 
         mDriverController
-                .a()
+                .povDown()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .whileTrue(DriveCommands.driveToAmp(
                         mDrive, mRobotState::getPose2d, Constants.Drive.kMediumTrapezoidalKinematicLimits, true));
