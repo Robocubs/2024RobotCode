@@ -129,14 +129,17 @@ public class ShootAndMove extends Command {
                 .getSpeakerPose()
                 .toTranslation2d()
                 .minus(endTranslation)
-                .getAngle();
+                .getAngle()
+                .minus(Rotation2d.fromDegrees(Constants.Shooter.kShooterReleaseAngleDegrees.get()));
         var headingError = currentPose.getRotation().minus(targetHeading);
 
+        // headingTolerance = Rotation2d.fromDegrees(0.5);
         headingTolerance = mRobotState.getToleranceSpeakerHeading();
 
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance.times(0.95))
+        if (GeometryUtil.isNear(
+                        GeometryUtil.kRotationIdentity, headingError, headingTolerance.times(0.95))
                 && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;
@@ -165,14 +168,17 @@ public class ShootAndMove extends Command {
             targetRollerSpeeds = ShooterUtil.calculateShooterSpeedsWithMotion(mRobotState, endTranslation);
         }
 
-        var currentExpectedShooterAngle = GeometryUtil.clampRotation(
-                ShooterUtil.calculateStationaryDesiredAngle(mRobotState),
-                Constants.Shooter.kShooterLowerLimit,
-                Constants.Shooter.kShooterUpperLimit);
+        var currentExpectedShooterAngle = mTuningEnabled.get()
+                ? targetShooterAngle
+                : GeometryUtil.clampRotation(
+                        ShooterUtil.calculateStationaryDesiredAngle(mRobotState),
+                        Constants.Shooter.kShooterLowerLimit,
+                        Constants.Shooter.kShooterUpperLimit);
 
         mShooter.setRotationAngle(targetShooterAngle);
 
-        var currentExpectedRollerSpeeds = ShooterUtil.calculateStationaryRollerSpeeds(mRobotState);
+        var currentExpectedRollerSpeeds =
+                mTuningEnabled.get() ? targetRollerSpeeds : ShooterUtil.calculateStationaryRollerSpeeds(mRobotState);
 
         mShooter.setRollerSpeeds(targetRollerSpeeds);
 
