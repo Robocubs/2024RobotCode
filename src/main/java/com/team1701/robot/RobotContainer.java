@@ -348,8 +348,13 @@ public class RobotContainer {
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .and(() -> mRobotState.inWing() || mRobotState.getPose2d().getY() > 6.4)
                 .whileTrue(DriveCommands.driveToAmp(
-                        mDrive, mRobotState::getPose2d, Constants.Drive.kMediumTrapezoidalKinematicLimits));
+                        mDrive, mRobotState::getPose2d, Constants.Drive.kMediumTrapezoidalKinematicLimits, false));
 
+        mDriverController
+                .povDown()
+                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
+                .whileTrue(DriveCommands.driveToAmp(
+                        mDrive, mRobotState::getPose2d, Constants.Drive.kMediumTrapezoidalKinematicLimits, true));
         mDriverController.leftTrigger().whileTrue(swerveLock(mDrive));
 
         // Shoot (and optionally move)
