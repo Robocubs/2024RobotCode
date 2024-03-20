@@ -296,7 +296,7 @@ public class RobotContainer {
                 () -> -mDriverController.getLeftY(),
                 () -> -mDriverController.getLeftX(),
                 () -> -mDriverController.getRightX(),
-                () -> mDriverController.rightBumper().getAsBoolean()
+                () -> mDriverController.getHID().getRightBumper()
                         ? Constants.Drive.kSlowKinematicLimits
                         : Constants.Drive.kFastKinematicLimits));
 
