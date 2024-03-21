@@ -19,15 +19,16 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
 
-public class ShootAndMove extends Command {
-    /* V3 */
-    private static final String kLoggingPrefix = "Command/ShootAndMove/";
+public class ShootWhileMove extends Command {
+    /* V4 */
+    private static final String kLoggingPrefix = "Command/ShootWhileMove/";
     private static final double kModuleRadius = Constants.Drive.kModuleRadius;
     private static final TrapezoidProfile.State kZeroState = new TrapezoidProfile.State(0.0, 0.0);
     private static final KinematicLimits kKinematicLimits = Constants.Drive.kFastSmoothKinematicLimits;
@@ -41,8 +42,7 @@ public class ShootAndMove extends Command {
     private static final LoggedTunableNumber kAngleToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
     private static final LoggedTunableNumber kSpeedToleranceRadiansPerSecond =
-            new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 25.0);
-    private Rotation2d headingTolerance;
+            new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 50.0);
 
     private static final LoggedTunableNumber kLoopsLatency =
             new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 2.0);
@@ -63,7 +63,7 @@ public class ShootAndMove extends Command {
     private TimeLockedBoolean mLockedReadyToShoot;
     private boolean mShooting;
 
-    ShootAndMove(
+    ShootWhileMove(
             Drive drive,
             Shooter shooter,
             Indexer indexer,
@@ -79,7 +79,7 @@ public class ShootAndMove extends Command {
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
-        mLockedReadyToShoot = new TimeLockedBoolean(.2, Timer.getFPGATimestamp());
+        mLockedReadyToShoot = new TimeLockedBoolean(.25, Timer.getFPGATimestamp());
 
         addRequirements(mDrive, mShooter, mIndexer);
     }
@@ -115,22 +115,24 @@ public class ShootAndMove extends Command {
 
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
-        var endTranslation = new Translation2d(
-                currentPose.getX() + fieldRelativeSpeeds.getX() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
-                currentPose.getY() + fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
 
-        var targetHeading = mRobotState
-                .getSpeakerPose()
-                .toTranslation2d()
-                .minus(endTranslation)
-                .getAngle();
+        var noteDX = fieldRelativeSpeeds.getX() * Constants.kLoopPeriodSeconds * kLoopsLatency.get();
+        var noteDY = (noteDX / fieldRelativeSpeeds.getX()) * fieldRelativeSpeeds.getY();
+
+        var endTranslation = mRobotState
+                .getProjectedPose(new Twist2d(
+                        fieldRelativeSpeeds.getX() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
+                        fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
+                        0))
+                .getTranslation();
+
+        var targetHeading = mRobotState.getMovingSpeakerHeading(noteDX, noteDY, endTranslation);
         var headingError = currentPose.getRotation().minus(targetHeading);
-
-        headingTolerance = mRobotState.getToleranceSpeakerHeading();
+        var headingTolerance = mRobotState.getToleranceSpeakerHeading();
 
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance.times(0.95))
+        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;

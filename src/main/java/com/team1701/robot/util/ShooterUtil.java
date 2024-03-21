@@ -24,6 +24,12 @@ public final class ShooterUtil {
         }
     }
 
+    public static Rotation2d calculateShooterAngleWithMotion(
+            RobotState robotState, double noteDY, Translation2d expectedTranslation) {
+        return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(
+                robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
+    }
+
     public static Rotation2d calculateShooterAngleWithMotion(RobotState robotState, Translation2d expectedTranslation) {
         return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(
                 robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));

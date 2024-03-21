@@ -12,6 +12,7 @@ import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.states.RobotState.ScoringMode;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -109,7 +110,9 @@ public class Robot extends LoggedRobot {
     }
 
     @Override
-    public void disabledInit() {}
+    public void disabledInit() {
+        mRobotContainer.getDriverController().getHID().setRumble(RumbleType.kBothRumble, 0);
+    }
 
     @Override
     public void disabledPeriodic() {}

@@ -40,12 +40,10 @@ public class IntakeCommands {
                             intake.setReverse();
                             indexer.setReverse();
                             drive.setVelocity(new ChassisSpeeds(0.75, 0, 0));
-                            // driverController.getHID().setRumble(RumbleType.kLeftRumble, 0.3);
                         },
                         () -> {
                             intake.stop();
                             indexer.stop();
-                            // driverController.getHID().setRumble(RumbleType.kLeftRumble, 0);
                         },
                         intake,
                         indexer,

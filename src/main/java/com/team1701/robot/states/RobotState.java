@@ -17,7 +17,6 @@ import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.Robot;
-import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
@@ -29,6 +28,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -128,6 +128,11 @@ public class RobotState {
                         Configuration.isBlueAlliance()
                                 ? FieldConstants.kBlueSpeakerOpeningCenter
                                 : FieldConstants.kRedSpeakerOpeningCenter);
+    }
+
+    @AutoLogOutput
+    public double getDistanceToSpeaker(Translation3d expectedRobotTranslation, double dX, double dY) {
+        return expectedRobotTranslation.getDistance(getAdjustedSpeakerTranslation(dX, dY));
     }
 
     public double getDistanceToSpeaker(Translation3d expectedTranslation) {
@@ -245,6 +250,10 @@ public class RobotState {
         return Configuration.isBlueAlliance() ? FieldConstants.kBlueAmpPosition : FieldConstants.kRedAmpPosition;
     }
 
+    public Pose2d getProjectedPose(Twist2d twist) {
+        return getPose2d().exp(twist);
+    }
+
     @AutoLogOutput
     public Rotation2d getSpeakerHeading() {
         return getSpeakerHeading(getPose2d().getTranslation());
@@ -258,13 +267,22 @@ public class RobotState {
                 .minus(Constants.Shooter.kShooterReleaseAngle);
     }
 
-    public Rotation2d getMovingSpeakerHeading(Drive drive) {
-        var projectedTranslation = getPose2d()
-                .getTranslation()
-                .plus(new Translation2d(
-                        drive.getFieldRelativeVelocity().vxMetersPerSecond * Constants.kLoopPeriodSeconds,
-                        drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
-        return getSpeakerHeading(projectedTranslation);
+    public Rotation2d getMovingSpeakerHeading(double dX, double dY, Translation2d expectedRobotTranslation) {
+        return getAdjustedSpeakerTranslation(dX, dY)
+                .toTranslation2d()
+                .minus(expectedRobotTranslation)
+                .getAngle();
+    }
+
+    public Translation3d getAdjustedSpeakerTranslation(double dX, double dY) {
+        var adjustedTranslation = getSpeakerPose().minus(new Translation3d(dX, dY, 0));
+        Logger.recordOutput(
+                "AdjustedSpeakerPose",
+                new Pose3d(
+                        new Translation3d(
+                                adjustedTranslation.getX(), adjustedTranslation.getY(), FieldConstants.kSpeakerHeight),
+                        new Rotation3d()));
+        return adjustedTranslation;
     }
 
     @AutoLogOutput

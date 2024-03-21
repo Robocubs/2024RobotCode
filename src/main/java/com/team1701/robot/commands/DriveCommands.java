@@ -184,7 +184,7 @@ public class DriveCommands {
             DoubleSupplier throttle,
             DoubleSupplier strafe) {
         var maxDriveVelocity = Constants.Drive.kFastSmoothKinematicLimits.maxDriveVelocity();
-        return new ShootAndMove(drive, shooter, indexer, robotState, () -> calculateDriveWithJoysticksVelocities(
+        return new ShootWhileMove(drive, shooter, indexer, robotState, () -> calculateDriveWithJoysticksVelocities(
                         throttle.getAsDouble(), strafe.getAsDouble(), drive.getFieldRelativeHeading(), maxDriveVelocity)
                 .rotateBy(robotState.getHeading()));
     }
