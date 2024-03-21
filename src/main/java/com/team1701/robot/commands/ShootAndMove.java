@@ -213,4 +213,8 @@ public class ShootAndMove extends Command {
     public boolean isFinished() {
         return mShooting && !mRobotState.hasNote();
     }
+
+    public boolean getIsShooting() {
+        return mShooting;
+    }
 }
