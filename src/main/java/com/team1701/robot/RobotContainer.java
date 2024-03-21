@@ -623,4 +623,8 @@ public class RobotContainer {
     public RobotState getRobotState() {
         return mRobotState;
     }
+
+    public CommandXboxController getDriverController() {
+        return mDriverController;
+    }
 }

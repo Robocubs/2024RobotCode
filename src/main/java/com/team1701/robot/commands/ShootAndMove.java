@@ -66,9 +66,6 @@ public class ShootAndMove extends Command {
 
     private LoggedTunableBoolean mTuningEnabled = new LoggedTunableBoolean(kLoggingPrefix + "TuningEnabled", false);
 
-    private LoggedTunableNumber mTunableSpeed = new LoggedTunableNumber(kLoggingPrefix + "TunableSpeedRPS", 300);
-    private LoggedTunableNumber mTunableAngle = new LoggedTunableNumber(kLoggingPrefix + "TunableAngleRadians", .8);
-
     ShootAndMove(
             Drive drive,
             Shooter shooter,
@@ -121,8 +118,12 @@ public class ShootAndMove extends Command {
 
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
+        // TODO: var timeInAir = mRobotState.getDistanceToSpeaker() / fieldRelativeSpeeds.getX();
         var endTranslation = new Translation2d(
-                currentPose.getX() + fieldRelativeSpeeds.getX() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
+                currentPose.getX()
+                        + fieldRelativeSpeeds.getX()
+                                * Constants.kLoopPeriodSeconds
+                                * kLoopsLatency.get(), // TODO: replace w Time in Air
                 currentPose.getY() + fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
 
         var targetHeading = mRobotState
@@ -133,12 +134,12 @@ public class ShootAndMove extends Command {
                 .minus(Rotation2d.fromDegrees(Constants.Shooter.kShooterReleaseAngleDegrees.get()));
         var headingError = currentPose.getRotation().minus(targetHeading);
 
-        headingTolerance = Rotation2d.fromDegrees(0.5);
-        // headingTolerance = mRobotState.getToleranceSpeakerHeading();
+        // headingTolerance = Rotation2d.fromDegrees(0.5);
+        headingTolerance = mRobotState.getToleranceSpeakerHeading();
 
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance /* .times(0.95)*/)
+        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance.times(0.95))
                 && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;
