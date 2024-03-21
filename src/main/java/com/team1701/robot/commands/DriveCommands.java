@@ -124,10 +124,11 @@ public class DriveCommands {
                 .withName("SwerveLock");
     }
 
-    public static Command driveToAmp(Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits) {
+    public static Command driveToAmp(
+            Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits, boolean oppositeAlliance) {
         return new DriveToPose(
                         drive,
-                        () -> Configuration.isBlueAlliance()
+                        () -> Configuration.isBlueAlliance() ^ oppositeAlliance
                                 ? FieldConstants.kBlueAmpDrivePose
                                 : FieldConstants.kRedAmpDrivePose,
                         poseSupplier,
