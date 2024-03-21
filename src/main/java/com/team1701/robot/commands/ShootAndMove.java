@@ -133,12 +133,12 @@ public class ShootAndMove extends Command {
                 .minus(Rotation2d.fromDegrees(Constants.Shooter.kShooterReleaseAngleDegrees.get()));
         var headingError = currentPose.getRotation().minus(targetHeading);
 
-        // headingTolerance = Rotation2d.fromDegrees(0.5);
-        headingTolerance = mRobotState.getToleranceSpeakerHeading();
+        headingTolerance = Rotation2d.fromDegrees(0.5);
+        // headingTolerance = mRobotState.getToleranceSpeakerHeading();
 
         Rotation2d setpoint;
         double rotationalVelocity;
-        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance.times(0.95))
+        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance /* .times(0.95)*/)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getX(), 0)
                 && Util.epsilonEquals(fieldRelativeSpeeds.getY(), 0)) {
             rotationalVelocity = 0;
