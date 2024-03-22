@@ -69,6 +69,7 @@
     "Deadband",
     "digitalinputs",
     "dtheta",
+    "Feedforward",
     "Holonomic",
     "Intaking",
     "Odometry",

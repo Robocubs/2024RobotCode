@@ -25,6 +25,9 @@ public class GyroIOPigeon2 implements GyroIO {
         mYawSignal = mPigeon.getYaw();
         mPitchSignal = mPigeon.getPitch();
         mRollSignal = mPigeon.getRoll();
+
+        BaseStatusSignal.setUpdateFrequencyForAll(100, mYawSignal, mPitchSignal, mRollSignal);
+        mPigeon.optimizeBusUtilization();
     }
 
     public GyroIOPigeon2(int pigeonID, Consumer<Pigeon2Configurator> configure) {

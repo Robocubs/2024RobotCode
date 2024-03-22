@@ -31,6 +31,7 @@ import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
+import com.team1701.robot.commands.CharacterizationCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.commands.ShootCommands;
@@ -97,23 +98,23 @@ public class RobotContainer {
                             new GyroIOPigeon2(30),
                             new SwerveModuleIO[] {
                                 new SwerveModuleIO(
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(10),
-                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(11),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(10),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(11),
                                         new EncoderIOAnalog(0),
                                         Rotation2d.fromRadians(-2.262)),
                                 new SwerveModuleIO(
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(12),
-                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(13),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(12),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(13),
                                         new EncoderIOAnalog(1),
                                         Rotation2d.fromRadians(-3.069)),
                                 new SwerveModuleIO(
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(14),
-                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(15),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(14),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(15),
                                         new EncoderIOAnalog(2),
                                         Rotation2d.fromRadians(-1.291)),
                                 new SwerveModuleIO(
-                                        TalonFxMotorFactory.createDriveMotorIOTalonFx(16),
-                                        TalonFxMotorFactory.createSteerMotorIOTalonFx(17),
+                                        TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(16),
+                                        TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(17),
                                         new EncoderIOAnalog(3),
                                         Rotation2d.fromRadians(-5.639)),
                             },
@@ -558,6 +559,17 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Five Piece Amp Auto", fivePieceAmpCommand.command());
         autonomousModeChooser.addOption("Straight To Middle", straightToMiddleCommand.command());
         autonomousModeChooser.addOption("Source Four Under Stage", sourceFourUnderStage.command());
+
+        autonomousModeChooser.addOption(
+                "Drive Characterization",
+                CharacterizationCommands.runDriveCharacterization(mDrive)
+                        .deadlineWith(Commands.idle(mShooter, mIndexer, mIntake))
+                        .withName("DriveCharacterization"));
+        autonomousModeChooser.addOption(
+                "Shooter Characterization",
+                CharacterizationCommands.runShooterCharacterization(mShooter)
+                        .deadlineWith(Commands.idle(mDrive, mIndexer, mIntake))
+                        .withName("ShooterCharacterization"));
 
         if (Configuration.getMode() == Mode.SIMULATION) {
             mAutonomousPaths.put("Demo", demoCommand.path());

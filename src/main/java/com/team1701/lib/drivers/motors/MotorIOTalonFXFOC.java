@@ -7,8 +7,9 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -16,12 +17,13 @@ import com.team1701.lib.util.SignalSamplingThread;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
-public class MotorIOTalonFX implements MotorIO {
+public class MotorIOTalonFXFOC implements MotorIO {
     private final TalonFX mMotor;
-    private final PositionDutyCycle mPositionDutyCycle;
-    private final VelocityDutyCycle mVelocityDutyCycle;
+    private final PositionTorqueCurrentFOC mPositionTorqueCurrentFOC;
+    private final VelocityTorqueCurrentFOC mVelocityTorqueCurrentFOC;
     private final DutyCycleOut mDutyCycleOut;
     private final VoltageOut mVoltageOut;
+    private final TorqueCurrentFOC mTorqueCurrentFOC;
     private final StatusSignal<Double> mPositionSignal;
     private final StatusSignal<Double> mVelocitySignal;
     private final StatusSignal<Double> mMotorVoltageSignal;
@@ -31,12 +33,13 @@ public class MotorIOTalonFX implements MotorIO {
     private Optional<Queue<Double>> mPositionSamples = Optional.empty();
     private Optional<Queue<Double>> mVelocitySamples = Optional.empty();
 
-    public MotorIOTalonFX(TalonFX motor) {
+    public MotorIOTalonFXFOC(TalonFX motor) {
         mMotor = motor;
-        mPositionDutyCycle = new PositionDutyCycle(0);
-        mVelocityDutyCycle = new VelocityDutyCycle(0);
+        mPositionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0);
+        mVelocityTorqueCurrentFOC = new VelocityTorqueCurrentFOC(0);
         mDutyCycleOut = new DutyCycleOut(0);
         mVoltageOut = new VoltageOut(0);
+        mTorqueCurrentFOC = new TorqueCurrentFOC(0);
         mPositionSignal = mMotor.getPosition();
         mVelocitySignal = mMotor.getVelocity();
         mMotorVoltageSignal = mMotor.getMotorVoltage();
@@ -85,12 +88,12 @@ public class MotorIOTalonFX implements MotorIO {
 
     @Override
     public void setPositionControl(Rotation2d position) {
-        mMotor.setControl(mPositionDutyCycle.withPosition(position.getRotations()));
+        mMotor.setControl(mPositionTorqueCurrentFOC.withPosition(position.getRotations()));
     }
 
     @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
-        mMotor.setControl(mVelocityDutyCycle.withVelocity(Units.radiansToRotations(velocityRadiansPerSecond)));
+        mMotor.setControl(mVelocityTorqueCurrentFOC.withVelocity(Units.radiansToRotations(velocityRadiansPerSecond)));
     }
 
     @Override
@@ -105,7 +108,7 @@ public class MotorIOTalonFX implements MotorIO {
 
     @Override
     public void runCharacterization(double input) {
-        setVoltageOutput(input);
+        mMotor.setControl(mTorqueCurrentFOC.withOutput(input));
     }
 
     @Override
@@ -153,13 +156,13 @@ public class MotorIOTalonFX implements MotorIO {
         mVelocitySamples = Optional.of(queue);
     }
 
-    public MotorIOTalonFX withPositionControlFrequency(double frequency) {
-        mPositionDutyCycle.withUpdateFreqHz(frequency);
+    public MotorIOTalonFXFOC withPositionControlFrequency(double frequency) {
+        mPositionTorqueCurrentFOC.withUpdateFreqHz(frequency);
         return this;
     }
 
-    public MotorIOTalonFX withVelocityControlFrequency(double frequency) {
-        mVelocityDutyCycle.withUpdateFreqHz(frequency);
+    public MotorIOTalonFXFOC withVelocityControlFrequency(double frequency) {
+        mVelocityTorqueCurrentFOC.withUpdateFreqHz(frequency);
         return this;
     }
 }
