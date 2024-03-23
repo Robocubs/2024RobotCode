@@ -193,14 +193,14 @@ public class AutonomousCommands {
 
         return Commands.deadline(
                         new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose),
-                        new Shoot(mShooter, mIndexer, mRobotState, true)
+                        new Shoot(mShooter, mIndexer, mDrive, mRobotState, true)
                                 .withTimeout(timeout)
                                 .andThen(forceShootCommand()))
                 .withName("FollowAndShoot");
     }
 
     private Command forceShootCommand() {
-        return new Shoot(mShooter, mIndexer, mRobotState, false, false, false).withName("ForceShoot");
+        return new Shoot(mShooter, mIndexer, mDrive, mRobotState, false, false, false).withName("ForceShoot");
     }
 
     private Command aimAndShoot() {
@@ -411,6 +411,15 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("FiveAmpMove.4"),
                         aimAndShoot())
                 .withName("FivePieceAmpAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand centerMove() {
+        var command = loggedSequence(
+                        print("Started center move auto"),
+                        followChoreoPathAndShoot("CenterMove.1", true, 0.8),
+                        forceShootCommand())
+                .withName("CenterMoveAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }

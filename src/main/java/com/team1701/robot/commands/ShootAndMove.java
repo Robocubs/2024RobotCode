@@ -49,9 +49,9 @@ public class ShootAndMove extends Command {
 
     private static final LoggedTunableNumber kLoopsLatency =
             new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 2.0);
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
+    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 10.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
-    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
+    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 1.0);
 
     private final Drive mDrive;
     private final Shooter mShooter;

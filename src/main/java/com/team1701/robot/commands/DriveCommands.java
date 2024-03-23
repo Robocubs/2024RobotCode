@@ -173,7 +173,7 @@ public class DriveCommands {
                                 drive.getFieldRelativeHeading(),
                                 maxDriveVelocity)
                         .rotateBy(robotState.getHeading())),
-                ShootCommands.shoot(shooter, indexer, robotState, true));
+                ShootCommands.shoot(shooter, indexer, drive, robotState, true));
     }
 
     // v3

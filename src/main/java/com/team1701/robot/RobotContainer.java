@@ -269,7 +269,7 @@ public class RobotContainer {
 
         mLED = new LED(mRobotState);
 
-        mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
+        mRobotState.addSubsystems(this.mDrive, this.mShooter, this.mIndexer, this.mIntake);
 
         SmartDashboard.putData(mDrive);
         SmartDashboard.putData(mShooter);
@@ -549,6 +549,7 @@ public class RobotContainer {
         var straightToMiddleCommand = commands.straightToMiddle();
         var sourceFourUnderStage = commands.sourceFourUnderStage();
         var fiveAmpSideMove = commands.fivePieceAmpAndMove();
+        var centerMove = commands.centerMove();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
@@ -562,6 +563,7 @@ public class RobotContainer {
         mAutonomousPaths.put("Straight To Middle", straightToMiddleCommand.path());
         mAutonomousPaths.put("Source Four Under Stage", sourceFourUnderStage.path());
         mAutonomousPaths.put("Five Piece Amp Move", fiveAmpSideMove.path());
+        mAutonomousPaths.put("Center Move", centerMove.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
@@ -574,7 +576,7 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Five Piece Amp Auto", fivePieceAmpCommand.command());
         autonomousModeChooser.addOption("Straight To Middle", straightToMiddleCommand.command());
         autonomousModeChooser.addOption("Source Four Under Stage", sourceFourUnderStage.command());
-        autonomousModeChooser.addOption("Five Piece Amp Move", fiveAmpSideMove.command());
+        autonomousModeChooser.addOption("Center Move", centerMove.command());
 
         autonomousModeChooser.addOption(
                 "Drive Characterization",

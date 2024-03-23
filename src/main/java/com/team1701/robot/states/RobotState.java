@@ -29,6 +29,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -48,6 +49,7 @@ public class RobotState {
     private final TimeLockedBoolean mOutOfAmpRange = new TimeLockedBoolean(0.25, Timer.getFPGATimestamp(), true, true);
     private final Field2d mField;
 
+    private Optional<Drive> mDrive = Optional.empty();
     private Optional<Indexer> mIndexer = Optional.empty();
     private Optional<Intake> mIntake = Optional.empty();
     private Optional<Shooter> mShooter = Optional.empty();
@@ -68,7 +70,8 @@ public class RobotState {
     private List<DetectedObjectState> mDetectedNotes = new ArrayList<>();
     private Optional<DetectedObjectState> mDetectedNoteForPickup = Optional.empty();
 
-    public void addSubsystems(Shooter shooter, Indexer indexer, Intake intake) {
+    public void addSubsystems(Drive drive, Shooter shooter, Indexer indexer, Intake intake) {
+        mDrive = Optional.of(drive);
         mShooter = Optional.of(shooter);
         mIndexer = Optional.of(indexer);
         mIntake = Optional.of(intake);
@@ -393,6 +396,11 @@ public class RobotState {
 
     public boolean isClimbMode() {
         return mScoringMode == ScoringMode.CLIMB;
+    }
+
+    public ChassisSpeeds getFieldRelativeSpeeds() {
+        return ChassisSpeeds.fromRobotRelativeSpeeds(
+                mDrive.map(Drive::getVelocity).orElse(new ChassisSpeeds()), getHeading());
     }
 
     public enum ScoringMode {
