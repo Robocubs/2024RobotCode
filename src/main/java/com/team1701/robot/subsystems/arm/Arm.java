@@ -10,6 +10,7 @@ import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
+import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -90,17 +91,18 @@ public class Arm extends SubsystemBase {
 
     @Override
     public void periodic() {
-        var hash = hashCode();
-
         mRotationMotorIO.updateInputs(mRotationMotorInputs);
         mAngleEncoderIO.updateInputs(mAngleEncoderInputs);
 
         Logger.processInputs("Arm/Motors/Rotation", mRotationMotorInputs);
         Logger.processInputs("Arm/Encoder", mAngleEncoderInputs);
 
-        if (Constants.Arm.kArmRotationKp.hasChanged(hash) || Constants.Arm.kArmRotationKd.hasChanged(hash)) {
-            mRotationMotorIO.setPID(Constants.Arm.kArmRotationKp.get(), 0, Constants.Arm.kArmRotationKd.get());
-        }
+        LoggedTunableValue.ifChanged(
+                hashCode(),
+                () -> mRotationMotorIO.setPID(
+                        Constants.Arm.kArmRotationKp.get(), 0, Constants.Arm.kArmRotationKd.get()),
+                Constants.Arm.kArmRotationKp,
+                Constants.Arm.kArmRotationKd);
 
         var angle = mAngleEncoderInputs.position.plus(Constants.Arm.kArmAngleEncoderOffset);
 

@@ -4,9 +4,10 @@ import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.lib.util.Util;
+import com.team1701.lib.util.tuning.LoggedTunableNumber;
+import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.states.ShootingState;
@@ -96,22 +97,26 @@ public class ShootAndMove extends Command {
                 MathUtil.angleModulus(headingError.getRadians()), fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
 
         mLockedReadyToShoot.update(false, Timer.getFPGATimestamp());
+
+        LoggedTunableValue.ifChanged(
+                hashCode(),
+                () -> {
+                    mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
+                            Math.min(kMaxAngularVelocity.get(), kKinematicLimits.maxDriveVelocity() / kModuleRadius),
+                            Math.min(
+                                    kMaxAngularAcceleration.get(),
+                                    kKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
+                    mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
+                },
+                kMaxAngularVelocity,
+                kMaxAngularAcceleration,
+                kRotationKp,
+                kRotationKi,
+                kRotationKd);
     }
 
     @Override
     public void execute() {
-        var hash = hashCode();
-        if (kMaxAngularVelocity.hasChanged(hash)
-                || kMaxAngularAcceleration.hasChanged(hash)
-                || kRotationKp.hasChanged(hash)
-                || kRotationKi.hasChanged(hash)
-                || kRotationKd.hasChanged(hash)) {
-            mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                    Math.min(kMaxAngularVelocity.get(), kKinematicLimits.maxDriveVelocity() / kModuleRadius),
-                    Math.min(kMaxAngularAcceleration.get(), kKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
-            mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
-        }
-
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
         var endTranslation = new Translation2d(
