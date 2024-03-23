@@ -4,8 +4,9 @@ import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.LoggedTunableNumber;
 import com.team1701.lib.util.Util;
+import com.team1701.lib.util.tuning.LoggedTunableNumber;
+import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
@@ -110,19 +111,23 @@ public class RotateToFieldHeading extends Command {
         mRotationState = new TrapezoidProfile.State(
                 MathUtil.angleModulus(headingError.getRadians()), fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
 
-        var hash = hashCode();
-        if (kMaxAngularVelocity.hasChanged(hash)
-                || kMaxAngularAcceleration.hasChanged(hash)
-                || kRotationKp.hasChanged(hash)
-                || kRotationKi.hasChanged(hash)
-                || kRotationKd.hasChanged(hash)) {
-            mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                    Math.min(kMaxAngularVelocity.get(), mRotationKinematicLimits.maxDriveVelocity() / kModuleRadius),
-                    Math.min(
-                            kMaxAngularAcceleration.get(),
-                            mRotationKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
-            mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
-        }
+        LoggedTunableValue.ifChanged(
+                hashCode(),
+                () -> {
+                    mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
+                            Math.min(
+                                    kMaxAngularVelocity.get(),
+                                    mRotationKinematicLimits.maxDriveVelocity() / kModuleRadius),
+                            Math.min(
+                                    kMaxAngularAcceleration.get(),
+                                    mRotationKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
+                    mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
+                },
+                kMaxAngularVelocity,
+                kMaxAngularAcceleration,
+                kRotationKp,
+                kRotationKi,
+                kRotationKd);
     }
 
     @Override
