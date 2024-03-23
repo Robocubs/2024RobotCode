@@ -182,6 +182,27 @@ public class AutonomousCommands {
                 .withName("FollowAndPreWarm");
     }
 
+    private Command followChoreoPathAndShoot(String pathName, boolean resetPose, double timeout) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        if (trajectory == null) {
+            return idle().withName(
+                            "Empty Idle Command"); // Prevent auto mode from continuing if trajectory failed to load
+        }
+
+        mPathBuilder.addPath(trajectory.getPoses());
+
+        return Commands.deadline(
+                        new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose),
+                        new Shoot(mShooter, mIndexer, mRobotState, true)
+                                .withTimeout(timeout)
+                                .andThen(forceShootCommand()))
+                .withName("FollowAndShoot");
+    }
+
+    private Command forceShootCommand() {
+        return new Shoot(mShooter, mIndexer, mRobotState, false, false, false).withName("ForceShoot");
+    }
+
     private Command aimAndShoot() {
         return ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState);
     }
@@ -381,10 +402,8 @@ public class AutonomousCommands {
     public AutonomousCommand fivePieceAmpAndMove() {
         var command = loggedSequence(
                         print("Started five piece amp and move auto"),
-                        driveToPoseWhileShooting(
-                                () -> getFirstPose("FiveAmpMove.1"),
-                                Constants.Drive.kFastTrapezoidalKinematicLimits,
-                                FinishedState.END_AFTER_SHOOTING_AND_MOVING),
+                        followChoreoPathAndShoot("FiveAmpMove.1", true, 0.6710751070512755),
+                        forceShootCommand(),
                         followChoreoPathAndPreWarm("FiveAmpMove.2"),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("FiveAmpMove.3"),

@@ -16,11 +16,17 @@ public class ManualShoot extends Command {
     private final RobotState mRobotState;
 
     private boolean mShooting;
+    private boolean mWaitForSpeed;
 
     public ManualShoot(Shooter shooter, Indexer indexer, RobotState robotState) {
+        this(shooter, indexer, robotState, true);
+    }
+
+    public ManualShoot(Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForSpeed) {
         mShooter = shooter;
         mIndexer = indexer;
         mRobotState = robotState;
+        mWaitForSpeed = waitForSpeed;
 
         addRequirements(shooter, indexer);
     }
@@ -37,7 +43,7 @@ public class ManualShoot extends Command {
 
         mShooter.setRollerSpeeds(targetSpeeds);
 
-        var atSpeed = targetSpeeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), 50.0);
+        var atSpeed = !mWaitForSpeed || targetSpeeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), 50.0);
 
         if (atSpeed) {
             mIndexer.setForwardShoot();
@@ -58,6 +64,7 @@ public class ManualShoot extends Command {
 
     @Override
     public void end(boolean interrupted) {
+        mShooting = false;
         mShooter.stopRollers();
         mShooter.stopRotation();
         mIndexer.stop();
@@ -65,6 +72,6 @@ public class ManualShoot extends Command {
 
     @Override
     public boolean isFinished() {
-        return mShooting;
+        return mShooting && !mRobotState.hasNote();
     }
 }

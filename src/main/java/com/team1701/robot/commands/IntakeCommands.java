@@ -73,7 +73,7 @@ public class IntakeCommands {
                         },
                         intake)
                 .finallyDo(intake::stop)
-                .withName("IdleIntake");
+                .withName("IdleIntakeCommand");
     }
 
     public static Command idleIndexer(Indexer indexer, BooleanSupplier shouldLoad) {
@@ -89,6 +89,6 @@ public class IntakeCommands {
                         },
                         indexer)
                 .finallyDo(indexer::stop)
-                .withName("IdleIndexer");
+                .withName("IdleIndexerCommand");
     }
 }

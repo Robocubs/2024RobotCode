@@ -26,15 +26,29 @@ public class Shoot extends Command {
     private final Indexer mIndexer;
     private final RobotState mRobotState;
     private final boolean mWaitForHeading;
+    private final boolean mWaitForSpeed;
+    private final boolean mWaitForAngle;
 
     private TimeLockedBoolean mLockedReadyToShoot;
     private boolean mShooting;
 
     public Shoot(Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForHeading) {
+        this(shooter, indexer, robotState, waitForHeading, true, true);
+    }
+
+    public Shoot(
+            Shooter shooter,
+            Indexer indexer,
+            RobotState robotState,
+            boolean waitForHeading,
+            boolean waitForSpeed,
+            boolean waitForAngle) {
         mShooter = shooter;
         mIndexer = indexer;
         mRobotState = robotState;
         mWaitForHeading = waitForHeading;
+        mWaitForSpeed = waitForSpeed;
+        mWaitForAngle = waitForAngle;
 
         mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp());
 
@@ -67,14 +81,15 @@ public class Shoot extends Command {
         var speeds = ShooterUtil.calculateStationaryRollerSpeeds(mRobotState);
         mShooter.setRollerSpeeds(speeds);
 
-        var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+        var atAngle = !mWaitForAngle
+                || GeometryUtil.isNear(
+                        mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
         var atHeading =
                 !mWaitForHeading || GeometryUtil.isNear(targetHeading, mRobotState.getHeading(), headingTolerance);
 
-        var atSpeed =
-                speeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
+        var atSpeed = !mWaitForSpeed
+                || speeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
         if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
             mIndexer.setForwardShoot();
