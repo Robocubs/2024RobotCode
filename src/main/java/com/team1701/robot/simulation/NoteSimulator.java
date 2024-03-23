@@ -139,8 +139,7 @@ public class NoteSimulator extends SubsystemBase {
                 new DigitalIOSim(() -> mNotesInRobot.stream()
                         .anyMatch(note -> note.location == NoteLocation.INDEXER
                                         && note.position > kIndexerPathLength - kNoteDiameter * 0.75
-                                || note.location == NoteLocation.SHOOTER
-                                        && note.position < kShooterPathLength - kNoteRadius)));
+                                || note.location == NoteLocation.SHOOTER)));
     }
 
     public void bindSubsystems(Intake intake, Indexer indexer, Shooter shooter) {

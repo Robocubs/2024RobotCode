@@ -1,7 +1,7 @@
 package com.team1701.robot.commands;
 
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.indexer.Indexer;

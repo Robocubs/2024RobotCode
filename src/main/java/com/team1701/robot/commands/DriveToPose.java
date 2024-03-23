@@ -4,7 +4,8 @@ import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.tuning.LoggedTunableNumber;
+import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
@@ -110,26 +111,30 @@ public class DriveToPose extends Command {
                         targetPose.getRotation().getRadians() + Math.PI),
                 fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
 
-        var hash = hashCode();
-        if (kMaxVelocity.hasChanged(hash)
-                || kMaxAcceleration.hasChanged(hash)
-                || kMaxAngularVelocity.hasChanged(hash)
-                || kMaxAngularAcceleration.hasChanged(hash)
-                || kTranslationKp.hasChanged(hash)
-                || kTranslationKi.hasChanged(hash)
-                || kTranslationKd.hasChanged(hash)
-                || kRotationKp.hasChanged(hash)
-                || kRotationKi.hasChanged(hash)
-                || kRotationKd.hasChanged(hash)) {
-            mTranslationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                    Math.min(kMaxVelocity.get(), mKinematicLimits.maxDriveVelocity()),
-                    Math.min(kMaxAcceleration.get(), mKinematicLimits.maxDriveAcceleration())));
-            mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                    Math.min(kMaxAngularVelocity.get(), mKinematicLimits.maxDriveVelocity() / kModuleRadius),
-                    Math.min(kMaxAngularAcceleration.get(), mKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
-            mTranslationController.setPID(kTranslationKp.get(), kTranslationKi.get(), kTranslationKd.get());
-            mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
-        }
+        LoggedTunableValue.ifChanged(
+                hashCode(),
+                () -> {
+                    mTranslationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
+                            Math.min(kMaxVelocity.get(), mKinematicLimits.maxDriveVelocity()),
+                            Math.min(kMaxAcceleration.get(), mKinematicLimits.maxDriveAcceleration())));
+                    mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
+                            Math.min(kMaxAngularVelocity.get(), mKinematicLimits.maxDriveVelocity() / kModuleRadius),
+                            Math.min(
+                                    kMaxAngularAcceleration.get(),
+                                    mKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
+                    mTranslationController.setPID(kTranslationKp.get(), kTranslationKi.get(), kTranslationKd.get());
+                    mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
+                },
+                kMaxVelocity,
+                kMaxAcceleration,
+                kMaxAngularVelocity,
+                kMaxAngularAcceleration,
+                kTranslationKp,
+                kTranslationKi,
+                kTranslationKd,
+                kRotationKp,
+                kRotationKi,
+                kRotationKd);
     }
 
     @Override

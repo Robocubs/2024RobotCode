@@ -40,10 +40,10 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean hasNote() {
-        return hasNoteAtInput() || hasNoteAtExit();
+        return hasNoteAtEntrance() || hasNoteAtExit();
     }
 
-    public boolean hasNoteAtInput() {
+    public boolean hasNoteAtEntrance() {
         return mIntakeEntranceSensorInputs.blocked;
     }
 
@@ -56,23 +56,24 @@ public class Intake extends SubsystemBase {
     }
 
     public void setForward() {
-        mPercentDemand = Constants.Intake.kIntakeSpeed;
-        mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed);
+        setPercentOutput(Constants.Intake.kIntakeSpeed);
     }
 
     public void setMediumForward() {
-        mPercentDemand = Constants.Intake.kIntakeSpeed / 2.0;
-        mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed / 2.0);
+        setPercentOutput(Constants.Intake.kIntakeSpeed / 2.0);
     }
 
     public void setSlowForward() {
-        mPercentDemand = Constants.Intake.kIntakeSpeed / 3.0;
-        mIntakeMotor.setPercentOutput(Constants.Intake.kIntakeSpeed / 3.0);
+        setPercentOutput(Constants.Intake.kIntakeSpeed / 3.0);
     }
 
     public void setReverse() {
-        mPercentDemand = Constants.Intake.kOuttakeSpeed;
-        mIntakeMotor.setPercentOutput(Constants.Intake.kOuttakeSpeed);
+        setPercentOutput(Constants.Intake.kOuttakeSpeed);
+    }
+
+    private void setPercentOutput(double percent) {
+        mPercentDemand = percent;
+        mIntakeMotor.setPercentOutput(percent);
     }
 
     public void stop() {

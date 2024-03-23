@@ -97,12 +97,15 @@ public class Drive extends SubsystemBase {
 
         new Trigger(DriverStation::isDisabled)
                 .whileTrue(Commands.sequence(
-                                Commands.waitSeconds(10), runOnce(() -> setDriveBrakeMode(false)), Commands.idle())
+                                runOnce(() -> setDriveBrakeMode(true)),
+                                Commands.waitSeconds(2),
+                                runOnce(() -> setDriveBrakeMode(false)),
+                                Commands.idle())
                         .ignoringDisable(true)
                         .withName("DriveDisabledLoop"));
 
         new Trigger(DriverStation::isEnabled)
-                .onTrue(Commands.runOnce(() -> setDriveBrakeMode(true))
+                .onTrue(Commands.runOnce(() -> setDriveBrakeMode(false))
                         .ignoringDisable(true)
                         .withName("DriveEnabledStart"));
     }

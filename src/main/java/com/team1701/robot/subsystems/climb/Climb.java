@@ -3,6 +3,7 @@ package com.team1701.robot.subsystems.climb;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
+import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -37,17 +38,13 @@ public class Climb extends SubsystemBase {
 
     @Override
     public void periodic() {
-        var hash = hashCode();
-
         mLeftWinchIO.updateInputs(mLeftWinchMotorInputs);
         mRightWinchIO.updateInputs(mRightWinchMotorInputs);
 
         Logger.processInputs("Climb/LeftWinch", mLeftWinchMotorInputs);
         Logger.processInputs("Climb/RightWinch", mRightWinchMotorInputs);
 
-        if (Constants.Climb.kWinchKp.hasChanged(hash) || Constants.Climb.kWinchKd.hasChanged(hash)) {
-            setWinchPID();
-        }
+        LoggedTunableValue.ifChanged(hashCode(), this::setWinchPID, Constants.Climb.kWinchKp, Constants.Climb.kWinchKd);
     }
 
     public void retractWinch() {

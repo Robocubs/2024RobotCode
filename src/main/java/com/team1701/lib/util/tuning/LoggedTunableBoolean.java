@@ -1,4 +1,4 @@
-package com.team1701.lib.util;
+package com.team1701.lib.util.tuning;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,12 +6,11 @@ import java.util.Map;
 import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 
 /**
- * Class for a tunable number. Gets value from dashboard in tuning mode, returns default if not or value not in
+ * Class for a tunable boolean. Gets value from dashboard in tuning mode, returns default if not or value not in
  * dashboard.
  */
-public class LoggedTunableBoolean {
+public class LoggedTunableBoolean implements LoggedTunableValue {
     private static final String kTableKey = "TunableBooleans";
-    private static boolean kTuningEnabled = true;
 
     private final String mKey;
     private boolean mHasDefault = false;
@@ -19,12 +18,8 @@ public class LoggedTunableBoolean {
     private LoggedDashboardBoolean mDashboardBoolean;
     private Map<Integer, Boolean> mLastHasChangedValues = new HashMap<>();
 
-    public static void enableTuning(boolean tuningEnabled) {
-        kTuningEnabled = tuningEnabled;
-    }
-
     /**
-     * Create a new LoggedTunableNumber
+     * Create a new LoggedTunableBoolean
      *
      * @param dashboardKey Key on dashboard
      */
@@ -33,7 +28,7 @@ public class LoggedTunableBoolean {
     }
 
     /**
-     * Create a new LoggedTunableNumber with the default value
+     * Create a new LoggedTunableBoolean with the default value
      *
      * @param dashboardKey Key on dashboard
      * @param defaultValue Default value
@@ -44,7 +39,7 @@ public class LoggedTunableBoolean {
     }
 
     /**
-     * Set the default value of the number. The default value can only be set once.
+     * Set the default value of the boolean. The default value can only be set once.
      *
      * @param defaultValue The default value
      */
@@ -52,7 +47,7 @@ public class LoggedTunableBoolean {
         if (!mHasDefault) {
             mHasDefault = true;
             this.mDefaultValue = defaultValue;
-            if (kTuningEnabled) {
+            if (LoggedTunableValue.kTuningEnabled) {
                 mDashboardBoolean = new LoggedDashboardBoolean(mKey, defaultValue);
             }
         }
@@ -64,7 +59,7 @@ public class LoggedTunableBoolean {
      * @return The current value
      */
     public boolean get() {
-        if (mHasDefault && kTuningEnabled) {
+        if (mHasDefault && LoggedTunableValue.kTuningEnabled) {
             return mDashboardBoolean.get();
         }
 
@@ -72,11 +67,11 @@ public class LoggedTunableBoolean {
     }
 
     /**
-     * Checks whether the number has changed since our last check
+     * Checks whether the boolean has changed since our last check
      *
      * @param id Unique identifier for the caller to avoid conflicts when shared between multiple objects. Recommended
      * approach is to pass the result of "hashCode()".
-     * @return True if the number has changed since the last time this method was called, false otherwise.
+     * @return True if the boolean has changed since the last time this method was called, false otherwise.
      */
     public boolean hasChanged(int id) {
         var currentValue = get();

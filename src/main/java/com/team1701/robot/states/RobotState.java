@@ -10,9 +10,9 @@ import com.team1701.lib.estimation.PoseEstimator.DriveMeasurement;
 import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
 import com.team1701.lib.estimation.TwistPoseEstimator;
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.LoggedTunableBoolean;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.lib.util.Util;
+import com.team1701.lib.util.tuning.LoggedTunableBoolean;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
@@ -351,6 +351,10 @@ public class RobotState {
         }
         var hasNote = mIntake.get().hasNote() || mIndexer.get().hasNote();
         return mHasNote.update(hasNote, Timer.getFPGATimestamp());
+    }
+
+    public boolean hasLoadedNote() {
+        return mIndexer.get().hasNoteAtExit();
     }
 
     @AutoLogOutput
