@@ -49,11 +49,7 @@ public class Arm extends SubsystemBase {
 
         mRotationMotorIO.setBrakeMode(true);
 
-        mRotationMotorIO.setPID(
-                Constants.Arm.kArmRotationKff.get(),
-                Constants.Arm.kArmRotationKp.get(),
-                0,
-                Constants.Arm.kArmRotationKd.get());
+        mRotationMotorIO.setPID(Constants.Arm.kArmRotationKp.get(), 0, Constants.Arm.kArmRotationKd.get());
 
         createMechanism2d();
     }
@@ -97,21 +93,13 @@ public class Arm extends SubsystemBase {
         var hash = hashCode();
 
         mRotationMotorIO.updateInputs(mRotationMotorInputs);
-
         mAngleEncoderIO.updateInputs(mAngleEncoderInputs);
 
         Logger.processInputs("Arm/Motors/Rotation", mRotationMotorInputs);
-
         Logger.processInputs("Arm/Encoder", mAngleEncoderInputs);
 
-        if (Constants.Arm.kArmRotationKff.hasChanged(hash)
-                || Constants.Arm.kArmRotationKp.hasChanged(hash)
-                || Constants.Arm.kArmRotationKd.hasChanged(hash)) {
-            mRotationMotorIO.setPID(
-                    Constants.Arm.kArmRotationKff.get(),
-                    Constants.Arm.kArmRotationKp.get(),
-                    0,
-                    Constants.Arm.kArmRotationKd.get());
+        if (Constants.Arm.kArmRotationKp.hasChanged(hash) || Constants.Arm.kArmRotationKd.hasChanged(hash)) {
+            mRotationMotorIO.setPID(Constants.Arm.kArmRotationKp.get(), 0, Constants.Arm.kArmRotationKd.get());
         }
 
         var angle = mAngleEncoderInputs.position.plus(Constants.Arm.kArmAngleEncoderOffset);

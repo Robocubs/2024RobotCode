@@ -8,8 +8,8 @@ import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.team1701.lib.util.SignalSamplingThread;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 
 public class MotorIOSparkFlex implements MotorIO {
@@ -18,13 +18,7 @@ public class MotorIOSparkFlex implements MotorIO {
     private final SparkPIDController mController;
     private final double mReduction;
 
-    private final TrapezoidProfile mProfile;
-    private final TrapezoidProfile.State mGoal = new TrapezoidProfile.State();
-    private final TrapezoidProfile.State mSetpoint = new TrapezoidProfile.State();
-
-    private final double mVelocityConstraints;
-    private final double mAccelerationConstraints;
-
+    private SimpleMotorFeedforward mFeedforward = new SimpleMotorFeedforward(0, 0, 0);
     private Optional<Queue<Double>> mPositionSamples = Optional.empty();
     private Optional<Queue<Double>> mVelocitySamples = Optional.empty();
 
@@ -38,10 +32,6 @@ public class MotorIOSparkFlex implements MotorIO {
         mEncoder = motor.getEncoder();
         mController = motor.getPIDController();
         mReduction = reduction;
-        mVelocityConstraints = velocityConstraint;
-        mAccelerationConstraints = accelerationConstraint;
-        mProfile =
-                new TrapezoidProfile(new TrapezoidProfile.Constraints(mVelocityConstraints, mAccelerationConstraints));
     }
 
     @Override
@@ -60,7 +50,7 @@ public class MotorIOSparkFlex implements MotorIO {
                 },
                 () -> {
                     inputs.positionRadians = toReducedRadians(mEncoder.getPosition());
-                    inputs.positionRadiansSamples = new double[] {};
+                    inputs.positionRadiansSamples = kEmptySamples;
                 });
         mVelocitySamples.ifPresentOrElse(
                 samples -> {
@@ -74,8 +64,10 @@ public class MotorIOSparkFlex implements MotorIO {
                 },
                 () -> {
                     inputs.velocityRadiansPerSecond = toReducedRadiansPerSecond(mEncoder.getVelocity());
-                    inputs.velocityRadiansPerSecondSamples = new double[] {};
+                    inputs.velocityRadiansPerSecondSamples = kEmptySamples;
                 });
+        inputs.appliedVoltage = mMotor.getBusVoltage() * mMotor.getAppliedOutput();
+        inputs.outputCurrent = mMotor.getOutputCurrent();
     }
 
     private double toReducedRadians(double value) {
@@ -88,34 +80,20 @@ public class MotorIOSparkFlex implements MotorIO {
 
     @Override
     public void setPositionControl(Rotation2d position) {
-        mController.setReference(position.getRotations() / mReduction, CANSparkFlex.ControlType.kPosition);
-    }
-
-    @Override
-    public void setSmoothPositionControl(
-            Rotation2d position, double maxVelocityRadiansPerSecond, double maxAccelerationRadiansPerSecond) {
-
-        // mController.setReference(position.getRotations() / mReduction, CANSparkFlex.ControlType.kSmartMotion);
-        // mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kTrapezoidal, 0);
-        // mController.setSmartMotionMaxVelocity(
-        //         Units.radiansPerSecondToRotationsPerMinute(maxVelocityRadiansPerSecond), 0);
-        // mController.setSmartMotionMaxAccel(
-        //         Units.radiansPerSecondToRotationsPerMinute(maxAccelerationRadiansPerSecond), 0);
+        mController.setReference(
+                position.getRotations() / mReduction,
+                CANSparkFlex.ControlType.kPosition,
+                0,
+                mFeedforward.calculate(position.getRadians() / mReduction));
     }
 
     @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
         mController.setReference(
                 Units.radiansPerSecondToRotationsPerMinute(velocityRadiansPerSecond / mReduction),
-                CANSparkFlex.ControlType.kVelocity);
-    }
-
-    @Override
-    public void setSmoothVelocityControl(
-            double velocityRadiansPerSecond, double maxAccelerationRadiansPerSecondSquared) {
-        mController.setReference(velocityRadiansPerSecond / mReduction, CANSparkFlex.ControlType.kSmartVelocity);
-        mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kTrapezoidal, 0);
-        mController.setSmartMotionMaxAccel(maxAccelerationRadiansPerSecondSquared, 0);
+                CANSparkFlex.ControlType.kVelocity,
+                0,
+                mFeedforward.calculate(velocityRadiansPerSecond / mReduction));
     }
 
     @Override
@@ -129,13 +107,22 @@ public class MotorIOSparkFlex implements MotorIO {
     }
 
     @Override
+    public void runCharacterization(double input) {
+        setVoltageOutput(input);
+    }
+
+    @Override
     public void setBrakeMode(boolean enable) {
         mMotor.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
     }
 
     @Override
-    public void setPID(double ff, double p, double i, double d) {
-        mController.setFF(ff);
+    public void setFeedforward(double kS, double kV, double kA) {
+        mFeedforward = new SimpleMotorFeedforward(kS, kV, kA);
+    }
+
+    @Override
+    public void setPID(double p, double i, double d) {
         mController.setP(p);
         mController.setI(i);
         mController.setD(d);
@@ -168,15 +155,5 @@ public class MotorIOSparkFlex implements MotorIO {
 
     public void stopMotor() {
         mMotor.stopMotor();
-    }
-
-    @Override
-    public double getOutputCurrent() {
-        return mMotor.getOutputCurrent();
-    }
-
-    @Override
-    public double getAppliedVoltage() {
-        return mMotor.getBusVoltage() * mMotor.getAppliedOutput();
     }
 }
