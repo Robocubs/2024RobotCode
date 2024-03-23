@@ -4,11 +4,11 @@ import java.util.Optional;
 import java.util.Queue;
 
 import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.team1701.lib.util.SignalSamplingThread;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
@@ -18,6 +18,7 @@ public class MotorIOSparkMax implements MotorIO {
     private final SparkPIDController mController;
     private final double mReduction;
 
+    private SimpleMotorFeedforward mFeedforward = new SimpleMotorFeedforward(0, 0, 0);
     private Optional<Queue<Double>> mPositionSamples = Optional.empty();
     private Optional<Queue<Double>> mVelocitySamples = Optional.empty();
 
@@ -30,7 +31,6 @@ public class MotorIOSparkMax implements MotorIO {
 
     @Override
     public void updateInputs(MotorInputs inputs) {
-
         inputs.positionRadians = Units.rotationsToRadians(mEncoder.getPosition()) * mReduction;
         inputs.velocityRadiansPerSecond =
                 Units.rotationsPerMinuteToRadiansPerSecond(mEncoder.getVelocity()) * mReduction;
@@ -45,7 +45,7 @@ public class MotorIOSparkMax implements MotorIO {
                 },
                 () -> {
                     inputs.positionRadians = toReducedRadians(mEncoder.getPosition());
-                    inputs.positionRadiansSamples = new double[] {};
+                    inputs.positionRadiansSamples = kEmptySamples;
                 });
         mVelocitySamples.ifPresentOrElse(
                 samples -> {
@@ -59,8 +59,10 @@ public class MotorIOSparkMax implements MotorIO {
                 },
                 () -> {
                     inputs.velocityRadiansPerSecond = toReducedRadiansPerSecond(mEncoder.getVelocity());
-                    inputs.velocityRadiansPerSecondSamples = new double[] {};
+                    inputs.velocityRadiansPerSecondSamples = kEmptySamples;
                 });
+        inputs.appliedVoltage = mMotor.getBusVoltage() * mMotor.getAppliedOutput();
+        inputs.outputCurrent = mMotor.getOutputCurrent();
     }
 
     private double toReducedRadians(double value) {
@@ -73,31 +75,20 @@ public class MotorIOSparkMax implements MotorIO {
 
     @Override
     public void setPositionControl(Rotation2d position) {
-        mController.setReference(position.getRotations() / mReduction, CANSparkMax.ControlType.kPosition);
-    }
-
-    @Override
-    public void setSmoothPositionControl(
-            Rotation2d position, double maxVelocityRadiansPerSecond, double maxAccelerationRadiansPerSecond) {
-        mController.setReference(position.getRotations() / mReduction, CANSparkFlex.ControlType.kSmartMotion);
-        mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kSCurve, 0);
-        mController.setSmartMotionMaxVelocity(maxVelocityRadiansPerSecond, 0);
-        mController.setSmartMotionMaxAccel(maxAccelerationRadiansPerSecond, 0);
+        mController.setReference(
+                position.getRotations() / mReduction,
+                CANSparkMax.ControlType.kPosition,
+                0,
+                mFeedforward.calculate(position.getRadians() / mReduction));
     }
 
     @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
         mController.setReference(
                 Units.radiansPerSecondToRotationsPerMinute(velocityRadiansPerSecond / mReduction),
-                CANSparkMax.ControlType.kVelocity);
-    }
-
-    @Override
-    public void setSmoothVelocityControl(
-            double velocityRadiansPerSecond, double maxAccelerationRadiansPerSecondSquared) {
-        mController.setReference(velocityRadiansPerSecond / mReduction, CANSparkFlex.ControlType.kSmartVelocity);
-        mController.setSmartMotionAccelStrategy(SparkPIDController.AccelStrategy.kSCurve, 0);
-        mController.setSmartMotionMaxAccel(maxAccelerationRadiansPerSecondSquared, 0);
+                CANSparkMax.ControlType.kVelocity,
+                0,
+                mFeedforward.calculate(velocityRadiansPerSecond / mReduction));
     }
 
     @Override
@@ -111,13 +102,27 @@ public class MotorIOSparkMax implements MotorIO {
     }
 
     @Override
+    public void runCharacterization(double input) {
+        setVoltageOutput(input);
+    }
+
+    @Override
     public void setBrakeMode(boolean enable) {
         mMotor.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
     }
 
     @Override
-    public void setPID(double ff, double p, double i, double d) {
-        mController.setFF(ff);
+    public void setFeedforward(double kS, double kV, double kA) {
+        mFeedforward = new SimpleMotorFeedforward(kS, kV, kA);
+    }
+
+    public MotorIOSparkMax withFeedforward(double kS, double kV, double kA) {
+        setFeedforward(kS, kV, kA);
+        return this;
+    }
+
+    @Override
+    public void setPID(double p, double i, double d) {
         mController.setP(p);
         mController.setI(i);
         mController.setD(d);

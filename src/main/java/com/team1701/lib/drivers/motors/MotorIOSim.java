@@ -3,6 +3,7 @@ package com.team1701.lib.drivers.motors;
 import com.team1701.lib.util.SignalSamplingThread;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -12,7 +13,8 @@ public class MotorIOSim implements MotorIO {
     private final DCMotorSim mSim;
     private final PIDController mController;
     private final double mLoopPeriodSeconds;
-    private double mFeedForward;
+    private SimpleMotorFeedforward mFeedforward = new SimpleMotorFeedforward(0, 0, 0);
+    private double mAppliedVoltage;
     private double mVelocityRadiansPerSecond;
     private double mPositionRadians;
     private boolean mPositionSamplingEnabled;
@@ -55,6 +57,9 @@ public class MotorIOSim implements MotorIO {
             }
         }
 
+        inputs.appliedVoltage = mAppliedVoltage;
+        inputs.outputCurrent = mSim.getCurrentDrawAmps();
+
         mPositionRadians = inputs.positionRadians;
         mVelocityRadiansPerSecond = inputs.velocityRadiansPerSecond;
         mPositionSamples = 0;
@@ -64,25 +69,14 @@ public class MotorIOSim implements MotorIO {
     @Override
     public void setPositionControl(Rotation2d position) {
         mController.setSetpoint(position.getRadians());
-        setVoltageOutput(mController.calculate(mPositionRadians) + position.getRadians() * mFeedForward);
-    }
-
-    @Override
-    public void setSmoothPositionControl(
-            Rotation2d position, double maxVelocityRadiansPerSecond, double maxAccelerationRadiansPerSecond) {
-        setPositionControl(position);
+        setVoltageOutput(mController.calculate(mPositionRadians) + mFeedforward.calculate(position.getRadians()));
     }
 
     @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
         mController.setSetpoint(velocityRadiansPerSecond);
-        setVoltageOutput(mController.calculate(mVelocityRadiansPerSecond) + velocityRadiansPerSecond * mFeedForward);
-    }
-
-    @Override
-    public void setSmoothVelocityControl(
-            double velocityRadiansPerSecond, double maxAccelerationRadiansPerSecondSquared) {
-        setVelocityControl(velocityRadiansPerSecond);
+        setVoltageOutput(
+                mController.calculate(mVelocityRadiansPerSecond) + mFeedforward.calculate(velocityRadiansPerSecond));
     }
 
     @Override
@@ -92,16 +86,25 @@ public class MotorIOSim implements MotorIO {
 
     @Override
     public void setVoltageOutput(double volts) {
-        var appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
-        mSim.setInputVoltage(appliedVolts);
+        mAppliedVoltage = MathUtil.clamp(volts, -12.0, 12.0);
+        mSim.setInputVoltage(mAppliedVoltage);
+    }
+
+    @Override
+    public void runCharacterization(double input) {
+        setVoltageOutput(input);
     }
 
     @Override
     public void setBrakeMode(boolean enable) {}
 
     @Override
-    public void setPID(double ff, double p, double i, double d) {
-        mFeedForward = ff;
+    public void setFeedforward(double kS, double kV, double kA) {
+        mFeedforward = new SimpleMotorFeedforward(kS, kV, kA);
+    }
+
+    @Override
+    public void setPID(double p, double i, double d) {
         mController.setPID(p, i, d);
     }
 

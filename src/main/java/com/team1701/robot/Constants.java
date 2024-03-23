@@ -16,6 +16,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 
 public final class Constants {
@@ -228,7 +229,9 @@ public final class Constants {
         public static final KinematicLimits kShootMoveKinematicLimits;
         public static final KinematicLimits kMediumTrapezoidalKinematicLimits;
 
-        public static final LoggedTunableNumber kDriveKff = new LoggedTunableNumber("Drive/Module/DriveKff");
+        public static final LoggedTunableNumber kDriveKs = new LoggedTunableNumber("Drive/Module/DriveKs");
+        public static final LoggedTunableNumber kDriveKv = new LoggedTunableNumber("Drive/Module/DriveKv");
+        public static final LoggedTunableNumber kDriveKa = new LoggedTunableNumber("Drive/Module/DriveKa");
         public static final LoggedTunableNumber kDriveKp = new LoggedTunableNumber("Drive/Module/DriveKp");
         public static final LoggedTunableNumber kDriveKd = new LoggedTunableNumber("Drive/Module/DriveKd");
         public static final LoggedTunableNumber kSteerKp = new LoggedTunableNumber("Drive/Module/SteerKp");
@@ -247,7 +250,7 @@ public final class Constants {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
                     kWheelRadiusMeters = Units.inchesToMeters(1.95379394);
-                    driveMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
+                    driveMotorMaxRPM = 5500; // Measured + 10%
                     turnMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
                     kDriveReduction = k16ToothKitReduction * kL3DriveReduction;
                     kSteerReduction = kMk4iSteerReduction;
@@ -256,11 +259,13 @@ public final class Constants {
                     /* TODO: Update values for 2024 bot */
                     kTrackWidthMeters = 0.465;
                     kWheelbaseMeters = 0.465;
-                    kDriveKff.initDefault(0.06);
-                    kDriveKp.initDefault(0.06);
+                    kDriveKs.initDefault(3.78855);
+                    kDriveKv.initDefault(0.11668); // 0.06
+                    kDriveKa.initDefault(1.0 / DCMotor.getKrakenX60Foc(1).KtNMPerAmp);
+                    kDriveKp.initDefault(35);
                     kDriveKd.initDefault(0);
-                    kSteerKp.initDefault(16.0);
-                    kSteerKd.initDefault(0);
+                    kSteerKp.initDefault(4000); // 16.0
+                    kSteerKd.initDefault(50);
                     break;
                 case SIMULATION_BOT:
                     kWheelRadiusMeters = Units.inchesToMeters(2);
@@ -273,7 +278,9 @@ public final class Constants {
                     /* TODO: Update values for 2024 bot */
                     kTrackWidthMeters = 0.5;
                     kWheelbaseMeters = 0.5;
-                    kDriveKff.initDefault(0.1);
+                    kDriveKs.initDefault(0.32651);
+                    kDriveKv.initDefault(0.1);
+                    kDriveKa.initDefault(0);
                     kDriveKp.initDefault(0.6);
                     kDriveKd.initDefault(0);
                     kSteerKp.initDefault(16.0);
@@ -284,8 +291,8 @@ public final class Constants {
             }
 
             kModuleRadius = Math.hypot(kTrackWidthMeters / 2.0, kWheelbaseMeters / 2.0);
-            kMaxVelocityMetersPerSecond = 5.41;
-            // Units.rotationsPerMinuteToRadiansPerSecond(driveMotorMaxRPM) * kDriveReduction * kWheelRadiusMeters;
+            kMaxVelocityMetersPerSecond =
+                    Units.rotationsPerMinuteToRadiansPerSecond(driveMotorMaxRPM) * kDriveReduction * kWheelRadiusMeters;
             kMaxAngularVelocityRadiansPerSecond =
                     kMaxVelocityMetersPerSecond / Math.hypot(kTrackWidthMeters / 2.0, kWheelbaseMeters / 2.0);
             kMaxSteerVelocityRadiansPerSecond =
@@ -342,7 +349,6 @@ public final class Constants {
     }
 
     public static final class Shooter {
-        // TODO: Update values
         public static final double kRollerReduction = 1.0 / 1.0; // 32.0 /18.0
         public static final double kEncoderToShooterReduction = 30.0 / 50.0;
         public static final double kAngleReduction = (1.0 / 4.0) * (1.0 / 5.0) * (20.0 / 93.0);
@@ -366,7 +372,14 @@ public final class Constants {
 
         public static final int kShooterThroughBoreEncoderId = 4;
 
-        public static final LoggedTunableNumber kRollerKff = new LoggedTunableNumber("Shooter/Motor/Roller/Kff");
+        public static final LoggedTunableNumber kUpperRollerKs =
+                new LoggedTunableNumber("Shooter/Motor/UpperRoller/Ks");
+        public static final LoggedTunableNumber kUpperRollerKv =
+                new LoggedTunableNumber("Shooter/Motor/UpperRoller/Kv");
+        public static final LoggedTunableNumber kLowerRollerKs =
+                new LoggedTunableNumber("Shooter/Motor/LowerRoller/Ks");
+        public static final LoggedTunableNumber kLowerRollerKv =
+                new LoggedTunableNumber("Shooter/Motor/LowerRoller/Kv");
         public static final LoggedTunableNumber kRollerKp = new LoggedTunableNumber("Shooter/Motor/Roller/Kp");
         public static final LoggedTunableNumber kRollerKd = new LoggedTunableNumber("Shooter/Motor/Roller/Kd");
 
@@ -492,7 +505,10 @@ public final class Constants {
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kRollerKff.initDefault(0.00015);
+                    kUpperRollerKs.initDefault(0.14414);
+                    kUpperRollerKv.initDefault(0.01684);
+                    kLowerRollerKs.initDefault(0.13441);
+                    kLowerRollerKv.initDefault(0.01675);
                     kRollerKp.initDefault(0.0002);
                     kRollerKd.initDefault(0.0);
 
@@ -509,7 +525,10 @@ public final class Constants {
 
                     break;
                 case SIMULATION_BOT:
-                    kRollerKff.initDefault(0.017);
+                    kUpperRollerKs.initDefault(0.8548);
+                    kUpperRollerKv.initDefault(0.01576);
+                    kLowerRollerKs.initDefault(0.8548);
+                    kLowerRollerKv.initDefault(0.01576);
                     kRollerKp.initDefault(0.2);
                     kRollerKd.initDefault(0.0);
 
@@ -537,7 +556,6 @@ public final class Constants {
         public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
         public static final double lowerLimitRotations = Units.radiansToRotations(-2) / kWinchReduction;
 
-        public static final LoggedTunableNumber kWinchKff = new LoggedTunableNumber("Climb/Winch/Kff");
         public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Climb/Winch/Kp");
         public static final LoggedTunableNumber kWinchKd = new LoggedTunableNumber("Climb/Winch/Kd");
 
@@ -547,15 +565,12 @@ public final class Constants {
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kWinchKff.initDefault(0.0);
                     kWinchKp.initDefault(0.1);
                     kWinchKd.initDefault(0.0);
                     break;
                 case SIMULATION_BOT:
-                    kWinchKff.initDefault(0.0);
                     kWinchKp.initDefault(2.0);
                     kWinchKd.initDefault(0.0);
-
                     break;
                 default:
             }
@@ -563,7 +578,6 @@ public final class Constants {
     }
 
     public static final class Arm {
-        // TODO: Update values
         public static final double kRotationReduction = 1.0 / 20.0;
 
         public static final double kArmUpperLimitRotations = Units.degreesToRotations(95) / kRotationReduction;
@@ -571,16 +585,12 @@ public final class Constants {
 
         public static final double kAngleReduction = 1;
 
-        // TODO: add IDs
-
         public static final int kRotationMotorId = 42;
         public static final int kEncoderId = 5;
 
-        public static final LoggedTunableNumber kArmRotationKff = new LoggedTunableNumber("Arm/RotationMotor/Kff");
         public static final LoggedTunableNumber kArmRotationKp = new LoggedTunableNumber("Arm/RotationMotor/Kp");
         public static final LoggedTunableNumber kArmRotationKd = new LoggedTunableNumber("Arm/RotationMotor/Kd");
 
-        // TODO: update values
         public static final LoggedTunableNumber kMaxRotationVelocityRadiansPerSecond =
                 new LoggedTunableNumber("Arm/Motor/Rotation/MaxVelocity", Math.PI);
         public static final LoggedTunableNumber kMaxRotationAccelerationRadiansPerSecondSquared =
@@ -590,20 +600,16 @@ public final class Constants {
 
         public static final LoggedTunableNumber kArmAmpRotationDegrees =
                 new LoggedTunableNumber("Arm/AmpRotationDegrees", 95);
-        ; // TODO: update
 
         static {
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kArmRotationKff.initDefault(0.0);
                     kArmRotationKp.initDefault(0.2);
                     kArmRotationKd.initDefault(0.0);
 
-                    kArmAngleEncoderOffset =
-                            Rotation2d.fromRadians(-0.6).plus(GeometryUtil.kRotationHalfPi); // TODO: Update value
+                    kArmAngleEncoderOffset = Rotation2d.fromRadians(-0.6).plus(GeometryUtil.kRotationHalfPi);
                     break;
                 case SIMULATION_BOT:
-                    kArmRotationKff.initDefault(0.0);
                     kArmRotationKp.initDefault(0.2);
                     kArmRotationKd.initDefault(0.0);
 
@@ -616,7 +622,6 @@ public final class Constants {
     }
 
     public static final class Indexer {
-        // TODO: Update values and set names
         public static final int kIndexerMotorId = 21;
         public static final double kIndexerReduction = 1.0 / 9.0;
 
@@ -626,29 +631,6 @@ public final class Constants {
         public static final double kIndexerShootPercent = 1;
         public static final double kIndexerLoadPercent = 0.5;
         public static final double kIndexerSlowPercent = 0.25;
-
-        public static final LoggedTunableNumber kIndexerKff = new LoggedTunableNumber("Indexer/Motor/Kff");
-        public static final LoggedTunableNumber kIndexerKp = new LoggedTunableNumber("Indexer/Motor/Kp");
-        public static final LoggedTunableNumber kIndexerKd = new LoggedTunableNumber("Indexer/Motor/Kd");
-        public static double kIntakeReduction;
-
-        static {
-            switch (Configuration.getRobot()) {
-                case COMPETITION_BOT:
-                    kIndexerKff.initDefault(0.0);
-                    kIndexerKp.initDefault(0.0);
-                    kIndexerKd.initDefault(0.0);
-
-                    break;
-                case SIMULATION_BOT:
-                    kIndexerKff.initDefault(0.0);
-                    kIndexerKp.initDefault(0.0);
-                    kIndexerKd.initDefault(0.0);
-
-                    break;
-                default:
-            }
-        }
     }
 
     public class Intake {

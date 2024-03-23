@@ -23,12 +23,12 @@ public class Climb extends SubsystemBase {
         mLeftWinchIO.setBrakeMode(true);
         mRightWinchIO.setBrakeMode(true);
 
-        setWinchPID(Constants.Climb.kWinchKff.get(), Constants.Climb.kWinchKp.get(), 0, Constants.Climb.kWinchKd.get());
+        setWinchPID();
     }
 
-    private void setWinchPID(double ff, double p, double i, double d) {
-        mLeftWinchIO.setPID(ff, p, i, d);
-        mRightWinchIO.setPID(ff, p, i, d);
+    private void setWinchPID() {
+        mLeftWinchIO.setPID(Constants.Climb.kWinchKp.get(), 0, Constants.Climb.kWinchKd.get());
+        mRightWinchIO.setPID(Constants.Climb.kWinchKp.get(), 0, Constants.Climb.kWinchKd.get());
     }
 
     public static MotorIOSim createWinchMotorIOSim(DCMotor winchMotor) {
@@ -45,11 +45,8 @@ public class Climb extends SubsystemBase {
         Logger.processInputs("Climb/LeftWinch", mLeftWinchMotorInputs);
         Logger.processInputs("Climb/RightWinch", mRightWinchMotorInputs);
 
-        if (Constants.Climb.kWinchKff.hasChanged(hash)
-                || Constants.Climb.kWinchKp.hasChanged(hash)
-                || Constants.Climb.kWinchKd.hasChanged(hash)) {
-            setWinchPID(
-                    Constants.Climb.kWinchKff.get(), Constants.Climb.kWinchKp.get(), 0, Constants.Climb.kWinchKd.get());
+        if (Constants.Climb.kWinchKp.hasChanged(hash) || Constants.Climb.kWinchKd.hasChanged(hash)) {
+            setWinchPID();
         }
     }
 
