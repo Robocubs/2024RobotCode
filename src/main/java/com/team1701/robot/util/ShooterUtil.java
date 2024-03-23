@@ -74,6 +74,7 @@ public final class ShooterUtil {
                     speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                 }
                 speeds = new ShooterSpeeds(speed);
+
                 break;
             case AMP:
                 speeds = new ShooterSpeeds(

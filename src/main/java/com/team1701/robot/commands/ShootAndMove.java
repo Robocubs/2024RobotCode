@@ -122,11 +122,13 @@ public class ShootAndMove extends Command {
         var droppedVelocity = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker())
                 * Units.inchesToMeters(2) // wheel radius
                 * .907; // calculated drop in roller speed
-        var headingAngleFromSpeaker = mRobotState
-                .getHeading()
+        var headingAngleFromSpeaker = mFieldRelativeSpeeds
+                .get()
+                .getAngle()
                 .minus(mRobotState
                         .getSpeakerHeading()
-                        .plus(Rotation2d.fromDegrees(Constants.Shooter.kShooterReleaseAngleDegrees.get())));
+                        .plus(Rotation2d.fromDegrees(Constants.Shooter.kShooterHeadingOffsetInterpolator.get(
+                                mRobotState.getDistanceToSpeaker()))));
         var robotVelocityTowardsSpeaker =
                 mDrive.getSpeedMetersPerSecond() * Math.cos(headingAngleFromSpeaker.getRadians());
         var timeInAir = mRobotState.getDistanceToSpeaker() / (robotVelocityTowardsSpeaker + droppedVelocity);
@@ -139,7 +141,8 @@ public class ShootAndMove extends Command {
                 .toTranslation2d()
                 .minus(endTranslation)
                 .getAngle()
-                .minus(Rotation2d.fromDegrees(Constants.Shooter.kShooterReleaseAngleDegrees.get()));
+                .minus(Rotation2d.fromDegrees(
+                        Constants.Shooter.kShooterHeadingOffsetInterpolator.get(mRobotState.getDistanceToSpeaker())));
         var headingError = currentPose.getRotation().minus(targetHeading);
 
         // headingTolerance = Rotation2d.fromDegrees(0.5);
@@ -185,18 +188,14 @@ public class ShootAndMove extends Command {
 
         mShooter.setRotationAngle(targetShooterAngle);
 
-        var currentExpectedRollerSpeeds =
-                mTuningEnabled.get() ? targetRollerSpeeds : ShooterUtil.calculateStationaryRollerSpeeds(mRobotState);
-
         mShooter.setRollerSpeeds(targetRollerSpeeds);
 
         var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(), currentExpectedShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(), targetShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        var atHeading =
-                GeometryUtil.isNear(mRobotState.getSpeakerHeading(), mRobotState.getHeading(), headingTolerance);
+        var atHeading = GeometryUtil.isNear(targetHeading, mRobotState.getHeading(), headingTolerance);
 
-        var atSpeed = currentExpectedRollerSpeeds.allMatch(
+        var atSpeed = targetRollerSpeeds.allMatch(
                 mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
         if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
@@ -215,6 +214,8 @@ public class ShootAndMove extends Command {
 
         Logger.recordOutput(kLoggingPrefix + "Setpoint", new Pose2d(endTranslation, setpoint));
         Logger.recordOutput(kLoggingPrefix + "TargetHeading", targetHeading);
+        Logger.recordOutput(kLoggingPrefix + "TargetAngle", targetShooterAngle);
+        Logger.recordOutput(kLoggingPrefix + "TargetSpeed", targetRollerSpeeds.upperSpeed());
         Logger.recordOutput(kLoggingPrefix + "TimeInAir", timeInAir);
         Logger.recordOutput(kLoggingPrefix + "VelocityTowardsSpeaker", robotVelocityTowardsSpeaker);
 

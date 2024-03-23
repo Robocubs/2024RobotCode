@@ -488,7 +488,7 @@ public final class Constants {
             // {6.4, 620},
             // {8.3, 660},
             // delete above
-            {2.3, 500}, // -7
+            {2.3, 400}, // -7
             {2.7, 400}, // -9
             {3.5, 430}, // -9
             {3.8, 450}, // -9
@@ -499,7 +499,7 @@ public final class Constants {
         };
 
         public static final double[][] kShooterDistanceToHeadingOffset = {
-            {2.3, -7},
+            {2.3, -9},
             {2.7, -9},
             {3.5, -9},
             {3.8, -9},
