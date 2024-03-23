@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
@@ -118,13 +119,20 @@ public class ShootAndMove extends Command {
 
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
-        // TODO: var timeInAir = mRobotState.getDistanceToSpeaker() / fieldRelativeSpeeds.getX();
+        var droppedVelocity = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker())
+                * Units.inchesToMeters(2) // wheel radius
+                * .907; // calculated drop in roller speed
+        var headingAngleFromSpeaker = mRobotState
+                .getHeading()
+                .minus(mRobotState
+                        .getSpeakerHeading()
+                        .plus(Rotation2d.fromDegrees(Constants.Shooter.kShooterReleaseAngleDegrees.get())));
+        var robotVelocityTowardsSpeaker =
+                mDrive.getSpeedMetersPerSecond() * Math.cos(headingAngleFromSpeaker.getRadians());
+        var timeInAir = mRobotState.getDistanceToSpeaker() / (robotVelocityTowardsSpeaker + droppedVelocity);
         var endTranslation = new Translation2d(
-                currentPose.getX()
-                        + fieldRelativeSpeeds.getX()
-                                * Constants.kLoopPeriodSeconds
-                                * kLoopsLatency.get(), // TODO: replace w Time in Air
-                currentPose.getY() + fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
+                currentPose.getX() + fieldRelativeSpeeds.getX() * timeInAir,
+                currentPose.getY() + fieldRelativeSpeeds.getY() * timeInAir);
 
         var targetHeading = mRobotState
                 .getSpeakerPose()
@@ -207,6 +215,11 @@ public class ShootAndMove extends Command {
 
         Logger.recordOutput(kLoggingPrefix + "Setpoint", new Pose2d(endTranslation, setpoint));
         Logger.recordOutput(kLoggingPrefix + "TargetHeading", targetHeading);
+        Logger.recordOutput(kLoggingPrefix + "TimeInAir", timeInAir);
+        Logger.recordOutput(kLoggingPrefix + "VelocityTowardsSpeaker", robotVelocityTowardsSpeaker);
+
+        Logger.recordOutput(
+                kLoggingPrefix + "EndTranslation", new Pose2d(endTranslation, GeometryUtil.kRotationIdentity));
         Logger.recordOutput(kLoggingPrefix + "AtAngle", atAngle);
         Logger.recordOutput(kLoggingPrefix + "AtHeading", atHeading);
         Logger.recordOutput(kLoggingPrefix + "AtSpeed", atSpeed);
