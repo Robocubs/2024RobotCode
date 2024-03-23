@@ -3,7 +3,6 @@ package com.team1701.robot.util;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
-import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -60,7 +59,7 @@ public final class ShooterUtil {
         return Rotation2d.fromRadians(Constants.Shooter.kPassingAngleInterpolator.get(robotState.getPassingDistance()));
     }
 
-    public static ShooterSpeeds calculateIdleRollerSpeeds(RobotState robotState, Drive drive) {
+    public static ShooterSpeeds calculateIdleRollerSpeeds(RobotState robotState) {
         ShooterSpeeds speeds;
         switch (robotState.getScoringMode()) {
             case SPEAKER:

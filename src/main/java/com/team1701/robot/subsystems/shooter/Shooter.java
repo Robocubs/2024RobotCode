@@ -214,16 +214,22 @@ public class Shooter extends SubsystemBase {
 
     public void setUpperRollerSpeed(double radiansPerSecond) {
         var calculatedSlew = mUpperRollerSlewRateLimiter.calculate(radiansPerSecond);
-        var velocity = radiansPerSecond == 0 ? 0 : calculatedSlew;
-        Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", velocity);
-        mUpperRollerMotorIO.setVelocityControl(velocity);
+        if (Util.epsilonEquals(radiansPerSecond, 0)) {
+            stopUpperRoller();
+        } else {
+            mUpperRollerMotorIO.setVelocityControl(calculatedSlew);
+            Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", calculatedSlew);
+        }
     }
 
     public void setLowerRollerSpeed(double radiansPerSecond) {
         var calculatedSlew = mLowerRollerSlewRateLimiter.calculate(radiansPerSecond);
-        var velocity = radiansPerSecond == 0 ? 0 : calculatedSlew;
-        Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", velocity);
-        mLowerRollerMotorIO.setVelocityControl(velocity);
+        if (Util.epsilonEquals(radiansPerSecond, 0)) {
+            stopLowerRoller();
+        } else {
+            mLowerRollerMotorIO.setVelocityControl(calculatedSlew);
+            Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", calculatedSlew);
+        }
     }
 
     public void runUpperRollerCharacterization(double input) {
@@ -254,16 +260,21 @@ public class Shooter extends SubsystemBase {
     }
 
     public void stopRollers() {
-        mUpperRollerMotorIO.setPercentOutput(0);
-        mLowerRollerMotorIO.setPercentOutput(0);
+        stopUpperRoller();
+        stopLowerRoller();
+    }
+
+    public void stopUpperRoller() {
         mUpperRollerMotorIO.stopMotor();
-        mLowerRollerMotorIO.stopMotor();
         Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", 0);
+    }
+
+    public void stopLowerRoller() {
+        mLowerRollerMotorIO.stopMotor();
         Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", 0);
     }
 
     public void stopRotation() {
-        mRotationMotorIO.setPercentOutput(0);
         mRotationMotorIO.stopMotor();
     }
 

@@ -136,6 +136,16 @@ public class MotorIOSim implements MotorIO {
         mVelocitySamplingEnabled = true;
     }
 
+    @Override
+    public void setPosition(Rotation2d position) {
+        mPositionRadians = position.getRadians();
+    }
+
+    @Override
+    public void stopMotor() {
+        setVoltageOutput(0);
+    }
+
     public void enableContinuousInput(double minimumInput, double maximumInput) {
         mController.enableContinuousInput(minimumInput, maximumInput);
     }
@@ -150,10 +160,5 @@ public class MotorIOSim implements MotorIO {
 
     public double getVelocityRotationsPerSecond() {
         return mVelocityRadiansPerSecond;
-    }
-
-    @Override
-    public void setPosition(Rotation2d position) {
-        mPositionRadians = position.getRadians();
     }
 }

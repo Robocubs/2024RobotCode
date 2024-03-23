@@ -629,8 +629,10 @@ public final class Constants {
         public static final int kIndexerExitSensorId = 2;
 
         public static final double kIndexerShootPercent = 1;
-        public static final double kIndexerLoadPercent = 0.5;
-        public static final double kIndexerSlowPercent = 0.25;
+        public static final double kIndexerLoadPercent = 0.8;
+        public static final double kIndexerSlowPercent = 0.5;
+        public static final double kIndexerReversePercent = -1;
+        public static final double kIndexerReverseBumpPercent = -0.2;
     }
 
     public class Intake {

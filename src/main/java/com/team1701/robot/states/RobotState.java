@@ -351,6 +351,10 @@ public class RobotState {
         return mHasNote.update(hasNote, Timer.getFPGATimestamp());
     }
 
+    public boolean hasLoadedNote() {
+        return mIndexer.get().hasNoteAtExit();
+    }
+
     @AutoLogOutput
     public Rotation2d calculateShooterAngleTowardsSpeaker() {
         return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(getDistanceToSpeaker()));
