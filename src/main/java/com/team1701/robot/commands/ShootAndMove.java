@@ -6,6 +6,7 @@ import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.lib.util.Util;
+import com.team1701.lib.util.tuning.LoggedTunableBoolean;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;

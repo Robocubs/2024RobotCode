@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
