@@ -422,4 +422,34 @@ public class AutonomousCommands {
                 .withName("CenterMoveAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
+
+    public AutonomousCommand fiveMiddleMove() {
+        var command = loggedSequence(
+                        print("Started five middle move auto"),
+                        driveToPoseWhileShooting(
+                                () -> getFirstPose("FiveMiddleToMiddle.3"),
+                                Constants.Drive.kFastTrapezoidalKinematicLimits,
+                                FinishedState.END_AFTER_MOVING),
+                        forceShootCommand(),
+                        followChoreoPath("FiveMiddleToMiddle.3"),
+                        aimAndShoot(),
+                        followChoreoPath("FiveMiddleToMiddle.4"),
+                        aimAndShoot(),
+                        followChoreoPath("FiveMiddleToMiddle.5"),
+                        aimAndShoot())
+                .withName("FiveMiddleMoveAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand centerMoveDTP() {
+        var command = loggedSequence(
+                        print("Started center move DTP auto"),
+                        driveToPoseWhileShooting(
+                                () -> getFirstPose("CenterMove.1"),
+                                Constants.Drive.kFastTrapezoidalKinematicLimits,
+                                FinishedState.END_AFTER_MOVING),
+                        forceShootCommand())
+                .withName("CenterMoveAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
 }

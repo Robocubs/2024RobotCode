@@ -24,24 +24,21 @@ public final class ShooterUtil {
     }
 
     public static Rotation2d calculateShooterAngleWithMotion(RobotState robotState, Translation2d expectedTranslation) {
-        return 
-        switch (robotState.getScoringMode()) {
+        return switch (robotState.getScoringMode()) {
             case SPEAKER -> Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(
-                robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
+                    robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
             case AMP -> Rotation2d.fromDegrees(Constants.Shooter.kShooterAmpAngleDegrees.get());
             default -> Constants.Shooter.kLoadingAngle;
-
         };
     }
 
     public static ShooterSpeeds calculateShooterSpeedsWithMotion(
             RobotState robotState, Translation2d expectedTranslation) {
-        return 
-        switch (robotState.getScoringMode()) {
+        return switch (robotState.getScoringMode()) {
             case SPEAKER -> new ShooterSpeeds(Constants.Shooter.kShooterSpeedInterpolator.get(
-                robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
+                    robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
             case AMP -> new ShooterSpeeds(
-                        Constants.Shooter.kUpperAmpSpeed.get(), Constants.Shooter.kLowerAmpSpeed.get());
+                    Constants.Shooter.kUpperAmpSpeed.get(), Constants.Shooter.kLowerAmpSpeed.get());
             default -> new ShooterSpeeds(0);
         };
     }
