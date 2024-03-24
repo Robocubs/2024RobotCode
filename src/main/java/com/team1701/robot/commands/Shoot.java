@@ -98,7 +98,16 @@ public class Shoot extends Command {
                 currentPose.getX() + fieldRelativeSpeeds.getX() * timeInAir,
                 currentPose.getY() + fieldRelativeSpeeds.getY() * timeInAir);
 
-        Rotation2d targetHeading = mRobotState.getStationaryTargetHeading();
+        var targetHeading = mRobotState.isSpeakerMode()
+                ? mRobotState
+                        .getSpeakerPose()
+                        .toTranslation2d()
+                        .minus(endTranslation)
+                        .getAngle()
+                        .minus(Rotation2d.fromDegrees(Constants.Shooter.kShooterHeadingOffsetInterpolator.get(
+                                mRobotState.getDistanceToSpeaker())))
+                : mRobotState.getStationaryTargetHeading();
+        var headingError = currentPose.getRotation().minus(targetHeading);
         headingTolerance = mRobotState.getToleranceSpeakerHeading();
 
         Rotation2d desiredShooterAngle = GeometryUtil.clampRotation(
@@ -115,8 +124,7 @@ public class Shoot extends Command {
                 || GeometryUtil.isNear(
                         mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        var atHeading =
-                !mWaitForHeading || GeometryUtil.isNear(targetHeading, mRobotState.getHeading(), headingTolerance);
+        var atHeading = !mWaitForHeading || GeometryUtil.isNear(targetHeading, headingError, headingTolerance);
 
         var atSpeed = !mWaitForSpeed
                 || speeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
