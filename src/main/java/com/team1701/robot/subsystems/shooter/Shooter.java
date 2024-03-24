@@ -10,6 +10,7 @@ import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
+import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -61,8 +62,7 @@ public class Shooter extends SubsystemBase {
 
         mRotationMotorIO.setBrakeMode(true);
 
-        setRollerPID();
-        setRotationPID();
+        setPIDValues();
 
         mAngleEncoderIO = angleEncoder;
 
@@ -126,7 +126,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        var hash = hashCode();
         mUpperRollerMotorIO.updateInputs(mUpperShooterMotorInputs);
         mLowerRollerMotorIO.updateInputs(mLowerShooterMotorInputs);
         mRotationMotorIO.updateInputs(mRotationShooterMotorInputs);
@@ -144,18 +143,17 @@ public class Shooter extends SubsystemBase {
                 "Shooter/Motors/LowerRollerWattage",
                 mLowerShooterMotorInputs.appliedVoltage * mLowerShooterMotorInputs.outputCurrent);
 
-        if (Constants.Shooter.kUpperRollerKs.hasChanged(hash)
-                || Constants.Shooter.kUpperRollerKv.hasChanged(hash)
-                || Constants.Shooter.kLowerRollerKs.hasChanged(hash)
-                || Constants.Shooter.kLowerRollerKv.hasChanged(hash)
-                || Constants.Shooter.kRollerKp.hasChanged(hash)
-                || Constants.Shooter.kRollerKd.hasChanged(hash)) {
-            setRollerPID();
-        }
-
-        if (Constants.Shooter.kRotationKp.hasChanged(hash) || Constants.Shooter.kRotationKd.hasChanged(hash)) {
-            setRotationPID();
-        }
+        LoggedTunableValue.ifChanged(
+                hashCode(),
+                this::setPIDValues,
+                Constants.Shooter.kUpperRollerKs,
+                Constants.Shooter.kUpperRollerKv,
+                Constants.Shooter.kLowerRollerKs,
+                Constants.Shooter.kLowerRollerKv,
+                Constants.Shooter.kRollerKp,
+                Constants.Shooter.kRollerKd,
+                Constants.Shooter.kRotationKp,
+                Constants.Shooter.kRotationKd);
 
         var angle = mAngleEncoderInputs
                 .position
@@ -176,16 +174,13 @@ public class Shooter extends SubsystemBase {
         Logger.recordOutput("Shooter/mech", mShooterMechanism);
     }
 
-    private void setRollerPID() {
+    private void setPIDValues() {
         mUpperRollerMotorIO.setFeedforward(
                 Constants.Shooter.kUpperRollerKs.get(), Constants.Shooter.kUpperRollerKv.get(), 0);
         mLowerRollerMotorIO.setFeedforward(
                 Constants.Shooter.kLowerRollerKs.get(), Constants.Shooter.kLowerRollerKv.get(), 0);
         mUpperRollerMotorIO.setPID(Constants.Shooter.kRollerKp.get(), 0, Constants.Shooter.kRollerKd.get());
         mLowerRollerMotorIO.setPID(Constants.Shooter.kRollerKp.get(), 0, Constants.Shooter.kRollerKd.get());
-    }
-
-    private void setRotationPID() {
         mRotationMotorIO.setPID(Constants.Shooter.kRotationKp.get(), 0, Constants.Shooter.kRotationKd.get());
     }
 
@@ -214,16 +209,22 @@ public class Shooter extends SubsystemBase {
 
     public void setUpperRollerSpeed(double radiansPerSecond) {
         var calculatedSlew = mUpperRollerSlewRateLimiter.calculate(radiansPerSecond);
-        var velocity = radiansPerSecond == 0 ? 0 : calculatedSlew;
-        Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", velocity);
-        mUpperRollerMotorIO.setVelocityControl(velocity);
+        if (Util.epsilonEquals(radiansPerSecond, 0)) {
+            stopUpperRoller();
+        } else {
+            mUpperRollerMotorIO.setVelocityControl(calculatedSlew);
+            Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", calculatedSlew);
+        }
     }
 
     public void setLowerRollerSpeed(double radiansPerSecond) {
         var calculatedSlew = mLowerRollerSlewRateLimiter.calculate(radiansPerSecond);
-        var velocity = radiansPerSecond == 0 ? 0 : calculatedSlew;
-        Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", velocity);
-        mLowerRollerMotorIO.setVelocityControl(velocity);
+        if (Util.epsilonEquals(radiansPerSecond, 0)) {
+            stopLowerRoller();
+        } else {
+            mLowerRollerMotorIO.setVelocityControl(calculatedSlew);
+            Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", calculatedSlew);
+        }
     }
 
     public void runUpperRollerCharacterization(double input) {
@@ -254,16 +255,21 @@ public class Shooter extends SubsystemBase {
     }
 
     public void stopRollers() {
-        mUpperRollerMotorIO.setPercentOutput(0);
-        mLowerRollerMotorIO.setPercentOutput(0);
+        stopUpperRoller();
+        stopLowerRoller();
+    }
+
+    public void stopUpperRoller() {
         mUpperRollerMotorIO.stopMotor();
-        mLowerRollerMotorIO.stopMotor();
         Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", 0);
+    }
+
+    public void stopLowerRoller() {
+        mLowerRollerMotorIO.stopMotor();
         Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", 0);
     }
 
     public void stopRotation() {
-        mRotationMotorIO.setPercentOutput(0);
         mRotationMotorIO.stopMotor();
     }
 

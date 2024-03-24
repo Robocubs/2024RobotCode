@@ -71,27 +71,32 @@ public class Indexer extends SubsystemBase {
     }
 
     public void setForwardLoad() {
-        mPercentDemand = Constants.Indexer.kIndexerLoadPercent;
-        mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerLoadPercent);
+        setPercentOutput(Constants.Indexer.kIndexerLoadPercent);
     }
 
     public void setSlowLoad() {
-        mPercentDemand = Constants.Indexer.kIndexerLoadPercent;
-        mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerLoadPercent);
+        setPercentOutput(Constants.Indexer.kIndexerSlowPercent);
     }
 
     public void setForwardShoot() {
-        mPercentDemand = Constants.Indexer.kIndexerShootPercent;
-        mIndexerMotorIO.setPercentOutput(Constants.Indexer.kIndexerShootPercent);
+        setPercentOutput(Constants.Indexer.kIndexerShootPercent);
     }
 
     public void setReverse() {
-        mPercentDemand = -Constants.Indexer.kIndexerShootPercent;
-        mIndexerMotorIO.setPercentOutput(-Constants.Indexer.kIndexerShootPercent);
+        setPercentOutput(Constants.Indexer.kIndexerReversePercent);
+    }
+
+    public void setReverseBump() {
+        setPercentOutput(Constants.Indexer.kIndexerReverseBumpPercent);
+    }
+
+    private void setPercentOutput(double percent) {
+        mPercentDemand = percent;
+        mIndexerMotorIO.setPercentOutput(percent);
     }
 
     public void stop() {
         mPercentDemand = 0;
-        mIndexerMotorIO.setPercentOutput(0);
+        mIndexerMotorIO.stopMotor();
     }
 }

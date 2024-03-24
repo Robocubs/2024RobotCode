@@ -8,7 +8,7 @@ import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -666,8 +666,10 @@ public final class Constants {
         public static final int kIndexerExitSensorId = 2;
 
         public static final double kIndexerShootPercent = 1;
-        public static final double kIndexerLoadPercent = 0.5;
-        public static final double kIndexerSlowPercent = 0.25;
+        public static final double kIndexerLoadPercent = 0.8;
+        public static final double kIndexerSlowPercent = 0.5;
+        public static final double kIndexerReversePercent = -1;
+        public static final double kIndexerReverseBumpPercent = -0.2;
     }
 
     public class Intake {

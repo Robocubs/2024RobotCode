@@ -10,7 +10,7 @@ import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO.DetectorCameraInputs;
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.LoggedTunableNumber;
+import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.robot.FieldConstants;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;

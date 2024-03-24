@@ -35,6 +35,7 @@ import com.team1701.robot.commands.CharacterizationCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.commands.ShootCommands;
+import com.team1701.robot.controls.RumbleController;
 import com.team1701.robot.controls.StreamDeck;
 import com.team1701.robot.controls.StreamDeck.StreamDeckButton;
 import com.team1701.robot.simulation.NoteSimulator;
@@ -55,10 +56,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -146,11 +147,11 @@ public class RobotContainer {
                     indexer = Optional.of(new Indexer(
                             SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
                             new DigitalIOSensor(Constants.Indexer.kIndexerEntranceSensorId, true),
-                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, true)));
+                            new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, false)));
                     intake = Optional.of(new Intake(
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
-                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
-                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
+                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, false),
+                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, false)));
                     climb = Optional.of(new Climb(
                             SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                                     Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
@@ -289,6 +290,21 @@ public class RobotContainer {
                         || !DriverStation.getJoystickIsXbox(
                                 mDriverController.getHID().getPort()));
 
+        /* RUMBLE */
+
+        var rumbleController = new RumbleController(mDriverController.getHID());
+
+        var teleopEnabled = new Trigger(DriverStation::isTeleopEnabled);
+
+        teleopEnabled
+                .and(() -> DriverStation.isFMSAttached() && Timer.getMatchTime() < 30.5)
+                .onTrue(rumbleController.rumblePulses(3).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+
+        mDriverController
+                .y()
+                .and(() -> !mRobotState.getDetectedNoteForPickup().isPresent() || mRobotState.hasNote())
+                .onTrue(rumbleController.rumblePulses(2));
+
         /* DEFAULT COMMANDS */
 
         mDrive.setDefaultCommand(driveWithJoysticks(
@@ -301,11 +317,11 @@ public class RobotContainer {
                         ? Constants.Drive.kSlowKinematicLimits
                         : Constants.Drive.kFastKinematicLimits));
 
-        mIndexer.setDefaultCommand(IntakeCommands.idleIndexer(mIndexer, () -> true));
+        mIndexer.setDefaultCommand(IntakeCommands.idleIndexer(mIndexer));
 
-        mIntake.setDefaultCommand(IntakeCommands.idleIntake(mIntake, mIndexer));
+        mIntake.setDefaultCommand(IntakeCommands.idleIntake(mIntake, mRobotState));
 
-        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mIndexer, mDrive, mRobotState));
+        mShooter.setDefaultCommand(ShootCommands.idleShooterCommand(mShooter, mRobotState));
 
         mClimb.setDefaultCommand(Commands.startEnd(mClimb::stop, () -> {}, mClimb)
                 .andThen(idle(mClimb))
@@ -500,14 +516,6 @@ public class RobotContainer {
                 .button(StreamDeckButton.kRetractWinchButton)
                 .whileTrue(retractWinchCommand)
                 .onFalse(runOnce(() -> mClimb.stop()));
-
-        /* Timer Triggers*/
-
-        new Trigger(() -> Timer.getMatchTime() == 30.5)
-                .onTrue(Commands.runOnce(() -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 1)));
-
-        new Trigger(() -> Timer.getMatchTime() == 29.5)
-                .onTrue(Commands.runOnce(() -> mDriverController.getHID().setRumble(RumbleType.kBothRumble, 0)));
 
         DriverStation.silenceJoystickConnectionWarning(true);
     }

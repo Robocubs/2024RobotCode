@@ -16,6 +16,7 @@ public class LED extends SubsystemBase {
     private static final int kTopLEDsRowCount = 3;
     private static final int kTopLEDsPerRow = kTopLEDCount / kTopLEDsRowCount;
     private static final int kCylonFrequency = 16;
+    private static final int kStrobeFrequency = 10;
 
     private final LEDController mLEDController;
     private final RobotState mRobotState;
@@ -32,8 +33,10 @@ public class LED extends SubsystemBase {
         } else if (mRobotState.hasNote()) {
             if (mRobotState.getShootingState().isActive) {
                 setScoringLEDStates();
+            } else if (!mRobotState.hasLoadedNote()) {
+                setStrobe(LEDColors.kIdleHasNote);
             } else if (mRobotState.isSpeakerMode() && !mRobotState.inOpponentWing()) {
-                setSpeakerRangeLEDs();
+                setSpeakerRangeLEDStates();
             } else {
                 mLEDController.setAll(LEDColors.kIdleHasNote);
             }
@@ -50,6 +53,11 @@ public class LED extends SubsystemBase {
     @Override
     public void simulationPeriodic() {
         Logger.recordOutput("LED", mLEDController.getColorHexStrings());
+    }
+
+    private void setStrobe(Color color) {
+        var tick = (int) (Timer.getFPGATimestamp() * kStrobeFrequency * 2);
+        mLEDController.setAll(tick % 2 == 0 ? color : Color.kWhite);
     }
 
     private void setDisabledLEDStates() {
@@ -96,7 +104,7 @@ public class LED extends SubsystemBase {
         }
     }
 
-    private void setSpeakerRangeLEDs() {
+    private void setSpeakerRangeLEDStates() {
         var unlitLEDsPerSide =
                 MathUtil.clamp((int) (mRobotState.getDistanceToSpeaker() - kMaxRange), 0, kTopLEDsPerRow / 2);
         var litLEDs = kTopLEDsPerRow - 2 * unlitLEDsPerSide;
