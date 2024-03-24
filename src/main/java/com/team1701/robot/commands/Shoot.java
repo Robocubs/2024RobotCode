@@ -108,9 +108,7 @@ public class Shoot extends Command {
 
         mShooter.setRotationAngle(desiredShooterAngle);
 
-        var speeds = mRobotState.isAmpMode()
-                ? ShooterUtil.calculateStationaryRollerSpeeds(mRobotState)
-                : ShooterUtil.calculateShooterSpeedsWithMotion(mRobotState, endTranslation);
+        var speeds = ShooterUtil.calculateShooterSpeedsWithMotion(mRobotState, endTranslation);
         mShooter.setRollerSpeeds(speeds);
 
         var atAngle = !mWaitForAngle
