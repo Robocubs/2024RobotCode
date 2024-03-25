@@ -59,7 +59,7 @@ public class ShootAndDriveToPose extends Command {
                 Constants.Drive.kSlowTrapezoidalKinematicLimits.maxDriveVelocity(),
                 Constants.Drive.kSlowTrapezoidalKinematicLimits.maxDriveAcceleration()));
 
-        mShootAndMoveCommand = new ShootAndMove(drive, shooter, indexer, robotState, this::getSpeed);
+        mShootAndMoveCommand = new ShootAndMove(drive, shooter, indexer, robotState, this::getSpeed, true);
         CommandScheduler.getInstance().registerComposedCommands(mShootAndMoveCommand);
     }
 

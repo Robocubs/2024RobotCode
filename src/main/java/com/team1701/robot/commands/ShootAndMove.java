@@ -49,15 +49,16 @@ public class ShootAndMove extends Command {
 
     private static final LoggedTunableNumber kLoopsLatency =
             new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 2.0);
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 10.0);
+    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
-    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 1.0);
+    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.5);
 
     private final Drive mDrive;
     private final Shooter mShooter;
     private final Indexer mIndexer;
     private final RobotState mRobotState;
     private final Supplier<Translation2d> mFieldRelativeSpeeds;
+    private final boolean mEndAfterShooting;
     private final PIDController mRotationController;
 
     private TrapezoidProfile mRotationProfile;
@@ -73,12 +74,14 @@ public class ShootAndMove extends Command {
             Shooter shooter,
             Indexer indexer,
             RobotState robotState,
-            Supplier<Translation2d> fieldRelativeSpeeds) {
+            Supplier<Translation2d> fieldRelativeSpeeds,
+            boolean endAfterShooting) {
         mDrive = drive;
         mShooter = shooter;
         mIndexer = indexer;
         mRobotState = robotState;
         mFieldRelativeSpeeds = fieldRelativeSpeeds;
+        mEndAfterShooting = endAfterShooting;
         mRotationController = new PIDController(
                 kRotationKp.get(), kRotationKi.get(), kRotationKd.get(), Constants.kLoopPeriodSeconds);
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
@@ -250,6 +253,6 @@ public class ShootAndMove extends Command {
 
     @Override
     public boolean isFinished() {
-        return mShooting && !mRobotState.hasNote();
+        return mEndAfterShooting && mShooting && !mRobotState.hasNote();
     }
 }
