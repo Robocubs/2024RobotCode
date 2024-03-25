@@ -12,6 +12,7 @@ import com.team1701.lib.util.PathBuilder;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
+import com.team1701.robot.commands.ShootAndDriveToPose.FinishedState;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
@@ -83,6 +84,11 @@ public class AutonomousCommands {
         mPathBuilder.addPose(pose);
         return DriveCommands.driveToPose(
                 mDrive, () -> autoFlipPose(pose), mRobotState::getPose2d, kinematicLimits, finishAtPose);
+    }
+
+    private Command driveToPoseWhileShooting(
+            Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits, FinishedState finishedState) {
+        return new ShootAndDriveToPose(mDrive, mShooter, mIndexer, mRobotState, poseSupplier, finishedState);
     }
 
     private Command driveToPoseAndPreWarm(Pose2d pose, KinematicLimits kinematicLimits) {
@@ -369,6 +375,23 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("SourceFourUnderStage.4"),
                         aimAndShoot())
                 .withName("SourceFourUnderStageAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand fivePieceAmpAndMove() {
+        var command = loggedSequence(
+                        print("Started five piece amp and move auto"),
+                        driveToPoseWhileShooting(
+                                () -> getFirstPose("FiveAmpMove.1"),
+                                Constants.Drive.kFastTrapezoidalKinematicLimits,
+                                FinishedState.END_AFTER_SHOOTING_AND_MOVING),
+                        followChoreoPathAndPreWarm("FiveAmpMove.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("FiveAmpMove.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("FiveAmpMove.4"),
+                        aimAndShoot())
+                .withName("FivePieceAmpAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }

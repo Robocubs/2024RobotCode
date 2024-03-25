@@ -371,6 +371,8 @@ public final class Constants {
         public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-2);
         public static final double kSpeakerToShooterHingeDifference =
                 FieldConstants.kSpeakerHeight - kShooterAxisHeight;
+        public static final LoggedTunableNumber kShooterReleaseAngleDegrees =
+                new LoggedTunableNumber("Shooter/kShooterReleaseAngleDegrees", -7);
 
         public static final Rotation2d kShooterAngleEncoderOffset;
 
@@ -404,17 +406,17 @@ public final class Constants {
                 new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 150);
         public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/TrapRollerSpeedRadiansPerSecond", 200);
-        public static final LoggedTunableNumber kTargetShootSpeedRadiansPerSecond =
-                new LoggedTunableNumber("Shooter/Roller/TargetShootSpeedRadiansPerSecond", 450);
+        public static final LoggedTunableNumber kTunableShooterSpeedRadiansPerSecond =
+                new LoggedTunableNumber("Shooter/Roller/TunableSpeedRadiansPerSecond", 300);
 
         public static final LoggedTunableNumber kTunableShooterAngleRadians =
                 new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
 
         public static final LoggedTunableNumber kLowerAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 80);
+                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 95);
 
         public static final LoggedTunableNumber kUpperAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 80);
+                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 60);
 
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
@@ -428,6 +430,9 @@ public final class Constants {
                 new InterpolatingDoubleTreeMap(); // Radians
         public static final InterpolatingDoubleTreeMap kPassingSpeedInterpolator =
                 new InterpolatingDoubleTreeMap(); // Radians/sec
+
+        public static final InterpolatingDoubleTreeMap kShooterHeadingOffsetInterpolator =
+                new InterpolatingDoubleTreeMap();
 
         public static final double kRollerRampRate = 450;
 
@@ -456,30 +461,59 @@ public final class Constants {
         // };
 
         public static final double[][] kShooterDistanceToAngleValues = {
-            {2.3, 1.01},
-            {2.75, 0.83},
-            {3.125, .715},
-            {3.5, 0.62},
-            {3.78, 0.56},
-            {4.25, 0.5},
-            {4.89, 0.47},
-            {5.49, 0.43},
-            {6, 0.4},
-            {6.4, 0.36},
-            {8.3, 0.31}
+            // {2.3, 1.01},
+            // {2.75, 0.83},
+            // {3.125, .715},
+            // {3.5, 0.62},
+            // {3.78, 0.56},
+            // {4.25, 0.5},
+            // {4.89, 0.47},
+            // {5.49, 0.43},
+            // {6, 0.4},
+            // {6.4, 0.36},
+            // {8.3, 0.31},
+            // delete above
+            {2.3, 1},
+            {2.7, .8},
+            {3.5, .63},
+            {3.8, .58},
+            {4.1, .55},
+            {4.7, .54},
+            {5.1, .47},
+            {5.9, .44} // -9
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
-            {2.3, 275},
-            {2.75, 320},
-            {3.5, 385},
-            {3.78, 425},
-            {4.25, 450},
-            {4.89, 500},
-            {5.49, 550},
-            {6, 600},
-            {6.4, 620},
-            {8.3, 660}
+            // {2.3, 275},
+            // {2.75, 320},
+            // {3.5, 385},
+            // {3.78, 425},
+            // {4.25, 450},
+            // {4.89, 500},
+            // {5.49, 550},
+            // {6, 600},
+            // {6.4, 620},
+            // {8.3, 660},
+            // delete above
+            {2.3, 400}, // -7
+            {2.7, 400}, // -9
+            {3.5, 430}, // -9
+            {3.8, 450}, // -9
+            {4.1, 460}, // -9
+            {4.7, 500}, // -9
+            {5.1, 540}, // -5
+            {5.9, 580} // -5
+        };
+
+        public static final double[][] kShooterDistanceToHeadingOffset = {
+            {2.3, -9},
+            {2.7, -9},
+            {3.5, -9},
+            {3.8, -9},
+            {4.1, -9},
+            {4.7, -9},
+            {5.1, -5},
+            {5.9, -5}
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {
@@ -522,6 +556,9 @@ public final class Constants {
 
                 kBetaRegression = new PolynomialRegression(theoreticalAngles, collectedAngles, 1);
             }
+            for (double[] pair : kShooterDistanceToHeadingOffset) {
+                kShooterHeadingOffsetInterpolator.put(pair[0], pair[1]);
+            }
         }
 
         static {
@@ -537,7 +574,7 @@ public final class Constants {
                     kRotationKp.initDefault(0.3);
                     kRotationKd.initDefault(0.0);
 
-                    kTargetShootSpeedRadiansPerSecond.initDefault(450);
+                    kTunableShooterSpeedRadiansPerSecond.initDefault(450);
 
                     kShooterAngleEncoderOffset = Rotation2d.fromRadians(1.011)
                             .plus(Rotation2d.fromDegrees(12.3 / kEncoderToShooterReduction)); // hard stop is 12.3º
