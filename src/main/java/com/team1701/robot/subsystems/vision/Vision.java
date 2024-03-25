@@ -57,6 +57,9 @@ public class Vision extends SubsystemBase {
             Alert.error("Failed to load AprilTag layout for Vision").enable();
         }
 
+        CubVisionConfigTable.getIntegerArrayTopic("valid_ids").publish().set(Constants.Vision.kValidOnboardIds);
+        CubVisionConfigTable.getStringArrayTopic("bus_keys").publish().set(Constants.Vision.kBusKeys);
+
         for (AprilTagCameraIO cameraIO : cameraIOs) {
             mAprilTagCameras.add(new AprilTagCamera(
                     cameraIO, fieldLayoutSupplier, mRobotState::getPose3d, this::interpolateStdDevForDistance));

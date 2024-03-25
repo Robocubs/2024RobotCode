@@ -126,6 +126,8 @@ public final class Constants {
         public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
         public static final double kMaxPoseAmbiguity = 0.03;
         public static final double kMaxAreaFitInFrame = 0.0;
+        public static final long[] kValidOnboardIds = {0, 2};
+        public static final String[] kBusKeys = {"FL:fc8", "FR:xhci", "BL:fc8", "BR:xhci"};
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
@@ -256,6 +258,7 @@ public final class Constants {
                     kSteerKp.initDefault(16.0);
                     kSteerKd.initDefault(0);
                     break;
+                case SIMULATION_VISION:
                 case SIMULATION_BOT:
                     kWheelRadiusMeters = Units.inchesToMeters(2);
                     driveMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
@@ -470,6 +473,7 @@ public final class Constants {
 
                     break;
                 case SIMULATION_BOT:
+                case SIMULATION_VISION:
                     kRollerKff.initDefault(0.017);
                     kRollerKp.initDefault(0.2);
                     kRollerKd.initDefault(0.0);
