@@ -436,7 +436,7 @@ public final class Constants {
 
         public static final double kRollerRampRate = 450;
 
-        public static final boolean kUseBetaCurve = true;
+        public static final boolean kUseNewCurves = true;
 
         // public static final double[][] kShooterDistanceToAngleValues = {
         //     {3.47, 0.535},
@@ -478,7 +478,7 @@ public final class Constants {
             {3.5, .63},
             {3.8, .58},
             {4.1, .55},
-            {4.7, .54},
+            {4.7, .50},
             {5.1, .47},
             {5.9, .44} // -9
         };
@@ -526,6 +526,8 @@ public final class Constants {
 
         // Regression of Collected (a.k.a used angle) vs Calculated Angle
         public static final PolynomialRegression kBetaRegression;
+        // Regression of Speed vs Distance to speaker
+        public static final PolynomialRegression kSpeedRegression;
 
         static {
             for (double[] pair : kShooterDistanceToAngleValues) {
@@ -544,7 +546,8 @@ public final class Constants {
                 kPassingSpeedInterpolator.put(pair[0], pair[1]);
             }
 
-            if (kUseBetaCurve) {
+            if (kUseNewCurves) {
+                // Angle
                 var collectedDistanceToAngles = kShooterDistanceToAngleValues;
                 double[] theoreticalAngles = new double[collectedDistanceToAngles.length];
                 double[] collectedAngles = new double[collectedDistanceToAngles.length];
@@ -555,6 +558,17 @@ public final class Constants {
                 }
 
                 kBetaRegression = new PolynomialRegression(theoreticalAngles, collectedAngles, 1);
+
+                // Speed
+                var collectedDistanceToSpeeds = kShooterDistanceToSpeedValues;
+                double[] distances = new double[collectedDistanceToSpeeds.length];
+                double[] collectedSpeeds = new double[collectedDistanceToSpeeds.length];
+                for (int i = 0; i < collectedDistanceToSpeeds.length; ++i) {
+                    distances[i] = collectedDistanceToSpeeds[i][0];
+                    collectedSpeeds[i] = collectedDistanceToSpeeds[i][1];
+                }
+
+                kSpeedRegression = new PolynomialRegression(distances, collectedSpeeds, 2);
             }
             for (double[] pair : kShooterDistanceToHeadingOffset) {
                 kShooterHeadingOffsetInterpolator.put(pair[0], pair[1]);

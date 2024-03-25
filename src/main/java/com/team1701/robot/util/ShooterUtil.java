@@ -19,7 +19,7 @@ public final class ShooterUtil {
         switch (robotState.getScoringMode()) {
             case SPEAKER:
                 var d = robotState.getDistanceToSpeaker();
-                if (Constants.Shooter.kUseBetaCurve) {
+                if (Constants.Shooter.kUseNewCurves) {
                     return Rotation2d.fromRadians(
                             Constants.Shooter.kBetaRegression.predict(calculateTheoreticalAngle(d)));
                 }
@@ -33,7 +33,7 @@ public final class ShooterUtil {
 
     public static Rotation2d calculateShooterAngleWithMotion(RobotState robotState, Translation2d expectedTranslation) {
         var d = robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation));
-        if (Constants.Shooter.kUseBetaCurve) {
+        if (Constants.Shooter.kUseNewCurves) {
             return Rotation2d.fromRadians(Constants.Shooter.kBetaRegression.predict(calculateTheoreticalAngle(d)));
         }
 
@@ -42,6 +42,10 @@ public final class ShooterUtil {
 
     public static ShooterSpeeds calculateShooterSpeedsWithMotion(
             RobotState robotState, Translation2d expectedTranslation) {
+        if (Constants.Shooter.kUseNewCurves) {
+            return new ShooterSpeeds(Constants.Shooter.kSpeedRegression.predict(
+                    robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
+        }
         return new ShooterSpeeds(Constants.Shooter.kShooterSpeedInterpolator.get(
                 robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
     }
@@ -51,7 +55,12 @@ public final class ShooterUtil {
             case SPEAKER:
                 var interpolatedSpeed =
                         Constants.Shooter.kShooterSpeedInterpolator.get(robotState.getDistanceToSpeaker());
+                var predictedSpeed = Constants.Shooter.kSpeedRegression.predict(robotState.getDistanceToSpeaker());
                 Logger.recordOutput("Shooter/InterpolatedShooterSpeeds", interpolatedSpeed);
+                Logger.recordOutput("Shooter/PredictedShooterSpeeds", predictedSpeed);
+                if (Constants.Shooter.kUseNewCurves) {
+                    return new ShooterSpeeds(predictedSpeed);
+                }
                 return new ShooterSpeeds(interpolatedSpeed);
             case AMP:
                 return new ShooterSpeeds(
@@ -76,11 +85,16 @@ public final class ShooterUtil {
         switch (robotState.getScoringMode()) {
             case SPEAKER:
                 double speed;
+                var distance = robotState.getDistanceToSpeaker();
 
                 if (!robotState.inNearHalf()) {
                     speed = 0;
                 } else if (robotState.hasNote()) {
-                    speed = Constants.Shooter.kShooterSpeedInterpolator.get(robotState.getDistanceToSpeaker());
+                    if (Constants.Shooter.kUseNewCurves) {
+                        speed = Constants.Shooter.kSpeedRegression.predict(distance);
+                    } else {
+                        speed = Constants.Shooter.kShooterSpeedInterpolator.get(distance);
+                    }
                 } else {
                     speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                 }
