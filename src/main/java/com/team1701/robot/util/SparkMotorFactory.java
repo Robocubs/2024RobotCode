@@ -21,7 +21,6 @@ public class SparkMotorFactory {
 
         motor.setCANTimeout(200);
 
-        // TODO: Update values for actual shooter
         configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
 
         configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);

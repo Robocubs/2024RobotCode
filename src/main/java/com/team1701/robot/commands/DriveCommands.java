@@ -1,5 +1,6 @@
 package com.team1701.robot.commands;
 
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -19,7 +20,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class DriveCommands {
     public static Command driveWithJoysticks(
@@ -118,6 +118,12 @@ public class DriveCommands {
                 drive, targetFieldHeading, robotHeadingSupplier, headingTolerance, kinematicLimits, finishAtRotation);
     }
 
+    public static Command stop(Drive drive) {
+        return Commands.runOnce(drive::stop, drive)
+                .andThen(Commands.idle(drive))
+                .withName("StopDrive");
+    }
+
     public static Command swerveLock(Drive drive) {
         return Commands.runOnce(drive::engageSwerveLock, drive)
                 .andThen(Commands.idle(drive))
@@ -137,24 +143,29 @@ public class DriveCommands {
                 .withName("DriveToAmp");
     }
 
-    public static Command driveToPiece(
-            Drive drive,
-            RobotState robotState,
-            KinematicLimits kinematicLimits,
-            CommandXboxController driverController) {
-        return new DriveToPose(
+    public static Command driveToNote(Drive drive, RobotState robotState, KinematicLimits kinematicLimits) {
+        return driveToNote(
                 drive,
-                () -> robotState
-                        .getDetectedNoteForPickup()
-                        .map(note -> note.pose().toPose2d())
-                        .map(pose -> new Pose2d(
-                                        pose.getTranslation(),
-                                        pose.getRotation().plus(GeometryUtil.kRotationPi))
-                                .transformBy(Constants.Robot.kIntakeToRobot))
-                        .orElseGet(robotState::getPose2d),
-                robotState::getPose2d,
-                kinematicLimits,
-                true);
+                robotState,
+                () -> robotState.getDetectedNoteForPickup().map(note -> note.pose()
+                        .toPose2d()),
+                kinematicLimits);
+    }
+
+    public static Command driveToNote(
+            Drive drive, RobotState robotState, Supplier<Optional<Pose2d>> notePose, KinematicLimits kinematicLimits) {
+        return new DriveToPose(
+                        drive,
+                        () -> notePose.get()
+                                .map(pose -> new Pose2d(
+                                                pose.getTranslation(),
+                                                pose.getRotation().plus(GeometryUtil.kRotationPi))
+                                        .transformBy(Constants.Robot.kIntakeToRobot))
+                                .orElseGet(robotState::getPose2d),
+                        robotState::getPose2d,
+                        kinematicLimits,
+                        true)
+                .withName("DriveToNote");
     }
 
     // v2

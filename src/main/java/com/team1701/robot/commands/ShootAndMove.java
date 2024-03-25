@@ -16,6 +16,7 @@ import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
+import com.team1701.robot.util.FieldUtil;
 import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -47,8 +48,6 @@ public class ShootAndMove extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 25.0);
     private Rotation2d headingTolerance;
 
-    private static final LoggedTunableNumber kLoopsLatency =
-            new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 2.0);
     private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
     private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
@@ -132,7 +131,7 @@ public class ShootAndMove extends Command {
                 .getAngle()
                 .minus(mRobotState
                         .getSpeakerHeading()
-                        .plus(Rotation2d.fromDegrees(Constants.Shooter.kShooterHeadingOffsetInterpolator.get(
+                        .plus(Rotation2d.fromRadians(Constants.Shooter.kShooterHeadingOffsetInterpolator.get(
                                 mRobotState.getDistanceToSpeaker()))));
         var robotVelocityTowardsSpeaker =
                 mDrive.getSpeedMetersPerSecond() * Math.cos(headingAngleFromSpeaker.getRadians());
@@ -141,13 +140,14 @@ public class ShootAndMove extends Command {
                 currentPose.getX() + fieldRelativeSpeeds.getX() * timeInAir,
                 currentPose.getY() + fieldRelativeSpeeds.getY() * timeInAir);
 
+        var shooterSetpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(endTranslation));
+
         var targetHeading = mRobotState
                 .getSpeakerPose()
                 .toTranslation2d()
                 .minus(endTranslation)
                 .getAngle()
-                .minus(Rotation2d.fromDegrees(
-                        Constants.Shooter.kShooterHeadingOffsetInterpolator.get(mRobotState.getDistanceToSpeaker())));
+                .minus(shooterSetpoint.releaseAngle());
         var headingError = currentPose.getRotation().minus(targetHeading);
 
         // headingTolerance = Rotation2d.fromDegrees(0.5);
@@ -177,19 +177,9 @@ public class ShootAndMove extends Command {
             targetShooterAngle = Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get());
             targetRollerSpeeds = new ShooterSpeeds(Constants.Shooter.kTunableShooterSpeedRadiansPerSecond.get());
         } else {
-            targetShooterAngle = GeometryUtil.clampRotation(
-                    ShooterUtil.calculateShooterAngleWithMotion(mRobotState, endTranslation),
-                    Constants.Shooter.kShooterLowerLimit,
-                    Constants.Shooter.kShooterUpperLimit);
-            targetRollerSpeeds = ShooterUtil.calculateShooterSpeedsWithMotion(mRobotState, endTranslation);
+            targetShooterAngle = shooterSetpoint.angle();
+            targetRollerSpeeds = shooterSetpoint.speeds();
         }
-
-        var currentExpectedShooterAngle = mTuningEnabled.get()
-                ? targetShooterAngle
-                : GeometryUtil.clampRotation(
-                        ShooterUtil.calculateStationaryDesiredAngle(mRobotState),
-                        Constants.Shooter.kShooterLowerLimit,
-                        Constants.Shooter.kShooterUpperLimit);
 
         mShooter.setRotationAngle(targetShooterAngle);
 
@@ -237,8 +227,7 @@ public class ShootAndMove extends Command {
         mShooting = false;
 
         mRobotState.setShootingState(new ShootingState());
-        mShooter.stopRollers();
-        mShooter.stopRotation();
+        mShooter.stop();
         mIndexer.stop();
         mDrive.stop();
 

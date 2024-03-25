@@ -14,6 +14,7 @@ import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -45,6 +46,8 @@ public class Shooter extends SubsystemBase {
     private MechanismLigament2d mShooterPost;
     private MechanismRoot2d mShooterRoot;
     private Rotation2d mAngle;
+    private boolean mUpperRollerStopped = true;
+    private boolean mLowerRollerStopped = true;
 
     private final SlewRateLimiter mUpperRollerSlewRateLimiter = new SlewRateLimiter(Constants.Shooter.kRollerRampRate);
     private final SlewRateLimiter mLowerRollerSlewRateLimiter = new SlewRateLimiter(Constants.Shooter.kRollerRampRate);
@@ -69,9 +72,24 @@ public class Shooter extends SubsystemBase {
         createMechanism2d();
     }
 
+    public static record ShooterSetpoint(ShooterSpeeds speeds, Rotation2d angle) {
+        public Rotation2d releaseAngle() {
+            return Rotation2d.fromRadians(
+                    Constants.Shooter.kShooterHeadingOffsetInterpolator.get(speeds.averageSpeed()));
+        }
+
+        public Pose2d applyReleaseAngle(Pose2d pose) {
+            return new Pose2d(pose.getTranslation(), pose.getRotation().minus(releaseAngle()));
+        }
+    }
+
     public static record ShooterSpeeds(double upperSpeed, double lowerSpeed) {
         public ShooterSpeeds(double radiansPerSecond) {
             this(radiansPerSecond, radiansPerSecond);
+        }
+
+        public double averageSpeed() {
+            return (upperSpeed + lowerSpeed) / 2;
         }
 
         public boolean allMatch(ShooterSpeeds speeds, double tolerance) {
@@ -169,6 +187,14 @@ public class Shooter extends SubsystemBase {
             zeroShooter();
         }
 
+        if (mUpperRollerStopped) {
+            mUpperRollerSlewRateLimiter.reset(mUpperShooterMotorInputs.velocityRadiansPerSecond);
+        }
+
+        if (mLowerRollerStopped) {
+            mLowerRollerSlewRateLimiter.reset(mLowerShooterMotorInputs.velocityRadiansPerSecond);
+        }
+
         Logger.recordOutput("Shooter/calculatedAngle", angle);
         Logger.recordOutput("Shooter/calculatedAngleModulus", mAngle);
         Logger.recordOutput("Shooter/mech", mShooterMechanism);
@@ -198,33 +224,38 @@ public class Shooter extends SubsystemBase {
                 mUpperShooterMotorInputs.velocityRadiansPerSecond, mLowerShooterMotorInputs.velocityRadiansPerSecond);
     }
 
+    public void setSetpoint(ShooterSetpoint setpoint) {
+        setRollerSpeeds(setpoint.speeds);
+        setRotationAngle(setpoint.angle);
+    }
+
     public void setRollerSpeeds(ShooterSpeeds shooterSpeeds) {
         setUpperRollerSpeed(shooterSpeeds.upperSpeed);
         setLowerRollerSpeed(shooterSpeeds.lowerSpeed);
     }
 
-    public void setUnifiedSpeed(double radiansPerSecond) {
-        setRollerSpeeds(new ShooterSpeeds(radiansPerSecond));
-    }
-
     public void setUpperRollerSpeed(double radiansPerSecond) {
-        var calculatedSlew = mUpperRollerSlewRateLimiter.calculate(radiansPerSecond);
         if (Util.epsilonEquals(radiansPerSecond, 0)) {
             stopUpperRoller();
-        } else {
-            mUpperRollerMotorIO.setVelocityControl(calculatedSlew);
-            Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", calculatedSlew);
+            return;
         }
+
+        var calculatedSlew = mUpperRollerSlewRateLimiter.calculate(radiansPerSecond);
+        mUpperRollerMotorIO.setVelocityControl(calculatedSlew);
+        mUpperRollerStopped = false;
+        Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", calculatedSlew);
     }
 
     public void setLowerRollerSpeed(double radiansPerSecond) {
-        var calculatedSlew = mLowerRollerSlewRateLimiter.calculate(radiansPerSecond);
         if (Util.epsilonEquals(radiansPerSecond, 0)) {
             stopLowerRoller();
-        } else {
-            mLowerRollerMotorIO.setVelocityControl(calculatedSlew);
-            Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", calculatedSlew);
+            return;
         }
+
+        var calculatedSlew = mLowerRollerSlewRateLimiter.calculate(radiansPerSecond);
+        mLowerRollerMotorIO.setVelocityControl(calculatedSlew);
+        mLowerRollerStopped = false;
+        Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", calculatedSlew);
     }
 
     public void runUpperRollerCharacterization(double input) {
@@ -254,6 +285,11 @@ public class Shooter extends SubsystemBase {
         mRotationMotorIO.setPercentOutput(-.1);
     }
 
+    public void stop() {
+        stopRollers();
+        stopRotation();
+    }
+
     public void stopRollers() {
         stopUpperRoller();
         stopLowerRoller();
@@ -261,11 +297,13 @@ public class Shooter extends SubsystemBase {
 
     public void stopUpperRoller() {
         mUpperRollerMotorIO.stopMotor();
+        mUpperRollerStopped = true;
         Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", 0);
     }
 
     public void stopLowerRoller() {
         mLowerRollerMotorIO.stopMotor();
+        mLowerRollerStopped = true;
         Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", 0);
     }
 

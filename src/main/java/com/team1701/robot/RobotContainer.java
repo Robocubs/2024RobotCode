@@ -132,7 +132,6 @@ public class RobotContainer {
                             },
                             new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
 
-                    // TODO: update IDs
                     shooter = Optional.of(new Shooter(
                             SparkMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterRightUpperRollerMotorId,
@@ -344,8 +343,8 @@ public class RobotContainer {
 
         mDriverController
                 .y()
-                .whileTrue(DriveCommands.driveToPiece(
-                        mDrive, mRobotState, Constants.Drive.kFastTrapezoidalKinematicLimits, mDriverController));
+                .whileTrue(DriveCommands.driveToNote(
+                        mDrive, mRobotState, Constants.Drive.kFastTrapezoidalKinematicLimits));
 
         // Passing
         mDriverController
@@ -442,8 +441,7 @@ public class RobotContainer {
                         },
                         mShooter)
                 .withName("StreamDeckShooterDownCommand");
-        var manualShootCommand =
-                ShootCommands.manualShoot(mShooter, mIndexer, mRobotState).withName("StreamDeckShootCommand");
+        var manualShootCommand = ShootCommands.manualShoot(mShooter, mIndexer).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
                         () -> {
                             mClimb.extendWinch();
@@ -456,13 +454,7 @@ public class RobotContainer {
                         },
                         mClimb)
                 .withName("StreamDeckRetractWinchCommand");
-        var stopShooterCommand = run(
-                        () -> {
-                            mShooter.stopRollers();
-                            mShooter.stopRotation();
-                        },
-                        mShooter)
-                .withName("StreamDeckStopShootCommand");
+        var stopShooterCommand = ShootCommands.stop(mShooter).withName("StreamDeckStopShootCommand");
 
         mStreamDeck.configureButton(config -> config.add(
                         StreamDeckButton.kSpeakerModeButton, () -> mRobotState.getScoringMode() == ScoringMode.SPEAKER)
@@ -549,6 +541,7 @@ public class RobotContainer {
         var straightToMiddleCommand = commands.straightToMiddle();
         var sourceFourUnderStage = commands.sourceFourUnderStage();
         var fiveAmpSideMove = commands.fivePieceAmpAndMove();
+        var source54CSeek = commands.source54CSeek();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
@@ -562,6 +555,7 @@ public class RobotContainer {
         mAutonomousPaths.put("Straight To Middle", straightToMiddleCommand.path());
         mAutonomousPaths.put("Source Four Under Stage", sourceFourUnderStage.path());
         mAutonomousPaths.put("Five Piece Amp Move", fiveAmpSideMove.path());
+        mAutonomousPaths.put("Source 54C Seek", source54CSeek.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
@@ -575,6 +569,7 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Straight To Middle", straightToMiddleCommand.command());
         autonomousModeChooser.addOption("Source Four Under Stage", sourceFourUnderStage.command());
         autonomousModeChooser.addOption("Five Piece Amp Move", fiveAmpSideMove.command());
+        autonomousModeChooser.addOption("Source 54C Seek", source54CSeek.command());
 
         autonomousModeChooser.addOption(
                 "Drive Characterization",
