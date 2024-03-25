@@ -548,6 +548,7 @@ public class RobotContainer {
         var fivePieceAmpCommand = commands.fivePieceAmp();
         var straightToMiddleCommand = commands.straightToMiddle();
         var sourceFourUnderStage = commands.sourceFourUnderStage();
+        var fiveAmpSideMove = commands.fivePieceAmpAndMove();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
@@ -560,6 +561,7 @@ public class RobotContainer {
         mAutonomousPaths.put("Five Piece Amp Auto", fivePieceAmpCommand.path());
         mAutonomousPaths.put("Straight To Middle", straightToMiddleCommand.path());
         mAutonomousPaths.put("Source Four Under Stage", sourceFourUnderStage.path());
+        mAutonomousPaths.put("Five Piece Amp Move", fiveAmpSideMove.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
@@ -572,6 +574,7 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Five Piece Amp Auto", fivePieceAmpCommand.command());
         autonomousModeChooser.addOption("Straight To Middle", straightToMiddleCommand.command());
         autonomousModeChooser.addOption("Source Four Under Stage", sourceFourUnderStage.command());
+        autonomousModeChooser.addOption("Five Piece Amp Move", fiveAmpSideMove.command());
 
         autonomousModeChooser.addOption(
                 "Drive Characterization",
@@ -642,5 +645,9 @@ public class RobotContainer {
 
     public RobotState getRobotState() {
         return mRobotState;
+    }
+
+    public CommandXboxController getDriverController() {
+        return mDriverController;
     }
 }

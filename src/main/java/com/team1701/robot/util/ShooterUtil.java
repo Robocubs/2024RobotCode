@@ -73,16 +73,15 @@ public final class ShooterUtil {
                     speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
                 }
                 speeds = new ShooterSpeeds(speed);
+
                 break;
             case AMP:
-                if (robotState.hasNote()) {
-                    speed = robotState.getDistanceToAmp() <= 1 ? Constants.Shooter.kUpperAmpSpeed.get() : 250;
-                } else {
-                    speed = Constants.Shooter.kIdleSpeedRadiansPerSecond.get();
-                }
-                speeds = new ShooterSpeeds(speed);
+                speeds = new ShooterSpeeds(
+                        Constants.Shooter.kUpperAmpSpeed.get(), Constants.Shooter.kLowerAmpSpeed.get());
+                break;
             case CLIMB:
                 speeds = new ShooterSpeeds(0);
+                break;
             default:
                 speeds = new ShooterSpeeds(Constants.Shooter.kIdleSpeedRadiansPerSecond.get());
         }
