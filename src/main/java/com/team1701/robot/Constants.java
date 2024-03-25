@@ -8,6 +8,7 @@ import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.PolynomialRegression;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -367,6 +368,7 @@ public final class Constants {
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
         public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-2);
+        public static final double kSpeakerToShooterDifference = FieldConstants.kSpeakerHeight - kShooterAxisHeight;
 
         public static final Rotation2d kShooterAngleEncoderOffset;
 
@@ -427,6 +429,8 @@ public final class Constants {
 
         public static final double kRollerRampRate = 450;
 
+        public static final boolean kUseBetaScaledTangentCurve = true;
+
         // public static final double[][] kShooterDistanceToAngleValues = {
         //     {3.47, 0.535},
         //     {2.75, 0.7},
@@ -484,6 +488,8 @@ public final class Constants {
             {11.53, 325}, {10.3, 315}, {9.02, 300}, {7.15, 275}, {5, 200}, {0, 100}
         };
 
+        public static final PolynomialRegression kBetaRegression;
+
         static {
             for (double[] pair : kShooterDistanceToAngleValues) {
                 kShooterAngleInterpolator.put(pair[0], pair[1]);
@@ -499,6 +505,18 @@ public final class Constants {
 
             for (double[] pair : kPassingDistanceToSpeedValues) {
                 kPassingSpeedInterpolator.put(pair[0], pair[1]);
+            }
+
+            if (kUseBetaScaledTangentCurve) {
+                var xy = kShooterDistanceToAngleValues;
+                double[] x = new double[xy.length];
+                double[] y = new double[xy.length];
+                for (int i = 0; i < xy.length; ++i) {
+                    var d = x[i] = xy[i][0];
+                    y[i] = xy[i][1] / Math.tan(kSpeakerToShooterDifference / d);
+                }
+
+                kBetaRegression = new PolynomialRegression(x, y, 1);
             }
         }
 

@@ -14,8 +14,12 @@ public final class ShooterUtil {
     public static Rotation2d calculateStationaryDesiredAngle(RobotState robotState) {
         switch (robotState.getScoringMode()) {
             case SPEAKER:
-                return Rotation2d.fromRadians(
-                        Constants.Shooter.kShooterAngleInterpolator.get(robotState.getDistanceToSpeaker()));
+                var d = robotState.getDistanceToSpeaker();
+                if (Constants.Shooter.kUseBetaScaledTangentCurve) {
+                    return Rotation2d.fromRadians(Constants.Shooter.kBetaRegression.predict(d)
+                            * Math.tan(Constants.Shooter.kSpeakerToShooterDifference / d));
+                }
+                return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(d));
             case AMP:
                 return Rotation2d.fromDegrees(Constants.Shooter.kShooterAmpAngleDegrees.get());
             default:
@@ -24,8 +28,12 @@ public final class ShooterUtil {
     }
 
     public static Rotation2d calculateShooterAngleWithMotion(RobotState robotState, Translation2d expectedTranslation) {
-        return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(
-                robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
+        var d = robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation));
+        if (Constants.Shooter.kUseBetaScaledTangentCurve) {
+            return Rotation2d.fromRadians(Constants.Shooter.kBetaRegression.predict(d)
+                    * Math.tan(Constants.Shooter.kSpeakerToShooterDifference / d));
+        }
+        return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(d));
     }
 
     public static ShooterSpeeds calculateShooterSpeedsWithMotion(
