@@ -2,7 +2,6 @@ package com.team1701.robot.commands;
 
 import java.util.function.DoubleSupplier;
 
-import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
@@ -15,19 +14,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class ShootCommands {
     public static Command idleShooterCommand(Shooter shooter, RobotState robotState) {
         return Commands.runEnd(
-                () -> {
-                    var desiredShooterAngle = robotState.hasLoadedNote()
-                            ? ShooterUtil.calculateStationaryDesiredAngle(robotState)
-                            : Constants.Shooter.kLoadingAngle;
-                    var clampedDesiredShooterAngle = GeometryUtil.clampRotation(
-                            desiredShooterAngle,
-                            Constants.Shooter.kShooterLowerLimit,
-                            Constants.Shooter.kShooterUpperLimit);
-                    shooter.setRotationAngle(clampedDesiredShooterAngle);
-                    shooter.setRollerSpeeds(ShooterUtil.calculateIdleRollerSpeeds(robotState));
-                },
+                () -> shooter.setSetpoint(ShooterUtil.calculateIdleSetpoint(robotState)),
                 shooter::stopRotation,
                 shooter);
+    }
+
+    public static Command stop(Shooter shooter) {
+        return Commands.run(shooter::stop, shooter).withName("StopShooter");
     }
 
     public static Command shoot(Shooter shooter, Indexer indexer, RobotState robotState) {
@@ -38,8 +31,8 @@ public class ShootCommands {
         return new Shoot(shooter, indexer, robotState, waitForHeading);
     }
 
-    public static Command manualShoot(Shooter shooter, Indexer indexer, RobotState robotState) {
-        return new ManualShoot(shooter, indexer, robotState).withName("ManualShoot");
+    public static Command manualShoot(Shooter shooter, Indexer indexer) {
+        return new ManualShoot(shooter, indexer).withName("ManualShoot");
     }
 
     public static Command aimAndShootInSpeaker(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {

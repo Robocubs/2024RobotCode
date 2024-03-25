@@ -130,23 +130,6 @@ public class RobotState {
                                 : FieldConstants.kRedSpeakerOpeningCenter);
     }
 
-    public double getDistanceToSpeaker(Translation3d expectedTranslation) {
-        return expectedTranslation.getDistance(
-                Configuration.isBlueAlliance()
-                        ? FieldConstants.kBlueSpeakerOpeningCenter
-                        : FieldConstants.kRedSpeakerOpeningCenter);
-    }
-
-    public double getSpeakerDistanceFromPose(Pose3d pose) {
-        var distance = pose.getTranslation()
-                .getDistance(
-                        Configuration.isBlueAlliance()
-                                ? FieldConstants.kBlueSpeakerOpeningCenter
-                                : FieldConstants.kRedSpeakerOpeningCenter);
-        Logger.recordOutput("DistanceFromProjectedPose", distance);
-        return distance;
-    }
-
     public Rotation2d getHeading() {
         return getPose2d().getRotation();
     }
@@ -255,7 +238,7 @@ public class RobotState {
                 .toTranslation2d()
                 .minus(translation)
                 .getAngle()
-                .minus(Rotation2d.fromDegrees(
+                .minus(Rotation2d.fromRadians(
                         Constants.Shooter.kShooterHeadingOffsetInterpolator.get(getDistanceToSpeaker())));
     }
 
@@ -279,7 +262,7 @@ public class RobotState {
                 .toTranslation2d()
                 .minus(translation)
                 .getAngle()
-                .minus(Rotation2d.fromDegrees(
+                .minus(Rotation2d.fromRadians(
                         Constants.Shooter.kShooterHeadingOffsetInterpolator.get(getDistanceToSpeaker())));
 
         var toleranceRadians = Math.abs(
