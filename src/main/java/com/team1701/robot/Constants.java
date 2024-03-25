@@ -10,6 +10,7 @@ import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.PolynomialRegression;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
+import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -368,7 +369,8 @@ public final class Constants {
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
         public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-2);
-        public static final double kSpeakerToShooterDifference = FieldConstants.kSpeakerHeight - kShooterAxisHeight;
+        public static final double kSpeakerToShooterHingeDifference =
+                FieldConstants.kSpeakerHeight - kShooterAxisHeight;
 
         public static final Rotation2d kShooterAngleEncoderOffset;
 
@@ -429,7 +431,7 @@ public final class Constants {
 
         public static final double kRollerRampRate = 450;
 
-        public static final boolean kUseBetaScaledTangentCurve = true;
+        public static final boolean kUseBetaCurve = true;
 
         // public static final double[][] kShooterDistanceToAngleValues = {
         //     {3.47, 0.535},
@@ -488,6 +490,7 @@ public final class Constants {
             {11.53, 325}, {10.3, 315}, {9.02, 300}, {7.15, 275}, {5, 200}, {0, 100}
         };
 
+        // Regression of Collected (a.k.a used angle) vs Calculated Angle
         public static final PolynomialRegression kBetaRegression;
 
         static {
@@ -507,16 +510,17 @@ public final class Constants {
                 kPassingSpeedInterpolator.put(pair[0], pair[1]);
             }
 
-            if (kUseBetaScaledTangentCurve) {
-                var xy = kShooterDistanceToAngleValues;
-                double[] x = new double[xy.length];
-                double[] y = new double[xy.length];
-                for (int i = 0; i < xy.length; ++i) {
-                    var d = x[i] = xy[i][0];
-                    y[i] = xy[i][1] / Math.tan(kSpeakerToShooterDifference / d);
+            if (kUseBetaCurve) {
+                var collectedDistanceToAngles = kShooterDistanceToAngleValues;
+                double[] theoreticalAngles = new double[collectedDistanceToAngles.length];
+                double[] collectedAngles = new double[collectedDistanceToAngles.length];
+                for (int i = 0; i < collectedDistanceToAngles.length; ++i) {
+                    var d = collectedDistanceToAngles[i][0];
+                    theoreticalAngles[i] = ShooterUtil.calculateTheoreticalAngle(d);
+                    collectedAngles[i] = collectedDistanceToAngles[i][1];
                 }
 
-                kBetaRegression = new PolynomialRegression(x, y, 1);
+                kBetaRegression = new PolynomialRegression(theoreticalAngles, collectedAngles, 1);
             }
         }
 

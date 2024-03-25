@@ -11,13 +11,17 @@ import org.littletonrobotics.junction.Logger;
 
 public final class ShooterUtil {
 
+    public static double calculateTheoreticalAngle(double distance) {
+        return Math.tan(Constants.Shooter.kSpeakerToShooterHingeDifference / distance);
+    }
+
     public static Rotation2d calculateStationaryDesiredAngle(RobotState robotState) {
         switch (robotState.getScoringMode()) {
             case SPEAKER:
                 var d = robotState.getDistanceToSpeaker();
-                if (Constants.Shooter.kUseBetaScaledTangentCurve) {
-                    return Rotation2d.fromRadians(Constants.Shooter.kBetaRegression.predict(d)
-                            * Math.tan(Constants.Shooter.kSpeakerToShooterDifference / d));
+                if (Constants.Shooter.kUseBetaCurve) {
+                    return Rotation2d.fromRadians(
+                            Constants.Shooter.kBetaRegression.predict(calculateTheoreticalAngle(d)));
                 }
                 return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(d));
             case AMP:
@@ -29,10 +33,10 @@ public final class ShooterUtil {
 
     public static Rotation2d calculateShooterAngleWithMotion(RobotState robotState, Translation2d expectedTranslation) {
         var d = robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation));
-        if (Constants.Shooter.kUseBetaScaledTangentCurve) {
-            return Rotation2d.fromRadians(Constants.Shooter.kBetaRegression.predict(d)
-                    * Math.tan(Constants.Shooter.kSpeakerToShooterDifference / d));
+        if (Constants.Shooter.kUseBetaCurve) {
+            return Rotation2d.fromRadians(Constants.Shooter.kBetaRegression.predict(calculateTheoreticalAngle(d)));
         }
+
         return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(d));
     }
 
