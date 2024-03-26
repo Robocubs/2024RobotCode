@@ -128,13 +128,6 @@ public class ShootAndMove extends Command {
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
         var droppedVelocity = ShooterUtil.calculateSpeakerSpeed(mRobotState.getDistanceToSpeaker())
                 * Constants.Shooter.kRollerSpeedToNoteSpeed;
-        var headingAngleFromSpeaker = mFieldRelativeSpeeds
-                .get()
-                .getAngle()
-                .minus(mRobotState
-                        .getSpeakerHeading()
-                        .plus(Rotation2d.fromRadians(Constants.Shooter.kShooterHeadingOffsetInterpolator.get(
-                                mRobotState.getDistanceToSpeaker()))));
         var robotVelocityTowardsSpeaker = fieldRelativeSpeeds
                 .rotateBy(mRobotState.getSpeakerHeading().unaryMinus())
                 .getX();

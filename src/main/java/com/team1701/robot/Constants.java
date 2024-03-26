@@ -476,9 +476,9 @@ public final class Constants {
             {3.5, .63},
             {3.8, .58},
             {4.1, .55},
-            {4.7, .50},
-            {5.1, .47},
-            {5.9, .44} // -9
+            {4.7, .505},
+            {5.1, .49},
+            {5.9, .46} // -9
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
@@ -549,7 +549,7 @@ public final class Constants {
                     collectedAngles[i] = collectedDistanceToAngles[i][1];
                 }
 
-                kAngleRegression = new PolynomialRegression(theoreticalAngles, collectedAngles, 1);
+                kAngleRegression = new PolynomialRegression(theoreticalAngles, collectedAngles, 2);
 
                 // Speed
                 var collectedDistanceToSpeeds = kShooterDistanceToSpeedValues;
