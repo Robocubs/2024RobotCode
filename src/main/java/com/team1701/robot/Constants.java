@@ -394,7 +394,7 @@ public final class Constants {
         public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =
-                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 55);
+                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 58);
         public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 150);
         public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
@@ -406,10 +406,10 @@ public final class Constants {
                 new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
 
         public static final LoggedTunableNumber kLowerAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 95);
+                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 87);
 
         public static final LoggedTunableNumber kUpperAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 60);
+                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 52);
 
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
@@ -508,8 +508,6 @@ public final class Constants {
         public static final double[][] kPassingDistanceToSpeedValues = {
             {11.53, 490}, {10.3, 450}, {9.02, 415}, {7.15, 330}, {6.15, 315}, {5, 200}, {0, 100}
         };
-
-        
 
         static {
             for (double[] pair : kShooterDistanceToAngleValues) {

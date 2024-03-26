@@ -31,7 +31,11 @@ public final class ShooterUtil {
     }
 
     public static ShooterSetpoint calculateIdleSetpoint(RobotState robotState) {
-        return new ShooterSetpoint(calculateIdleRollerSpeeds(robotState), calculateStationaryDesiredAngle(robotState));
+        return new ShooterSetpoint(
+                calculateIdleRollerSpeeds(robotState),
+                robotState.hasLoadedNote()
+                        ? calculateStationaryDesiredAngle(robotState)
+                        : Constants.Shooter.kLoadingAngle);
     }
 
     private static Rotation2d calculateStationaryDesiredAngle(RobotState robotState) {
