@@ -512,7 +512,7 @@ public final class Constants {
         };
 
         // Regression of Collected (a.k.a used angle) vs Calculated Angle
-        public static final PolynomialRegression kBetaRegression;
+        public static final PolynomialRegression kAngleRegression;
         // Regression of Speed vs Distance to speaker
         public static final PolynomialRegression kSpeedRegression;
 
@@ -544,7 +544,7 @@ public final class Constants {
                     collectedAngles[i] = collectedDistanceToAngles[i][1];
                 }
 
-                kBetaRegression = new PolynomialRegression(theoreticalAngles, collectedAngles, 1);
+                kAngleRegression = new PolynomialRegression(theoreticalAngles, collectedAngles, 1);
 
                 // Speed
                 var collectedDistanceToSpeeds = kShooterDistanceToSpeedValues;

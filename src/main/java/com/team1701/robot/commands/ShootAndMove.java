@@ -123,7 +123,7 @@ public class ShootAndMove extends Command {
     public void execute() {
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
-        var droppedVelocity = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker())
+        var droppedVelocity = ShooterUtil.calculateSpeakerSpeed(mRobotState.getDistanceToSpeaker())
                 * Units.inchesToMeters(2) // wheel radius
                 * .907; // calculated drop in roller speed
         var headingAngleFromSpeaker = mFieldRelativeSpeeds
