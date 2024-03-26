@@ -22,6 +22,7 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.util.FieldUtil;
+import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -217,7 +218,10 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d getPassingHeading() {
-        return getPassingTarget().minus(getPose2d().getTranslation()).getAngle();
+        var difference = getPassingTarget().minus(getPose2d().getTranslation());
+        return ShooterUtil.calculatePassingSetpoint(this)
+                .applyReleaseAngle(new Pose2d(difference, difference.getAngle()))
+                .getRotation();
     }
 
     @AutoLogOutput

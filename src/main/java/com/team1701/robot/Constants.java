@@ -506,8 +506,10 @@ public final class Constants {
         };
 
         public static final double[][] kPassingDistanceToSpeedValues = {
-            {11.53, 325}, {10.3, 315}, {9.02, 300}, {7.15, 275}, {5, 200}, {0, 100}
+            {11.53, 490}, {10.3, 450}, {9.02, 415}, {7.15, 330}, {6.15, 315}, {5, 200}, {0, 100}
         };
+
+        
 
         static {
             for (double[] pair : kShooterDistanceToAngleValues) {

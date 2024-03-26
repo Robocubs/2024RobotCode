@@ -30325,8 +30325,7 @@
                         9,
                         10
                     ],
-                    "type": "ZeroAngularVelocity",
-                    "direction": 0
+                    "type": "ZeroAngularVelocity"
                 },
                 {
                     "scope": [
@@ -30366,7 +30365,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         }
     },
     "splitTrajectoriesAtStopPoints": true,

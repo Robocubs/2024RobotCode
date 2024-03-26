@@ -5,6 +5,7 @@ import com.team1701.lib.util.tuning.LoggedTunableBoolean;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
+import com.team1701.robot.states.ShootingState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.shooter.Shooter.ShooterSetpoint;
@@ -74,11 +75,8 @@ public class PassANote extends Command {
             }
         }
 
-        Logger.recordOutput(kLoggingPrefix + "AtAngle", atAngle);
-        Logger.recordOutput(kLoggingPrefix + "AtHeading", atHeading);
+        mRobotState.setShootingState(new ShootingState(setpoint, true, atAngle, atSpeed, atHeading, mShooting));
         Logger.recordOutput(kLoggingPrefix + "AtPose", atPose);
-        Logger.recordOutput(kLoggingPrefix + "Shooting", mShooting);
-        Logger.recordOutput(kLoggingPrefix + "AtSpeed", atSpeed);
     }
 
     @Override
