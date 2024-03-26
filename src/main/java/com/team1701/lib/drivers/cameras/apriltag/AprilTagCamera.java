@@ -35,7 +35,6 @@ public class AprilTagCamera {
     private final List<Predicate<Pose3d>> mPoseFilters = new ArrayList<>();
     private final Alert mDisconnectedAlert;
 
-    // TODO: Add std devs
     public static record EstimatedRobotPose(Pose3d estimatedPose, double timestamp, Vector<N3> stdDevs) {}
 
     public AprilTagCamera(

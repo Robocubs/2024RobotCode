@@ -3,7 +3,6 @@ package com.team1701.robot.commands;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
-import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.states.ShootingState;
 import com.team1701.robot.subsystems.indexer.Indexer;
@@ -54,27 +53,20 @@ public class Shoot extends Command {
             return;
         }
 
-        Rotation2d targetHeading = mRobotState.getStationaryTargetHeading();
+        var targetHeading = mRobotState.getStationaryTargetHeading();
         headingTolerance = mRobotState.getToleranceSpeakerHeading();
 
-        Rotation2d desiredShooterAngle = GeometryUtil.clampRotation(
-                ShooterUtil.calculateStationaryDesiredAngle(mRobotState),
-                Constants.Shooter.kShooterLowerLimit,
-                Constants.Shooter.kShooterUpperLimit);
-
-        mShooter.setRotationAngle(desiredShooterAngle);
-
-        var speeds = ShooterUtil.calculateStationaryRollerSpeeds(mRobotState);
-        mShooter.setRollerSpeeds(speeds);
+        var setpoint = ShooterUtil.calculateStationarySetpoint(mRobotState);
+        mShooter.setSetpoint(setpoint);
 
         var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(), desiredShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(), setpoint.angle(), Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
         var atHeading =
                 !mWaitForHeading || GeometryUtil.isNear(targetHeading, mRobotState.getHeading(), headingTolerance);
 
-        var atSpeed =
-                speeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
+        var atSpeed = setpoint.speeds()
+                .allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
         if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
             mIndexer.setForwardShoot();
@@ -91,7 +83,6 @@ public class Shoot extends Command {
 
         mRobotState.setShootingState(new ShootingState(true, atAngle, atSpeed, atHeading, mShooting));
 
-        Logger.recordOutput(kLoggingPrefix + "TargetShooterAngle", desiredShooterAngle);
         Logger.recordOutput(kLoggingPrefix + "Shooting", mShooting);
         Logger.recordOutput(kLoggingPrefix + "AtAngle", atAngle);
         Logger.recordOutput(kLoggingPrefix + "AtHeading", atHeading);
@@ -103,8 +94,7 @@ public class Shoot extends Command {
         mShooting = false;
 
         mRobotState.setShootingState(new ShootingState());
-        mShooter.stopRollers();
-        mShooter.stopRotation();
+        mShooter.stop();
         mIndexer.stop();
 
         Logger.recordOutput(kLoggingPrefix + "Shooting", false);

@@ -3,11 +3,10 @@ package com.team1701.robot.util;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
+import com.team1701.robot.subsystems.shooter.Shooter.ShooterSetpoint;
 import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import org.littletonrobotics.junction.Logger;
 
 public final class ShooterUtil {
 
@@ -15,49 +14,53 @@ public final class ShooterUtil {
         return Math.tan(Constants.Shooter.kSpeakerToShooterHingeDifference / distance);
     }
 
-    public static Rotation2d calculateStationaryDesiredAngle(RobotState robotState) {
-        switch (robotState.getScoringMode()) {
-            case SPEAKER:
-                var d = robotState.getDistanceToSpeaker();
-                if (Constants.Shooter.kUseNewCurves) {
-                    return Rotation2d.fromRadians(
-                            Constants.Shooter.kBetaRegression.predict(calculateTheoreticalAngle(d)));
-                }
-                return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(d));
-            case AMP:
-                return Rotation2d.fromDegrees(Constants.Shooter.kShooterAmpAngleDegrees.get());
-            default:
-                return Constants.Shooter.kLoadingAngle;
-        }
+    public static ShooterSetpoint calculateSetpoint(double distanceToSpeaker) {
+        return new ShooterSetpoint(
+                new ShooterSpeeds(Constants.Shooter.kShooterSpeedInterpolator.get(distanceToSpeaker)),
+                GeometryUtil.clampRotation(
+                        Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(distanceToSpeaker)),
+                        Constants.Shooter.kShooterLowerLimit,
+                        Constants.Shooter.kShooterUpperLimit));
     }
 
-    public static Rotation2d calculateShooterAngleWithMotion(RobotState robotState, Translation2d expectedTranslation) {
-        var d = robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation));
-        if (Constants.Shooter.kUseNewCurves) {
-            return Rotation2d.fromRadians(Constants.Shooter.kBetaRegression.predict(calculateTheoreticalAngle(d)));
-        }
-
-        return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(d));
+    public static ShooterSetpoint calculateStationarySetpoint(RobotState robotState) {
+        return new ShooterSetpoint(
+                calculateStationaryRollerSpeeds(robotState), calculateStationaryDesiredAngle(robotState));
     }
 
-    public static ShooterSpeeds calculateShooterSpeedsWithMotion(
-            RobotState robotState, Translation2d expectedTranslation) {
-        if (Constants.Shooter.kUseNewCurves) {
-            return new ShooterSpeeds(Constants.Shooter.kSpeedRegression.predict(
-                    robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
-        }
-        return new ShooterSpeeds(Constants.Shooter.kShooterSpeedInterpolator.get(
-                robotState.getDistanceToSpeaker(GeometryUtil.toTranslation3d(expectedTranslation))));
+    public static ShooterSetpoint calculatePassingSetpoint(RobotState robotState) {
+        return new ShooterSetpoint(
+                new ShooterSpeeds(Constants.Shooter.kPassingSpeedInterpolator.get(robotState.getPassingDistance())),
+                Rotation2d.fromRadians(
+                        Constants.Shooter.kPassingAngleInterpolator.get(robotState.getPassingDistance())));
     }
 
-    public static ShooterSpeeds calculateStationaryRollerSpeeds(RobotState robotState) {
+    public static ShooterSetpoint calculateIdleSetpoint(RobotState robotState) {
+        return new ShooterSetpoint(calculateIdleRollerSpeeds(robotState), calculateStationaryDesiredAngle(robotState));
+    }
+
+    private static Rotation2d calculateStationaryDesiredAngle(RobotState robotState) {
+        var d = robotState.getDistanceToSpeaker();
+        var rotation =
+                switch (robotState.getScoringMode()) {
+                    case SPEAKER -> Rotation2d.fromRadians(
+                            Constants.Shooter.kUseNewCurves
+                                    ? Constants.Shooter.kBetaRegression.predict(calculateTheoreticalAngle(d))
+                                    : Constants.Shooter.kShooterAngleInterpolator.get(d));
+                    case AMP -> Rotation2d.fromDegrees(Constants.Shooter.kShooterAmpAngleDegrees.get());
+                    default -> Constants.Shooter.kLoadingAngle;
+                };
+
+        return GeometryUtil.clampRotation(
+                rotation, Constants.Shooter.kShooterLowerLimit, Constants.Shooter.kShooterUpperLimit);
+    }
+
+    private static ShooterSpeeds calculateStationaryRollerSpeeds(RobotState robotState) {
         switch (robotState.getScoringMode()) {
             case SPEAKER:
                 var interpolatedSpeed =
                         Constants.Shooter.kShooterSpeedInterpolator.get(robotState.getDistanceToSpeaker());
                 var predictedSpeed = Constants.Shooter.kSpeedRegression.predict(robotState.getDistanceToSpeaker());
-                Logger.recordOutput("Shooter/InterpolatedShooterSpeeds", interpolatedSpeed);
-                Logger.recordOutput("Shooter/PredictedShooterSpeeds", predictedSpeed);
                 if (Constants.Shooter.kUseNewCurves) {
                     return new ShooterSpeeds(predictedSpeed);
                 }
@@ -70,17 +73,7 @@ public final class ShooterUtil {
         }
     }
 
-    public static ShooterSpeeds calculatePassingShooterSpeeds(RobotState robotState) {
-        var interpolatedSpeed = Constants.Shooter.kPassingSpeedInterpolator.get(robotState.getPassingDistance());
-        Logger.recordOutput("Shooter/InterpolatedPassingSpeeds", interpolatedSpeed);
-        return new ShooterSpeeds(interpolatedSpeed);
-    }
-
-    public static Rotation2d calculatePassingShooterAngle(RobotState robotState) {
-        return Rotation2d.fromRadians(Constants.Shooter.kPassingAngleInterpolator.get(robotState.getPassingDistance()));
-    }
-
-    public static ShooterSpeeds calculateIdleRollerSpeeds(RobotState robotState) {
+    private static ShooterSpeeds calculateIdleRollerSpeeds(RobotState robotState) {
         ShooterSpeeds speeds;
         switch (robotState.getScoringMode()) {
             case SPEAKER:

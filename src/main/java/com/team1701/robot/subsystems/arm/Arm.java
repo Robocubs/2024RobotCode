@@ -157,7 +157,6 @@ public class Arm extends SubsystemBase {
     }
 
     public enum ArmPosition {
-        // TODO: update values
         HOME(20),
         LOW(45),
         LOW_CLIMB(60),

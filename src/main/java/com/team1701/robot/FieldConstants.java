@@ -15,6 +15,9 @@ public final class FieldConstants {
     public static final double kWingLength = Units.inchesToMeters(231.2);
     public static final double kNoteHeight = Units.inchesToMeters(2);
     public static final double kHalfNoteHeight = kNoteHeight / 2;
+    public static final double kNoteStartLineBlueWing = Units.inchesToMeters(114);
+    public static final double kSpaceBetweenWingNotes = Units.inchesToMeters(57);
+    public static final double kSpaceBetweenCenterNotes = Units.inchesToMeters(66);
 
     public static final double kSpeakerHeight = Units.inchesToMeters(80.4375);
     public static final Translation3d kBlueSpeakerOpeningCenter =

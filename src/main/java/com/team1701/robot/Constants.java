@@ -27,8 +27,6 @@ public final class Constants {
     public static final class Robot {
         public static final double kRobotWidth = Units.inchesToMeters(23);
         public static final double kRobotLength = Units.inchesToMeters(28.5);
-        public static final double kDriveTrainWidth = .465; // using wheelbase from drive
-        public static final double kDriveTrainLength = kDriveTrainWidth; // using wheelbase from drive
         public static final double kRobotWidthWithBumpers = kRobotWidth + Units.inchesToMeters(8);
         public static final double kRobotLengthWithBumpers = kRobotLength + Units.inchesToMeters(8);
         public static final double kRobotFrontToCenter = Units.inchesToMeters(23.0 / 2.0);
@@ -46,7 +44,7 @@ public final class Constants {
                 new Translation3d(Units.inchesToMeters(10.0), 0.0, Units.inchesToMeters(1.9)),
                 GeometryUtil.kRotation3dIdentity);
         public static final double kLongDistanceFromDriveCenterToCorner =
-                Math.hypot(kRobotWidthWithBumpers / 2.0, kRobotLength - (kDriveTrainLength / 2.0));
+                Math.hypot(kRobotWidthWithBumpers / 2.0, kRobotLength - (kRobotWidth / 2.0));
     }
 
     public static final class Vision {
@@ -69,7 +67,6 @@ public final class Constants {
          */
         public static final boolean kUseInterpolatedVisionStdDevValues = true;
 
-        // TODO: Collect values
         public static final double[][] kMeasuredDistanceToXStdDevValues = {
             {2.13, 0.006},
             {2.286, 0.008},
@@ -198,7 +195,6 @@ public final class Constants {
     }
 
     public static final class Drive {
-        // TODO: update these values for 2024 bot
         protected static final double kL1DriveReduction = (14.0 / 50.0) * (25.0 / 19.0) * (15.0 / 45.0);
         protected static final double kL2DriveReduction = (14.0 / 50.0) * (27.0 / 17.0) * (15.0 / 45.0);
         protected static final double kL3DriveReduction = (14.0 / 50.0) * (28.0 / 16.0) * (15.0 / 45.0);
@@ -239,7 +235,6 @@ public final class Constants {
         public static final LoggedTunableNumber kSteerKp = new LoggedTunableNumber("Drive/Module/SteerKp");
         public static final LoggedTunableNumber kSteerKd = new LoggedTunableNumber("Drive/Module/SteerKd");
 
-        // TODO: determine PID values
         public static final double kPathTranslationKp = 4.0;
         public static final double kPathRotationKp = 2.0;
 
@@ -258,9 +253,8 @@ public final class Constants {
                     kSteerReduction = kMk4iSteerReduction;
                     kDriveMotorsInverted = true;
                     kSteerMotorsInverted = true;
-                    /* TODO: Update values for 2024 bot */
-                    kTrackWidthMeters = 0.465;
-                    kWheelbaseMeters = 0.465;
+                    kTrackWidthMeters = 0.451;
+                    kWheelbaseMeters = 0.451;
                     kDriveKs.initDefault(3.78855);
                     kDriveKv.initDefault(0.11668); // 0.06
                     kDriveKa.initDefault(1.0 / DCMotor.getKrakenX60Foc(1).KtNMPerAmp);
@@ -277,7 +271,6 @@ public final class Constants {
                     kSteerReduction = kMk4iSteerReduction;
                     kDriveMotorsInverted = true;
                     kSteerMotorsInverted = true;
-                    /* TODO: Update values for 2024 bot */
                     kTrackWidthMeters = 0.5;
                     kWheelbaseMeters = 0.5;
                     kDriveKs.initDefault(0.32651);
@@ -506,14 +499,8 @@ public final class Constants {
         };
 
         public static final double[][] kShooterDistanceToHeadingOffset = {
-            {2.3, -9},
-            {2.7, -9},
-            {3.5, -9},
-            {3.8, -9},
-            {4.1, -9},
-            {4.7, -9},
-            {5.1, -5},
-            {5.9, -5}
+            {460, -9},
+            {540, -5}
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {
@@ -571,7 +558,7 @@ public final class Constants {
                 kSpeedRegression = new PolynomialRegression(distances, collectedSpeeds, 2);
             }
             for (double[] pair : kShooterDistanceToHeadingOffset) {
-                kShooterHeadingOffsetInterpolator.put(pair[0], pair[1]);
+                kShooterHeadingOffsetInterpolator.put(pair[0], Units.degreesToRadians(pair[1]));
             }
         }
 
@@ -632,8 +619,7 @@ public final class Constants {
         public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Climb/Winch/Kp");
         public static final LoggedTunableNumber kWinchKd = new LoggedTunableNumber("Climb/Winch/Kd");
 
-        public static final double kWinchCircumference =
-                Math.PI * Units.inchesToMeters(1.5); // idk, TODO: update diameter
+        public static final double kWinchCircumference = Math.PI * Units.inchesToMeters(1.5);
 
         static {
             switch (Configuration.getRobot()) {

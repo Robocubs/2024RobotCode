@@ -1,43 +1,41 @@
 package com.team1701.robot.commands;
 
-import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
-import com.team1701.robot.util.ShooterUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
 
 public class ManualShoot extends Command {
     private static final String kLoggingPrefix = "Command/ManualShoot/";
+    private static final ShooterSpeeds kManualShootSpeed = new ShooterSpeeds(400);
 
     private final Shooter mShooter;
     private final Indexer mIndexer;
-    private final RobotState mRobotState;
 
+    private Rotation2d mAngle;
     private boolean mShooting;
 
-    public ManualShoot(Shooter shooter, Indexer indexer, RobotState robotState) {
+    public ManualShoot(Shooter shooter, Indexer indexer) {
         mShooter = shooter;
         mIndexer = indexer;
-        mRobotState = robotState;
 
         addRequirements(shooter, indexer);
     }
 
     @Override
     public void initialize() {
+        mAngle = mShooter.getAngle();
         mShooting = false;
     }
 
     @Override
     public void execute() {
-        ShooterSpeeds targetSpeeds;
-        targetSpeeds = ShooterUtil.calculateStationaryRollerSpeeds(mRobotState);
+        mShooter.setRollerSpeeds(kManualShootSpeed);
+        mShooter.setRotationAngle(mAngle);
 
-        mShooter.setRollerSpeeds(targetSpeeds);
-
-        var atSpeed = targetSpeeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), 50.0);
+        var atSpeed = kManualShootSpeed.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), 50.0);
 
         if (atSpeed) {
             mIndexer.setForwardShoot();
@@ -58,8 +56,7 @@ public class ManualShoot extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        mShooter.stopRollers();
-        mShooter.stopRotation();
+        mShooter.stop();
         mIndexer.stop();
     }
 
