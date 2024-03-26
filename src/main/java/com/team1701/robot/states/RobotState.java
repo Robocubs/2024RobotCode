@@ -10,21 +10,24 @@ import com.team1701.lib.estimation.PoseEstimator.DriveMeasurement;
 import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
 import com.team1701.lib.estimation.TwistPoseEstimator;
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.LoggedTunableBoolean;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.lib.util.Util;
+import com.team1701.lib.util.tuning.LoggedTunableBoolean;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.Robot;
+import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -127,13 +130,6 @@ public class RobotState {
                                 : FieldConstants.kRedSpeakerOpeningCenter);
     }
 
-    public double getDistanceToSpeaker(Translation3d expectedTranslation) {
-        return expectedTranslation.getDistance(
-                Configuration.isBlueAlliance()
-                        ? FieldConstants.kBlueSpeakerOpeningCenter
-                        : FieldConstants.kRedSpeakerOpeningCenter);
-    }
-
     public Rotation2d getHeading() {
         return getPose2d().getRotation();
     }
@@ -163,15 +159,17 @@ public class RobotState {
 
     @AutoLogOutput
     public boolean inOpponentWing() {
-        var poseX = getPose2d().getX();
+        var translationX = getPose2d().getX();
         return Configuration.isBlueAlliance()
-                ? poseX > FieldConstants.kFieldLongLengthMeters - FieldConstants.kWingLength
-                : poseX < FieldConstants.kWingLength;
+                ? translationX + Constants.Robot.kLongDistanceFromDriveCenterToCorner + .15
+                        > FieldConstants.kFieldLongLengthMeters - FieldConstants.kWingLength
+                : translationX - Constants.Robot.kLongDistanceFromDriveCenterToCorner - .15
+                        < FieldConstants.kWingLength;
     }
 
     @AutoLogOutput
     public boolean inNearHalf() {
-        var poseX = getPose2d().getX();
+        var poseX = getPose2d().getTranslation().getX();
         return Configuration.isBlueAlliance()
                 ? poseX < FieldConstants.kFieldLongLengthMeters / 2.0
                 : poseX > FieldConstants.kFieldLongLengthMeters / 2.0;
@@ -188,6 +186,27 @@ public class RobotState {
     }
 
     @AutoLogOutput
+    public Pose2d getPassingPose() {
+        return new Pose2d(getPassingTarget(), GeometryUtil.kRotationIdentity);
+    }
+
+    public Translation2d getPassingTarget() {
+        return Configuration.isBlueAlliance()
+                ? FieldConstants.kBluePassingTarget.getTranslation()
+                : FieldConstants.kRedPassingTarget.getTranslation();
+    }
+
+    @AutoLogOutput
+    public double getPassingDistance() {
+        return getPose2d().getTranslation().getDistance(getPassingTarget());
+    }
+
+    @AutoLogOutput
+    public Rotation2d getPassingHeading() {
+        return getPassingTarget().minus(getPose2d().getTranslation()).getAngle();
+    }
+
+    @AutoLogOutput
     public boolean outOfAmpRange() {
         return mOutOfAmpRange.getValue();
     }
@@ -198,15 +217,58 @@ public class RobotState {
                 : FieldConstants.kRedSpeakerOpeningCenter;
     }
 
+    @AutoLogOutput
+    public Pose3d getTolerancePose() {
+        return Configuration.isBlueAlliance()
+                ? new Pose3d(FieldConstants.kBlueSpeakerToleranceTranslation, GeometryUtil.kRotation3dIdentity)
+                : new Pose3d(FieldConstants.kRedSpeakerToleranceTranslation, GeometryUtil.kRotation3dIdentity);
+    }
+
     public Translation3d getAmpPose() {
         return Configuration.isBlueAlliance() ? FieldConstants.kBlueAmpPosition : FieldConstants.kRedAmpPosition;
     }
 
+    @AutoLogOutput
     public Rotation2d getSpeakerHeading() {
+        return getSpeakerHeading(getPose2d().getTranslation());
+    }
+
+    public Rotation2d getSpeakerHeading(Translation2d translation) {
         return getSpeakerPose()
                 .toTranslation2d()
-                .minus(getPose2d().getTranslation())
-                .getAngle();
+                .minus(translation)
+                .getAngle()
+                .minus(Rotation2d.fromRadians(
+                        Constants.Shooter.kShooterHeadingOffsetInterpolator.get(getDistanceToSpeaker())));
+    }
+
+    public Rotation2d getMovingSpeakerHeading(Drive drive) {
+        var projectedTranslation = getPose2d()
+                .getTranslation()
+                .plus(new Translation2d(
+                        drive.getFieldRelativeVelocity().vxMetersPerSecond * Constants.kLoopPeriodSeconds,
+                        drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
+        return getSpeakerHeading(projectedTranslation);
+    }
+
+    @AutoLogOutput
+    public Rotation2d getToleranceSpeakerHeading() {
+        return getToleranceSpeakerHeading(getPose2d().getTranslation());
+    }
+
+    public Rotation2d getToleranceSpeakerHeading(Translation2d translation) {
+        var heading = getTolerancePose()
+                .getTranslation()
+                .toTranslation2d()
+                .minus(translation)
+                .getAngle()
+                .minus(Rotation2d.fromRadians(
+                        Constants.Shooter.kShooterHeadingOffsetInterpolator.get(getDistanceToSpeaker())));
+
+        var toleranceRadians = Math.abs(
+                MathUtil.angleModulus(heading.getRadians() - getSpeakerHeading().getRadians()));
+
+        return Rotation2d.fromRadians(Math.max(0.017, toleranceRadians));
     }
 
     public Rotation2d getAmpHeading() {
@@ -272,6 +334,10 @@ public class RobotState {
         }
         var hasNote = mIntake.get().hasNote() || mIndexer.get().hasNote();
         return mHasNote.update(hasNote, Timer.getFPGATimestamp());
+    }
+
+    public boolean hasLoadedNote() {
+        return mIndexer.get().hasNoteAtExit();
     }
 
     @AutoLogOutput

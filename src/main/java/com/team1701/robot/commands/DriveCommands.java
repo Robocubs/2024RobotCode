@@ -1,5 +1,6 @@
 package com.team1701.robot.commands;
 
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -19,7 +20,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class DriveCommands {
     public static Command driveWithJoysticks(
@@ -30,26 +30,29 @@ public class DriveCommands {
             DoubleSupplier rotationSupplier,
             Supplier<KinematicLimits> kinematicLimitsSupplier) {
         return Commands.runEnd(
-                () -> {
-                    var kinematicLimits = kinematicLimitsSupplier.get();
-                    drive.setKinematicLimits(kinematicLimits);
+                        () -> {
+                            var kinematicLimits = kinematicLimitsSupplier.get();
+                            drive.setKinematicLimits(kinematicLimits);
 
-                    var translationVelocities = calculateDriveWithJoysticksVelocities(
-                            throttleSupplier.getAsDouble(),
-                            strafeSupplier.getAsDouble(),
-                            headingSupplier.get(),
-                            kinematicLimits.maxDriveVelocity());
-                    var rotation =
-                            MathUtil.applyDeadband(rotationSupplier.getAsDouble(), Constants.Controls.kDriverDeadband);
-                    var rotationRadiansPerSecond = Math.copySign(rotation * rotation, rotation)
-                            * kinematicLimits.maxDriveVelocity()
-                            / Constants.Drive.kModuleRadius;
+                            var translationVelocities = calculateDriveWithJoysticksVelocities(
+                                    throttleSupplier.getAsDouble(),
+                                    strafeSupplier.getAsDouble(),
+                                    headingSupplier.get(),
+                                    kinematicLimits.maxDriveVelocity());
+                            var rotation = MathUtil.applyDeadband(
+                                    rotationSupplier.getAsDouble(), Constants.Controls.kDriverDeadband);
+                            var rotationRadiansPerSecond = Math.copySign(rotation * rotation, rotation)
+                                    * kinematicLimits.maxDriveVelocity()
+                                    / Constants.Drive.kModuleRadius;
 
-                    drive.setVelocity(new ChassisSpeeds(
-                            translationVelocities.getX(), translationVelocities.getY(), rotationRadiansPerSecond));
-                },
-                drive::stop,
-                drive);
+                            drive.setVelocity(new ChassisSpeeds(
+                                    translationVelocities.getX(),
+                                    translationVelocities.getY(),
+                                    rotationRadiansPerSecond));
+                        },
+                        drive::stop,
+                        drive)
+                .withName("DriveWithJoysticks");
     }
 
     private static Translation2d calculateDriveWithJoysticksVelocities(
@@ -74,17 +77,51 @@ public class DriveCommands {
     public static Command rotateToSpeaker(
             Drive drive, RobotState state, KinematicLimits kinematicLimits, boolean finishAtRotation) {
         return rotateToFieldHeading(
-                drive, state::getSpeakerHeading, state::getHeading, kinematicLimits, finishAtRotation);
+                drive,
+                state::getSpeakerHeading,
+                state::getHeading,
+                state::getToleranceSpeakerHeading,
+                kinematicLimits,
+                finishAtRotation);
+    }
+
+    public static Command rotateToPassTarget(
+            Drive drive,
+            DoubleSupplier throttle,
+            DoubleSupplier strafe,
+            RobotState state,
+            KinematicLimits kinematicLimits) {
+        return new RotateToFieldHeading(
+                        drive,
+                        () -> calculateDriveWithJoysticksVelocities(
+                                        throttle.getAsDouble(),
+                                        strafe.getAsDouble(),
+                                        drive.getFieldRelativeHeading(),
+                                        kinematicLimits.maxDriveVelocity())
+                                .rotateBy(state.getHeading()),
+                        state::getPassingHeading,
+                        state::getHeading,
+                        () -> new Rotation2d(.01),
+                        kinematicLimits,
+                        false)
+                .withName("RotateToPassTarget");
     }
 
     public static Command rotateToFieldHeading(
             Drive drive,
             Supplier<Rotation2d> targetFieldHeading,
             Supplier<Rotation2d> robotHeadingSupplier,
+            Supplier<Rotation2d> headingTolerance,
             KinematicLimits kinematicLimits,
             boolean finishAtRotation) {
         return new RotateToFieldHeading(
-                drive, targetFieldHeading, robotHeadingSupplier, kinematicLimits, finishAtRotation);
+                drive, targetFieldHeading, robotHeadingSupplier, headingTolerance, kinematicLimits, finishAtRotation);
+    }
+
+    public static Command stop(Drive drive) {
+        return Commands.runOnce(drive::stop, drive)
+                .andThen(Commands.idle(drive))
+                .withName("StopDrive");
     }
 
     public static Command swerveLock(Drive drive) {
@@ -93,10 +130,11 @@ public class DriveCommands {
                 .withName("SwerveLock");
     }
 
-    public static Command driveToAmp(Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits) {
+    public static Command driveToAmp(
+            Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits, boolean oppositeAlliance) {
         return new DriveToPose(
                         drive,
-                        () -> Configuration.isBlueAlliance()
+                        () -> Configuration.isBlueAlliance() ^ oppositeAlliance
                                 ? FieldConstants.kBlueAmpDrivePose
                                 : FieldConstants.kRedAmpDrivePose,
                         poseSupplier,
@@ -105,24 +143,29 @@ public class DriveCommands {
                 .withName("DriveToAmp");
     }
 
-    public static Command driveToPiece(
-            Drive drive,
-            RobotState robotState,
-            KinematicLimits kinematicLimits,
-            CommandXboxController driverController) {
-        return new DriveToPose(
+    public static Command driveToNote(Drive drive, RobotState robotState, KinematicLimits kinematicLimits) {
+        return driveToNote(
                 drive,
-                () -> robotState
-                        .getDetectedNoteForPickup()
-                        .map(note -> note.pose().toPose2d())
-                        .map(pose -> new Pose2d(
-                                        pose.getTranslation(),
-                                        pose.getRotation().plus(GeometryUtil.kRotationPi))
-                                .transformBy(Constants.Robot.kIntakeToRobot))
-                        .orElseGet(robotState::getPose2d),
-                robotState::getPose2d,
-                kinematicLimits,
-                true);
+                robotState,
+                () -> robotState.getDetectedNoteForPickup().map(note -> note.pose()
+                        .toPose2d()),
+                kinematicLimits);
+    }
+
+    public static Command driveToNote(
+            Drive drive, RobotState robotState, Supplier<Optional<Pose2d>> notePose, KinematicLimits kinematicLimits) {
+        return new DriveToPose(
+                        drive,
+                        () -> notePose.get()
+                                .map(pose -> new Pose2d(
+                                                pose.getTranslation(),
+                                                pose.getRotation().plus(GeometryUtil.kRotationPi))
+                                        .transformBy(Constants.Robot.kIntakeToRobot))
+                                .orElseGet(robotState::getPose2d),
+                        robotState::getPose2d,
+                        kinematicLimits,
+                        true)
+                .withName("DriveToNote");
     }
 
     // v2
@@ -152,7 +195,7 @@ public class DriveCommands {
             RobotState robotState,
             DoubleSupplier throttle,
             DoubleSupplier strafe) {
-        var maxDriveVelocity = Constants.Drive.kFastSmoothKinematicLimits.maxDriveVelocity();
+        var maxDriveVelocity = 2;
         return new ShootAndMove(drive, shooter, indexer, robotState, () -> calculateDriveWithJoysticksVelocities(
                         throttle.getAsDouble(), strafe.getAsDouble(), drive.getFieldRelativeHeading(), maxDriveVelocity)
                 .rotateBy(robotState.getHeading()));

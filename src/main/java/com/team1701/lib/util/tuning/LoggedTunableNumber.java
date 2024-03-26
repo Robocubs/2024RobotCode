@@ -1,4 +1,4 @@
-package com.team1701.lib.util;
+package com.team1701.lib.util.tuning;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,19 +9,14 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
  * Class for a tunable number. Gets value from dashboard in tuning mode, returns default if not or value not in
  * dashboard.
  */
-public class LoggedTunableNumber {
+public class LoggedTunableNumber implements LoggedTunableValue {
     private static final String kTableKey = "TunableNumbers";
-    private static boolean kTuningEnabled = true;
 
     private final String mKey;
     private boolean mHasDefault = false;
     private double mDefaultValue;
     private LoggedDashboardNumber mDashboardNumber;
     private Map<Integer, Double> mLastHasChangedValues = new HashMap<>();
-
-    public static void enableTuning(boolean tuningEnabled) {
-        kTuningEnabled = tuningEnabled;
-    }
 
     /**
      * Create a new LoggedTunableNumber
@@ -52,7 +47,7 @@ public class LoggedTunableNumber {
         if (!mHasDefault) {
             mHasDefault = true;
             this.mDefaultValue = defaultValue;
-            if (kTuningEnabled) {
+            if (LoggedTunableValue.kTuningEnabled) {
                 mDashboardNumber = new LoggedDashboardNumber(mKey, defaultValue);
             }
         }
@@ -67,7 +62,7 @@ public class LoggedTunableNumber {
         if (!mHasDefault) {
             return 0.0;
         } else {
-            return kTuningEnabled ? mDashboardNumber.get() : mDefaultValue;
+            return LoggedTunableValue.kTuningEnabled ? mDashboardNumber.get() : mDefaultValue;
         }
     }
 

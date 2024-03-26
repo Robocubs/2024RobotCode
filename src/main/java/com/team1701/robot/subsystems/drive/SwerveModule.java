@@ -7,6 +7,7 @@ import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -51,9 +52,10 @@ public class SwerveModule {
         mSteerMotorIO = moduleIO.steerMotorIO;
         mSteerEncoderIO = moduleIO.steerEncoderIO;
         mSteerEncoderOffset = moduleIO.steerEncoderOffset;
-        mDriveMotorIO.setPID(
-                Constants.Drive.kDriveKff.get(), Constants.Drive.kDriveKp.get(), 0, Constants.Drive.kDriveKd.get());
-        mSteerMotorIO.setPID(0, Constants.Drive.kSteerKp.get(), 0, Constants.Drive.kSteerKd.get());
+        mDriveMotorIO.setFeedforward(
+                Constants.Drive.kDriveKs.get(), Constants.Drive.kDriveKv.get(), Constants.Drive.kDriveKa.get());
+        mDriveMotorIO.setPID(Constants.Drive.kDriveKp.get(), 0, Constants.Drive.kDriveKd.get());
+        mSteerMotorIO.setPID(Constants.Drive.kSteerKp.get(), 0, Constants.Drive.kSteerKd.get());
     }
 
     // Separated from periodic to support thread locking of odometry inputs
@@ -76,17 +78,24 @@ public class SwerveModule {
 
         mMeasuredAngle = toModuleAngle(Rotation2d.fromRadians(mSteerMotorInputs.positionRadians));
 
-        var hashCode = hashCode();
-        if (Constants.Drive.kDriveKff.hasChanged(hashCode)
-                || Constants.Drive.kDriveKp.hasChanged(hashCode)
-                || Constants.Drive.kDriveKd.hasChanged(hashCode)) {
-            mDriveMotorIO.setPID(
-                    Constants.Drive.kDriveKff.get(), Constants.Drive.kDriveKp.get(), 0, Constants.Drive.kDriveKd.get());
-        }
+        LoggedTunableValue.ifChanged(
+                hashCode(),
+                () -> {
+                    mDriveMotorIO.setFeedforward(
+                            Constants.Drive.kDriveKs.get(),
+                            Constants.Drive.kDriveKv.get(),
+                            Constants.Drive.kDriveKa.get());
+                    mDriveMotorIO.setPID(Constants.Drive.kDriveKp.get(), 0, Constants.Drive.kDriveKd.get());
 
-        if (Constants.Drive.kSteerKp.hasChanged(hashCode) || Constants.Drive.kSteerKd.hasChanged(hashCode)) {
-            mSteerMotorIO.setPID(0, Constants.Drive.kSteerKp.get(), 0, Constants.Drive.kSteerKd.get());
-        }
+                    mSteerMotorIO.setPID(Constants.Drive.kSteerKp.get(), 0, Constants.Drive.kSteerKd.get());
+                },
+                Constants.Drive.kDriveKs,
+                Constants.Drive.kDriveKv,
+                Constants.Drive.kDriveKa,
+                Constants.Drive.kDriveKp,
+                Constants.Drive.kDriveKd,
+                Constants.Drive.kSteerKp,
+                Constants.Drive.kSteerKd);
     }
 
     public Rotation2d getAngle() {
@@ -113,6 +122,10 @@ public class SwerveModule {
         return states;
     }
 
+    public double getSpeedRadiansPerSecond() {
+        return mDriveMotorInputs.velocityRadiansPerSecond;
+    }
+
     public SwerveModuleState getState() {
         return new SwerveModuleState(
                 mDriveMotorInputs.velocityRadiansPerSecond * Constants.Drive.kWheelRadiusMeters, mMeasuredAngle);
@@ -126,6 +139,11 @@ public class SwerveModule {
     public void setOrient(Rotation2d steerAngle) {
         mDriveMotorIO.setPercentOutput(0);
         mSteerMotorIO.setPositionControl(steerAngle.minus(mAngleOffset));
+    }
+
+    public void runCharacterization(double input) {
+        mDriveMotorIO.runCharacterization(input);
+        mSteerMotorIO.setPositionControl(GeometryUtil.kRotationIdentity.minus(mAngleOffset));
     }
 
     public void setDriveBrakeMode(boolean enable) {

@@ -15,6 +15,7 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
+import com.team1701.robot.autonomous.AutoNote;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
@@ -27,7 +28,10 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.Logger;
 
 public class NoteSimulator extends SubsystemBase {
@@ -44,6 +48,20 @@ public class NoteSimulator extends SubsystemBase {
             new Pose3d(1.0, 1.0, kNoteThickness / 2, GeometryUtil.kRotation3dIdentity);
     private static final Pose3d kRedNoteSpawn = new Pose3d(
             FieldConstants.kFieldLongLengthMeters - 1.0, 1.0, kNoteThickness / 2, GeometryUtil.kRotation3dIdentity);
+    private static final Pose3d[] kStartingNotePoses = Stream.of(
+                    AutoNote.A.bluePose(),
+                    AutoNote.B.bluePose(),
+                    AutoNote.C.bluePose(),
+                    AutoNote.A.redPose(),
+                    AutoNote.B.redPose(),
+                    AutoNote.C.redPose(),
+                    AutoNote.M1.pose(),
+                    AutoNote.M2.pose(),
+                    AutoNote.M3.pose(),
+                    AutoNote.M4.pose(),
+                    AutoNote.M5.pose())
+            .map(pose -> new Pose3d(pose.getX(), pose.getY(), kNoteThickness / 2, GeometryUtil.kRotation3dIdentity))
+            .toArray(Pose3d[]::new);
 
     private final RobotState mRobotState;
     private final VisionConfig mDetectorVisionConfig;
@@ -64,8 +82,8 @@ public class NoteSimulator extends SubsystemBase {
         mRobotState = robotState;
         mDetectorVisionConfig = detectorVisionConfig;
 
-        // TODO: Place starting notes on the field
         mNotesInRobot.add(new NoteInRobot(kIndexerPathLength / 2, NoteLocation.INTAKE));
+        new Trigger(DriverStation::isAutonomous).onTrue(Commands.runOnce(this::placeAutonNotes));
     }
 
     public NoteSimulatorSensors getSensors() {
@@ -80,8 +98,7 @@ public class NoteSimulator extends SubsystemBase {
                 new DigitalIOSim(() -> mNotesInRobot.stream()
                         .anyMatch(note -> note.location == NoteLocation.INDEXER
                                         && note.position > kIndexerPathLength - kNoteDiameter * 0.75
-                                || note.location == NoteLocation.SHOOTER
-                                        && note.position < kShooterPathLength - kNoteRadius)));
+                                || note.location == NoteLocation.SHOOTER)));
     }
 
     public void bindSubsystems(Intake intake, Indexer indexer, Shooter shooter) {
@@ -185,9 +202,8 @@ public class NoteSimulator extends SubsystemBase {
 
         mNotesInRobot.removeAll(notesToRemoveFromRobot);
 
-        // TODO: Randomly place additional notes in valid places on the field
         // Place new notes
-        if (mNotesInRobot.isEmpty()) {
+        if (mNotesInRobot.isEmpty() && DriverStation.isTeleop()) {
             if (mNotesOnField.stream().noneMatch(note -> note.isNear(kBlueNoteSpawn))) {
                 mNotesOnField.add(new NoteOnField(kBlueNoteSpawn));
             }
@@ -218,6 +234,16 @@ public class NoteSimulator extends SubsystemBase {
                 mNotesInRobot.stream()
                         .mapToDouble(NoteInRobot::getTotalPosition)
                         .toArray());
+    }
+
+    public void placeAutonNotes() {
+        mNotesOnField.clear();
+        for (var note : kStartingNotePoses) {
+            mNotesOnField.add(new NoteOnField(note));
+        }
+
+        mNotesInRobot.clear();
+        mNotesInRobot.add(new NoteInRobot(kIntakePathLength - Units.inchesToMeters(1), NoteLocation.INDEXER));
     }
 
     public Pose3d[] getNotePosesOnField() {

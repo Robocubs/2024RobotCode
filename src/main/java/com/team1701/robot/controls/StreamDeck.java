@@ -13,13 +13,11 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 
 public class StreamDeck {
     private final Map<StreamDeckButton, Button> buttons = new HashMap<>();
 
-    private static record Button(
-            LoggedDashboardBoolean pressed, BooleanSupplier selected, BooleanPublisher activePub) {}
+    private static record Button(BooleanDashboardInput pressed, BooleanSupplier selected, BooleanPublisher activePub) {}
 
     public StreamDeck() {
         CommandScheduler.getInstance()
@@ -37,11 +35,11 @@ public class StreamDeck {
         var deckTable = nt.getTable("StreamDeck");
         configuration.buttonConfigurations.forEach((button, selected) -> {
             var table = deckTable.getSubTable("Button/" + button.index);
-            table.getStringTopic("Key").publish().set("/SmartDashboard/" + button.key);
+            table.getStringTopic("Key").publish().set("/Dashboard/" + button.key);
             table.getStringTopic("Icon").publish().set(button.icon);
             table.getStringTopic("Label").publish().set(button.label);
 
-            var dashboardBoolean = new LoggedDashboardBoolean(button.key, false);
+            var dashboardBoolean = new BooleanDashboardInput(button.key, false);
             buttons.put(
                     button,
                     new Button(
@@ -74,11 +72,11 @@ public class StreamDeck {
         kStopIntakeButton(1, 0, "Controls/StopIntakingButton", "StopIntakingIcon", "Stop"),
         kRejectButton(2, 0, "Controls/RejectButton", "RejectIntakeIcon", "Reject"),
         kForwardButton(0, 0, "Controls/ForwardButton", "ForceIntakeIcon", "Intake"),
-        kArmUpButton(0, 1, "Controls/ArmUpButton", "RaiseArmIcon", "Up"),
-        kArmDownButton(2, 1, "Controls/ArmDownButton", "LowerArmIcon", "Down"),
-        kArmStopButton(1, 1, "Controls/ArmStopButton", "StopArmIcon", "Stop"),
-        kShooterUpButton(0, 3, "Controls/ShooterUpButton", "RaiseShooterIcon", "Up"),
-        kShooterDownButton(2, 3, "Controls/ShooterDownButton", "LowerShooterIcon", "Down"),
+        kLeftClimbButton(0, 1, "Controls/LeftClimbButton", "LeftClimbIcon", "Left"),
+        kRightClimbButton(2, 1, "Controls/RightClimbButton", "RightClimbIcon", "Right"),
+        kCenterClimbButton(1, 1, "Controls/CenterClimbButton", "CenterClimbIcon", "Center"),
+        kShooterUpButton(0, 3, "Controls/ShooterUpButton", "RaiseShooterIcon", "Raise"),
+        kShooterDownButton(2, 3, "Controls/ShooterDownButton", "LowerShooterIcon", "Lower"),
         kShootButton(1, 2, "Controls/ShootButton", "ShootIcon", "Shoot"),
         kStopShootButton(1, 3, "Controls/StopShootButton", "StopShooterIcon", "Stop"),
         kSpeakerModeButton(0, 4, "Controls/SpeakerModeButton", "SpeakerModeIcon", "Speaker"),

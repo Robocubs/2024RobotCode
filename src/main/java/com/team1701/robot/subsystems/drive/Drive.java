@@ -45,6 +45,7 @@ public class Drive extends SubsystemBase {
     private KinematicLimits mKinematicLimits = Constants.Drive.kFastKinematicLimits;
     private ChassisSpeeds mDesiredChassisSpeeds = new ChassisSpeeds();
     private Rotation2d[] mDesiredModuleOrientations;
+    private double mCharacterizationInput = 0.0;
     private SwerveSetpoint mPreviousSetpoint = new SwerveSetpoint(Constants.Drive.kNumModules);
     private SwerveModulePosition[] mMeasuredModulePositions;
     private Rotation2d mFieldRelativeHeading = GeometryUtil.kRotationIdentity;
@@ -89,24 +90,24 @@ public class Drive extends SubsystemBase {
             mModules[i] = new SwerveModule(i, moduleIOs[i]);
         }
 
-        for (var module : mModules) {
-            module.setSteerBrakeMode(false);
-            module.setDriveBrakeMode(false);
-        }
+        setDriveBrakeMode(false);
 
         updateInputs();
         zeroModules();
 
         new Trigger(DriverStation::isDisabled)
                 .whileTrue(Commands.sequence(
-                                Commands.waitSeconds(10), runOnce(() -> setDriveBrakeMode(false)), Commands.idle())
+                                runOnce(() -> setDriveBrakeMode(true)),
+                                Commands.waitSeconds(2),
+                                runOnce(() -> setDriveBrakeMode(false)),
+                                Commands.idle())
                         .ignoringDisable(true)
-                        .withName("DisabledLoop"));
+                        .withName("DriveDisabledLoop"));
 
         new Trigger(DriverStation::isEnabled)
                 .onTrue(Commands.runOnce(() -> setDriveBrakeMode(false))
                         .ignoringDisable(true)
-                        .withName("EnabledStart"));
+                        .withName("DriveEnabledStart"));
     }
 
     @Override
@@ -199,6 +200,16 @@ public class Drive extends SubsystemBase {
             return;
         }
 
+        if (mDriveControlState == DriveControlState.CHARACTERIZATION) {
+            var desiredModuleStates = new SwerveModuleState[mModules.length];
+            for (int i = 0; i < mModules.length; ++i) {
+                desiredModuleStates[i] = new SwerveModuleState(mCharacterizationInput, GeometryUtil.kRotationIdentity);
+                mModules[i].runCharacterization(mCharacterizationInput);
+            }
+            Logger.recordOutput("Drive/DesiredStates", desiredModuleStates);
+            return;
+        }
+
         var desiredChassisSpeedIsZero = Util.epsilonEquals(mDesiredChassisSpeeds.vxMetersPerSecond, 0.0)
                 && Util.epsilonEquals(mDesiredChassisSpeeds.vyMetersPerSecond, 0.0)
                 && Util.epsilonEquals(mDesiredChassisSpeeds.omegaRadiansPerSecond, 0.0);
@@ -253,6 +264,13 @@ public class Drive extends SubsystemBase {
         return ChassisSpeeds.fromRobotRelativeSpeeds(getVelocity(), mRobotState.getHeading());
     }
 
+    public double getAverageModuleSpeedRadiansPerSecond() {
+        return Stream.of(mModules)
+                .mapToDouble(SwerveModule::getSpeedRadiansPerSecond)
+                .average()
+                .getAsDouble();
+    }
+
     @AutoLogOutput
     public double getSpeedMetersPerSecond() {
         var chassisSpeeds = Constants.Drive.kKinematics.toChassisSpeeds(mMeasuredModuleStates);
@@ -281,6 +299,12 @@ public class Drive extends SubsystemBase {
         mDriveControlState = DriveControlState.ORIENT_MODULES;
         mDesiredChassisSpeeds = new ChassisSpeeds();
         mDesiredModuleOrientations = orientations;
+    }
+
+    public void runCharacterization(double volts) {
+        mDriveControlState = DriveControlState.CHARACTERIZATION;
+        mDesiredChassisSpeeds = new ChassisSpeeds();
+        mCharacterizationInput = volts;
     }
 
     public void zeroGyroscope() {
@@ -324,5 +348,6 @@ public class Drive extends SubsystemBase {
     public enum DriveControlState {
         VELOCITY_CONTROL,
         ORIENT_MODULES,
+        CHARACTERIZATION,
     }
 }

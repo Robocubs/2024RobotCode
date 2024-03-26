@@ -12,7 +12,7 @@ public class VisionCameraConfig {
     // used
     public static VisionCameraConfig kStandardArduCamConfig = new VisionCameraConfig(1280, 720, 1, 35, 0, false);
     public static VisionCameraConfig kLimelightConfig = new VisionCameraConfig(960, 720, 0, 0, 0, false);
-    public static VisionCameraConfig kSniperCamConfig = new VisionCameraConfig(1600, 1200, 0, 100, 0, false);
+    public static VisionCameraConfig kSniperCamConfig = new VisionCameraConfig(1600, 1200, 0, 400, 0, false);
 
     VisionCameraConfig(
             int cameraResolutionWidth,

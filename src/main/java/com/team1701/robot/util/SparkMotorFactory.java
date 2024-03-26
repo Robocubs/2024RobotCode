@@ -21,7 +21,6 @@ public class SparkMotorFactory {
 
         motor.setCANTimeout(200);
 
-        // TODO: Update values for actual shooter
         configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
 
         configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);
@@ -33,18 +32,18 @@ public class SparkMotorFactory {
         double reduction = 1.0;
         switch (motorUse) {
             case SHOOTER_ROLLER:
+                configureWithRetry(() -> motor.setIdleMode(CANSparkMax.IdleMode.kCoast), errorAlert);
                 configureWithRetry(() -> motor.setSmartCurrentLimit(60), errorAlert);
-                configureWithRetry(() -> controller.setP(/*Constants.Shooter.kRollerKp.get()*/ 0), errorAlert);
-                configureWithRetry(() -> controller.setD(/*Constants.Shooter.kRollerKd.get()*/ 0), errorAlert);
-                configureWithRetry(() -> controller.setFF(/*Constants.Shooter.kRollerKff.get()*/ 0), errorAlert);
+                configureWithRetry(() -> controller.setP(Constants.Shooter.kRollerKp.get()), errorAlert);
+                configureWithRetry(() -> controller.setD(Constants.Shooter.kRollerKd.get()), errorAlert);
                 reduction = Constants.Shooter.kRollerReduction;
                 break;
             case ROTATION:
+                configureWithRetry(() -> motor.setIdleMode(CANSparkMax.IdleMode.kBrake), errorAlert);
                 configureWithRetry(() -> motor.setSmartCurrentLimit(40), errorAlert);
                 configureWithRetry(() -> motor.setClosedLoopRampRate(0.2), errorAlert);
                 configureWithRetry(() -> controller.setP(Constants.Shooter.kRotationKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Shooter.kRotationKd.get()), errorAlert);
-                configureWithRetry(() -> controller.setFF(0), errorAlert);
                 configureWithRetry(() -> controller.setOutputRange(-.3, .3), errorAlert);
                 configureWithRetry(
                         () -> motor.setSoftLimit(SoftLimitDirection.kForward, (float)
@@ -77,23 +76,19 @@ public class SparkMotorFactory {
     public static MotorIOSparkFlex createIndexerMotorIOSparkFlex(int deviceId) {
         var motor = new CANSparkFlex(deviceId, MotorType.kBrushless);
         var encoder = motor.getEncoder();
-        var controller = motor.getPIDController();
         var errorAlert = new REVAlert(motor, deviceId);
 
         motor.setCANTimeout(200);
 
         configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
 
+        configureWithRetry(() -> motor.setIdleMode(CANSparkMax.IdleMode.kBrake), errorAlert);
         configureWithRetry(() -> motor.setSmartCurrentLimit(40), errorAlert);
         configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);
 
         configureWithRetry(() -> encoder.setPosition(0), errorAlert);
         configureWithRetry(() -> encoder.setMeasurementPeriod(10), errorAlert);
         configureWithRetry(() -> encoder.setAverageDepth(2), errorAlert);
-
-        configureWithRetry(() -> controller.setP(Constants.Indexer.kIndexerKp.get()), errorAlert);
-        configureWithRetry(() -> controller.setD(Constants.Indexer.kIndexerKd.get()), errorAlert);
-        configureWithRetry(() -> controller.setFF(Constants.Indexer.kIndexerKff.get()), errorAlert);
 
         configureWithRetry(() -> motor.burnFlash(), errorAlert);
 
@@ -111,6 +106,7 @@ public class SparkMotorFactory {
 
         configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
 
+        configureWithRetry(() -> motor.setIdleMode(CANSparkMax.IdleMode.kCoast), errorAlert);
         configureWithRetry(() -> motor.setSmartCurrentLimit(40), errorAlert);
         configureWithRetry(() -> motor.setOpenLoopRampRate(0.2), errorAlert);
         configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);
@@ -123,7 +119,7 @@ public class SparkMotorFactory {
 
         motor.setCANTimeout(0);
 
-        return new MotorIOSparkFlex(motor, Constants.Indexer.kIntakeReduction);
+        return new MotorIOSparkFlex(motor, Constants.Intake.kReduction);
     }
 
     public static MotorIOSparkFlex createArmClimbMotorIOSparkFlex(int deviceId, MotorUsage motorUse, boolean inverted) {
@@ -134,9 +130,9 @@ public class SparkMotorFactory {
 
         motor.setCANTimeout(200);
 
-        // TODO: Update values for actual shooter
         configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
 
+        configureWithRetry(() -> motor.setIdleMode(CANSparkMax.IdleMode.kBrake), errorAlert);
         configureWithRetry(() -> motor.setSmartCurrentLimit(80), errorAlert);
         configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);
 
@@ -148,7 +144,6 @@ public class SparkMotorFactory {
             case WINCH:
                 configureWithRetry(() -> controller.setP(Constants.Climb.kWinchKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Climb.kWinchKd.get()), errorAlert);
-                configureWithRetry(() -> controller.setFF(Constants.Climb.kWinchKff.get()), errorAlert);
 
                 configureWithRetry(
                         () -> motor.setSoftLimit(
@@ -168,7 +163,6 @@ public class SparkMotorFactory {
                 configureWithRetry(() -> encoder.setPosition(0), errorAlert);
                 configureWithRetry(() -> controller.setP(Constants.Arm.kArmRotationKp.get()), errorAlert);
                 configureWithRetry(() -> controller.setD(Constants.Arm.kArmRotationKd.get()), errorAlert);
-                configureWithRetry(() -> controller.setFF(Constants.Arm.kArmRotationKff.get()), errorAlert);
                 configureWithRetry(() -> controller.setOutputRange(-.15, .15), errorAlert);
 
                 configureWithRetry(
@@ -207,6 +201,7 @@ public class SparkMotorFactory {
 
         configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
 
+        configureWithRetry(() -> motor.setIdleMode(CANSparkMax.IdleMode.kBrake), errorAlert);
         configureWithRetry(() -> motor.setSmartCurrentLimit(80), errorAlert);
         configureWithRetry(() -> motor.enableVoltageCompensation(12), errorAlert);
 
@@ -216,14 +211,15 @@ public class SparkMotorFactory {
 
         configureWithRetry(() -> controller.setP(Constants.Drive.kDriveKp.get()), errorAlert);
         configureWithRetry(() -> controller.setD(Constants.Drive.kDriveKd.get()), errorAlert);
-        configureWithRetry(() -> controller.setFF(Constants.Drive.kDriveKff.get()), errorAlert);
 
         configureWithRetry(() -> motor.burnFlash(), errorAlert);
 
         motor.setInverted(Constants.Drive.kDriveMotorsInverted);
         motor.setCANTimeout(0);
 
-        return new MotorIOSparkMax(motor, Constants.Drive.kDriveReduction);
+        return new MotorIOSparkMax(motor, Constants.Drive.kDriveReduction)
+                .withFeedforward(
+                        Constants.Drive.kDriveKs.get(), Constants.Drive.kDriveKv.get(), Constants.Drive.kDriveKa.get());
     }
 
     public static MotorIOSparkMax createSteerMotorIOSparkMax(int deviceId) {
@@ -236,6 +232,7 @@ public class SparkMotorFactory {
 
         configureWithRetry(() -> motor.restoreFactoryDefaults(), errorAlert);
 
+        configureWithRetry(() -> motor.setIdleMode(CANSparkMax.IdleMode.kBrake), errorAlert);
         configureWithRetry(() -> motor.setSmartCurrentLimit(30), errorAlert);
         configureWithRetry(() -> motor.enableVoltageCompensation(12.0), errorAlert);
 

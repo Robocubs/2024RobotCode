@@ -3,6 +3,7 @@ package com.team1701.lib.drivers.motors;
 import java.util.Optional;
 import java.util.Queue;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -17,35 +18,41 @@ import edu.wpi.first.math.util.Units;
 
 public class MotorIOTalonFX implements MotorIO {
     private final TalonFX mMotor;
-    private final double mReduction;
     private final PositionDutyCycle mPositionDutyCycle;
     private final VelocityDutyCycle mVelocityDutyCycle;
     private final DutyCycleOut mDutyCycleOut;
     private final VoltageOut mVoltageOut;
     private final StatusSignal<Double> mPositionSignal;
     private final StatusSignal<Double> mVelocitySignal;
+    private final StatusSignal<Double> mMotorVoltageSignal;
+    private final StatusSignal<Double> mTorqueCurrentSignal;
+    private final Slot0Configs mSlot0Configs;
 
     private Optional<Queue<Double>> mPositionSamples = Optional.empty();
     private Optional<Queue<Double>> mVelocitySamples = Optional.empty();
 
     public MotorIOTalonFX(TalonFX motor) {
-        this(motor, 1.0);
-    }
-
-    public MotorIOTalonFX(TalonFX motor, double reduction) {
-        super();
         mMotor = motor;
-        mReduction = reduction;
         mPositionDutyCycle = new PositionDutyCycle(0);
         mVelocityDutyCycle = new VelocityDutyCycle(0);
         mDutyCycleOut = new DutyCycleOut(0);
         mVoltageOut = new VoltageOut(0);
         mPositionSignal = mMotor.getPosition();
         mVelocitySignal = mMotor.getVelocity();
+        mMotorVoltageSignal = mMotor.getMotorVoltage();
+        mTorqueCurrentSignal = mMotor.getTorqueCurrent();
+        mSlot0Configs = new Slot0Configs();
+        mMotor.getConfigurator().refresh(mSlot0Configs);
+
+        BaseStatusSignal.setUpdateFrequencyForAll(
+                100, mPositionSignal, mVelocitySignal, mMotorVoltageSignal, mTorqueCurrentSignal);
+        mMotor.optimizeBusUtilization();
     }
 
     @Override
     public void updateInputs(MotorInputs inputs) {
+        BaseStatusSignal.refreshAll(mPositionSignal, mVelocitySignal, mMotorVoltageSignal, mTorqueCurrentSignal);
+
         mPositionSamples.ifPresentOrElse(
                 samples -> {
                     inputs.positionRadiansSamples = samples.stream()
@@ -53,10 +60,7 @@ public class MotorIOTalonFX implements MotorIO {
                             .toArray();
                     samples.clear();
                 },
-                () -> {
-                    mPositionSignal.refresh();
-                    inputs.positionRadiansSamples = new double[] {};
-                });
+                () -> inputs.positionRadiansSamples = kEmptySamples);
 
         inputs.positionRadians = encoderUnitsToReducedUnits(mPositionSignal.getValue());
 
@@ -67,32 +71,28 @@ public class MotorIOTalonFX implements MotorIO {
                             .toArray();
                     samples.clear();
                 },
-                () -> {
-                    mVelocitySignal.refresh();
-                    inputs.velocityRadiansPerSecondSamples = new double[] {};
-                });
+                () -> inputs.velocityRadiansPerSecondSamples = kEmptySamples);
 
         inputs.velocityRadiansPerSecond = encoderUnitsToReducedUnits(mVelocitySignal.getValue());
+
+        inputs.appliedVoltage = mMotorVoltageSignal.getValue();
+        inputs.outputCurrent = mTorqueCurrentSignal.getValue();
     }
 
     private double encoderUnitsToReducedUnits(double encoderUnits) {
-        return Units.rotationsToRadians(encoderUnits) * mReduction;
+        return Units.rotationsToRadians(encoderUnits);
     }
 
     @Override
     public void setPositionControl(Rotation2d position) {
-        mMotor.setControl(mPositionDutyCycle.withPosition(position.getRotations() / mReduction));
+        mMotor.setControl(mPositionDutyCycle.withPosition(position.getRotations()));
     }
 
     @Override
     public void setVelocityControl(double velocityRadiansPerSecond) {
-        mMotor.setControl(
-                mVelocityDutyCycle.withVelocity(Units.radiansToRotations(velocityRadiansPerSecond) / mReduction));
+        mMotor.setControl(mVelocityDutyCycle.withVelocity(Units.radiansToRotations(velocityRadiansPerSecond)));
     }
 
-    /**
-     * @param percentage Percent between -1 & 1
-     */
     @Override
     public void setPercentOutput(double percentage) {
         mMotor.setControl(mDutyCycleOut.withOutput(percentage));
@@ -104,19 +104,31 @@ public class MotorIOTalonFX implements MotorIO {
     }
 
     @Override
+    public void runCharacterization(double input) {
+        setVoltageOutput(input);
+    }
+
+    @Override
     public void setBrakeMode(boolean enable) {
         mMotor.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
     }
 
     @Override
-    public void setPID(double ff, double p, double i, double d) {
-        var configs = new Slot0Configs();
-        configs.kV = ff;
-        configs.kP = p;
-        configs.kI = i;
-        configs.kD = d;
+    public void setFeedforward(double kS, double kV, double kA) {
+        mSlot0Configs.kS = kS;
+        mSlot0Configs.kV = kV;
+        mSlot0Configs.kA = kA;
 
-        mMotor.getConfigurator().apply(configs);
+        mMotor.getConfigurator().apply(mSlot0Configs);
+    }
+
+    @Override
+    public void setPID(double p, double i, double d) {
+        mSlot0Configs.kP = p;
+        mSlot0Configs.kI = i;
+        mSlot0Configs.kD = d;
+
+        mMotor.getConfigurator().apply(mSlot0Configs);
     }
 
     @Override
@@ -139,5 +151,15 @@ public class MotorIOTalonFX implements MotorIO {
         mVelocitySignal.setUpdateFrequency(samplingThread.getFrequency());
         var queue = samplingThread.addSignal(mMotor, mVelocitySignal);
         mVelocitySamples = Optional.of(queue);
+    }
+
+    public MotorIOTalonFX withPositionControlFrequency(double frequency) {
+        mPositionDutyCycle.withUpdateFreqHz(frequency);
+        return this;
+    }
+
+    public MotorIOTalonFX withVelocityControlFrequency(double frequency) {
+        mVelocityDutyCycle.withUpdateFreqHz(frequency);
+        return this;
     }
 }

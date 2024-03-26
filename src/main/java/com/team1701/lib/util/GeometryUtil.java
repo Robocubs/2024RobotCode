@@ -14,6 +14,7 @@ public final class GeometryUtil {
     public static final Pose2d kPoseIdentity = new Pose2d();
     public static final Translation2d kTranslationIdentity = new Translation2d();
     public static final Rotation2d kRotationIdentity = new Rotation2d();
+    public static final Rotation2d kRotationEpsilon = new Rotation2d(Util.kEpsilon);
     public static final Rotation2d kRotationPi = new Rotation2d(Math.PI);
     public static final Rotation2d kRotationMinusPi = new Rotation2d(-Math.PI);
     public static final Rotation2d kRotationHalfPi = new Rotation2d(Math.PI / 2.0);
@@ -61,7 +62,7 @@ public final class GeometryUtil {
     }
 
     public static boolean isNear(Translation2d expected, Translation2d actual, double tolerance) {
-        var difference = expected.minus(actual).getNorm();
+        var difference = expected.getDistance(actual);
         return MathUtil.isNear(difference, 0.0, tolerance);
     }
 
