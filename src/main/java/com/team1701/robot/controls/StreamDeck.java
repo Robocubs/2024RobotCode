@@ -9,22 +9,19 @@ import java.util.function.Consumer;
 import com.team1701.lib.alerts.Alert;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.Logger;
 
-public class StreamDeck {
+public class StreamDeck extends SubsystemBase {
     private final Map<StreamDeckButton, Button> buttons = new HashMap<>();
 
     private static record Button(BooleanDashboardInput pressed, BooleanSupplier selected, BooleanPublisher activePub) {}
 
-    public StreamDeck() {
-        CommandScheduler.getInstance()
-                .schedule(Commands.run(() -> buttons.values()
-                                .forEach(button -> button.activePub.set(button.selected.getAsBoolean())))
-                        .ignoringDisable(true)
-                        .withName("StreamDeckPeriodic"));
+    @Override
+    public void periodic() {
+        buttons.values().forEach(button -> button.activePub.set(button.selected.getAsBoolean()));
     }
 
     public StreamDeck configureButton(Consumer<ButtonConfiguration> config) {
@@ -68,7 +65,6 @@ public class StreamDeck {
     }
 
     public static enum StreamDeckButton {
-        // kButton(0, 0, "Controls/TestButton", "ArrowUpward", "Button"),
         kStopIntakeButton(1, 0, "Controls/StopIntakingButton", "StopIntakingIcon", "Stop"),
         kRejectButton(2, 0, "Controls/RejectButton", "RejectIntakeIcon", "Reject"),
         kForwardButton(0, 0, "Controls/ForwardButton", "ForceIntakeIcon", "Intake"),
