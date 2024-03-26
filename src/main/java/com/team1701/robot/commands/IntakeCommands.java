@@ -75,7 +75,7 @@ public class IntakeCommands {
                         },
                         intake)
                 .finallyDo(intake::stop)
-                .withName("IdleIntake");
+                .withName("IdleIntakeCommand");
     }
 
     public static Command idleIndexer(Indexer indexer) {
@@ -98,6 +98,6 @@ public class IntakeCommands {
                         },
                         indexer)
                 .finallyDo(indexer::stop)
-                .withName("IdleIndexer");
+                .withName("IdleIndexerCommand");
     }
 }

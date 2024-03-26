@@ -19,7 +19,6 @@ export class DiagnosticView extends LitElement {
       <frc-robot-subsystem class="font-sans" label="Shooter" source-key="/SmartDashboard/Shooter"></frc-robot-subsystem>
       <frc-robot-subsystem class="font-sans" label="Indexer" source-key="/SmartDashboard/Indexer"></frc-robot-subsystem>
       <frc-robot-subsystem class="font-sans" label="Intake" source-key="/SmartDashboard/Intake"></frc-robot-subsystem>
-      <frc-robot-subsystem class="font-sans" label="Arm" source-key="/SmartDashboard/Arm"></frc-robot-subsystem>
       <frc-robot-subsystem class="font-sans" label="Climb" source-key="/SmartDashboard/Climb"></frc-robot-subsystem>
     </div>`;
   }

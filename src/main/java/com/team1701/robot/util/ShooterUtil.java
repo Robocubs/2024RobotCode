@@ -11,7 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public final class ShooterUtil {
     public static ShooterSetpoint calculateSetpoint(double distanceToSpeaker) {
         return new ShooterSetpoint(
-                new ShooterSpeeds(Constants.Shooter.kShooterSpeedInterpolator.get(distanceToSpeaker)),
+                Constants.Shooter.kShooterSpeedInterpolator.get(distanceToSpeaker),
                 GeometryUtil.clampRotation(
                         Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(distanceToSpeaker)),
                         Constants.Shooter.kShooterLowerLimit,
@@ -25,13 +25,17 @@ public final class ShooterUtil {
 
     public static ShooterSetpoint calculatePassingSetpoint(RobotState robotState) {
         return new ShooterSetpoint(
-                new ShooterSpeeds(Constants.Shooter.kPassingSpeedInterpolator.get(robotState.getPassingDistance())),
+                Constants.Shooter.kPassingSpeedInterpolator.get(robotState.getPassingDistance()),
                 Rotation2d.fromRadians(
                         Constants.Shooter.kPassingAngleInterpolator.get(robotState.getPassingDistance())));
     }
 
     public static ShooterSetpoint calculateIdleSetpoint(RobotState robotState) {
-        return new ShooterSetpoint(calculateIdleRollerSpeeds(robotState), calculateStationaryDesiredAngle(robotState));
+        return new ShooterSetpoint(
+                calculateIdleRollerSpeeds(robotState),
+                robotState.hasLoadedNote()
+                        ? calculateStationaryDesiredAngle(robotState)
+                        : Constants.Shooter.kLoadingAngle);
     }
 
     private static Rotation2d calculateStationaryDesiredAngle(RobotState robotState) {
@@ -57,7 +61,7 @@ public final class ShooterUtil {
                 return new ShooterSpeeds(
                         Constants.Shooter.kUpperAmpSpeed.get(), Constants.Shooter.kLowerAmpSpeed.get());
             default:
-                return new ShooterSpeeds(0);
+                return ShooterSpeeds.kZero;
         }
     }
 
@@ -82,7 +86,7 @@ public final class ShooterUtil {
                         Constants.Shooter.kUpperAmpSpeed.get(), Constants.Shooter.kLowerAmpSpeed.get());
                 break;
             case CLIMB:
-                speeds = new ShooterSpeeds(0);
+                speeds = ShooterSpeeds.kZero;
                 break;
             default:
                 speeds = new ShooterSpeeds(Constants.Shooter.kIdleSpeedRadiansPerSecond.get());

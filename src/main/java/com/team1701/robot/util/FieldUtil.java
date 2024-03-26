@@ -5,6 +5,7 @@ import com.team1701.robot.Configuration;
 import com.team1701.robot.FieldConstants;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 
@@ -26,5 +27,16 @@ public class FieldUtil {
 
     public static double getDistanceToSpeaker(Pose2d pose) {
         return getDistanceToSpeaker(pose.getTranslation());
+    }
+
+    public static Rotation2d getHeadingToSpeaker(Translation2d translation) {
+        var speakerTranslation = Configuration.isBlueAlliance()
+                ? FieldConstants.kBlueSpeakerOpeningCenter
+                : FieldConstants.kRedSpeakerOpeningCenter;
+        return speakerTranslation.toTranslation2d().minus(translation).getAngle();
+    }
+
+    public static Rotation2d getHeadingToSpeaker(Pose2d pose) {
+        return getHeadingToSpeaker(pose.getTranslation());
     }
 }

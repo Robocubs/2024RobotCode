@@ -187,7 +187,9 @@ public class AutonomousCommands {
         mPathBuilder.addPath(trajectory.getPoses());
 
         var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
-        return new DriveChoreoTrajectory(mDrive, mRobotState, trajectory, eventMarkers, resetPose);
+        return new DriveChoreoTrajectory(mDrive, mRobotState, trajectory, eventMarkers, resetPose)
+                .deadlineWith(index(), idleShooter())
+                .withName("FollowChoreo");
     }
 
     private Pose2d getFirstPose(String pathName) {
@@ -232,7 +234,29 @@ public class AutonomousCommands {
         return new DriveChoreoTrajectory(
                         mDrive, mRobotState, trajectory, eventMarkers, shooterSetpoint::applyReleaseAngle, resetPose)
                 .deadlineWith(index(), warmShooter(shooterSetpoint, waitForNote))
-                .withName("FollowAndPreWarm");
+                .withName("FollowChoreoAndPreWarm");
+    }
+
+    private Command followChoreoPathAndShoot(String pathName, boolean resetPose, double timeout) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        if (trajectory == null) {
+            return stopRoutine();
+        }
+
+        mPathBuilder.addPath(trajectory.getPoses());
+
+        var shooterSetpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
+        var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
+        return new DriveChoreoTrajectory(
+                        mDrive, mRobotState, trajectory, eventMarkers, shooterSetpoint::applyReleaseAngle, resetPose)
+                .deadlineWith(ShootCommands.shoot(mShooter, mIndexer, mRobotState)
+                        .withTimeout(timeout)
+                        .andThen(forceShoot(), index()))
+                .withName("FollowChoreoAndShoot");
+    }
+
+    private Command forceShoot() {
+        return ShootCommands.forceShoot(mShooter, mIndexer, mRobotState);
     }
 
     private Command aimAndShoot() {
@@ -428,8 +452,8 @@ public class AutonomousCommands {
     public AutonomousCommand fivePieceAmpAndMove() {
         var command = loggedSequence(
                         print("Started five piece amp and move auto"),
-                        driveToPoseWhileShooting(
-                                getFirstPose("FiveAmpMove.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
+                        followChoreoPathAndShoot("FiveAmpMove.1", true, 0.6710751070512755),
+                        forceShoot(),
                         followChoreoPathAndPreWarm("FiveAmpMove.2"),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("FiveAmpMove.3"),
@@ -437,6 +461,39 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("FiveAmpMove.4"),
                         aimAndShoot())
                 .withName("FivePieceAmpAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand centerMove() {
+        var command = loggedSequence(
+                        print("Started center move auto"),
+                        followChoreoPathAndShoot("CenterMove.1", true, 1.5),
+                        forceShoot())
+                .withName("CenterMoveAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand fiveMiddleMove() {
+        var command = loggedSequence(
+                        print("Started five middle move auto"),
+                        driveToPoseWhileShooting(
+                                getFirstPose("FiveMiddleToMiddle.3"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
+                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.4"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.5"),
+                        aimAndShoot())
+                .withName("FiveMiddleMoveAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand centerMoveDTP() {
+        var command = loggedSequence(
+                        print("Started center move DTP auto"),
+                        driveToPoseWhileShooting(getFirstPose("CenterMove.1"), FinishedState.END_AFTER_MOVING),
+                        forceShoot())
+                .withName("CenterMoveAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
@@ -453,7 +510,7 @@ public class AutonomousCommands {
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("Source54CSeek.6"),
                         aimAndShoot())
-                .withName("Source45SeekAuto");
+                .withName("Source45CSeekAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }
