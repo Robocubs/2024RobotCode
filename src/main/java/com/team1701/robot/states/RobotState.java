@@ -21,7 +21,6 @@ import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
-import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -339,11 +338,6 @@ public class RobotState {
 
     public boolean hasLoadedNote() {
         return mIndexer.get().hasNoteAtExit();
-    }
-
-    @AutoLogOutput
-    public Rotation2d calculateShooterAngleTowardsSpeaker() {
-        return ShooterUtil.calculateStationaryDesiredAngle(this);
     }
 
     public void setShootingState(ShootingState shootingState) {
