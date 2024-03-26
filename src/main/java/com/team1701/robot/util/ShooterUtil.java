@@ -56,10 +56,9 @@ public final class ShooterUtil {
     }
 
     private static Rotation2d calculateStationaryDesiredAngle(RobotState robotState) {
-        var d = robotState.getDistanceToSpeaker();
         var rotation =
                 switch (robotState.getScoringMode()) {
-                    case SPEAKER -> Rotation2d.fromRadians(calculateSpeakerAngle(d));
+                    case SPEAKER -> Rotation2d.fromRadians(calculateSpeakerAngle(robotState.getDistanceToSpeaker()));
                     case AMP -> Rotation2d.fromDegrees(Constants.Shooter.kShooterAmpAngleDegrees.get());
                     default -> Constants.Shooter.kLoadingAngle;
                 };
