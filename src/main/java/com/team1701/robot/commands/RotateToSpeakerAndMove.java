@@ -10,6 +10,7 @@ import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
+import com.team1701.robot.util.FieldUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -68,7 +69,7 @@ public class RotateToSpeakerAndMove extends Command {
         mRotationController.reset();
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
 
-        var fieldRelativeChassisSpeeds = mDrive.getFieldRelativeVelocity();
+        var fieldRelativeChassisSpeeds = mRobotState.getFieldRelativeSpeeds();
         var headingError = mRobotState.getHeading().minus(mRobotState.getSpeakerHeading());
         mRotationState = new TrapezoidProfile.State(
                 MathUtil.angleModulus(headingError.getRadians()), fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
@@ -97,7 +98,7 @@ public class RotateToSpeakerAndMove extends Command {
         var endTranslation = new Translation2d(
                 currentPose.getX() + fieldRelativeSpeeds.getX() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
                 currentPose.getY() + fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
-        var targetHeading = mRobotState.getSpeakerHeading(endTranslation);
+        var targetHeading = FieldUtil.getHeadingToSpeaker(endTranslation);
         var headingError = currentPose.getRotation().minus(targetHeading);
         var headingTolerance = mRobotState.getToleranceSpeakerHeading(endTranslation);
 

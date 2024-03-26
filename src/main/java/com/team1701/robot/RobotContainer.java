@@ -389,7 +389,7 @@ public class RobotContainer {
         mDriverController
                 .rightTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
-                .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mRobotState));
+                .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mRobotState));
 
         /* STREAMDECK BUTTONS */
 
@@ -441,7 +441,8 @@ public class RobotContainer {
                         },
                         mShooter)
                 .withName("StreamDeckShooterDownCommand");
-        var manualShootCommand = ShootCommands.manualShoot(mShooter, mIndexer).withName("StreamDeckShootCommand");
+        var manualShootCommand =
+                ShootCommands.manualShoot(mShooter, mIndexer, mRobotState).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
                         () -> {
                             mClimb.extendWinch();

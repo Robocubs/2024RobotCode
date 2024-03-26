@@ -59,7 +59,7 @@ public class ShootAndDriveToPose extends Command {
                 Constants.Drive.kSlowTrapezoidalKinematicLimits.maxDriveVelocity(),
                 Constants.Drive.kSlowTrapezoidalKinematicLimits.maxDriveAcceleration()));
 
-        mShootAndMoveCommand = new ShootAndMove(drive, shooter, indexer, robotState, this::getSpeed, true);
+        mShootAndMoveCommand = new ShootAndMove(drive, shooter, indexer, robotState, this::getSpeed, false);
         CommandScheduler.getInstance().registerComposedCommands(mShootAndMoveCommand);
     }
 
@@ -99,8 +99,8 @@ public class ShootAndDriveToPose extends Command {
     public boolean isFinished() {
         return switch (mFinishedState) {
             case NONE -> false;
-            case END_AFTER_SHOOTING_AND_MOVING -> mShootAndMoveCommand.isFinished() && mAtTranslation;
-            case END_AFTER_SHOOTING -> mShootAndMoveCommand.isFinished();
+            case END_AFTER_SHOOTING_AND_MOVING -> !mRobotState.hasNote() && mAtTranslation;
+            case END_AFTER_SHOOTING -> !mRobotState.hasNote();
             case END_AFTER_MOVING -> mAtTranslation;
         };
     }

@@ -78,7 +78,8 @@ public class DriveCommands {
             Drive drive, RobotState state, KinematicLimits kinematicLimits, boolean finishAtRotation) {
         return rotateToFieldHeading(
                 drive,
-                state::getSpeakerHeading,
+                () -> state.getSpeakerHeading()
+                        .minus(state.getShootingState().setpoint.releaseAngle()),
                 state::getHeading,
                 state::getToleranceSpeakerHeading,
                 kinematicLimits,
@@ -184,7 +185,7 @@ public class DriveCommands {
                                 drive.getFieldRelativeHeading(),
                                 maxDriveVelocity)
                         .rotateBy(robotState.getHeading())),
-                ShootCommands.shoot(shooter, indexer, drive, robotState, true));
+                ShootCommands.shoot(shooter, indexer, robotState));
     }
 
     // v3

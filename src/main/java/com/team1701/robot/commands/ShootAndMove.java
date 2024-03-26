@@ -15,7 +15,7 @@ import com.team1701.robot.states.ShootingState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
-import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
+import com.team1701.robot.subsystems.shooter.Shooter.ShooterSetpoint;
 import com.team1701.robot.util.FieldUtil;
 import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.MathUtil;
@@ -25,7 +25,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
@@ -128,23 +127,22 @@ public class ShootAndMove extends Command {
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
         var droppedVelocity = Constants.Shooter.kShooterSpeedInterpolator.get(mRobotState.getDistanceToSpeaker())
-                * Units.inchesToMeters(2) // wheel radius
-                * .907; // calculated drop in roller speed
-        var headingAngleFromSpeaker = mFieldRelativeSpeeds
-                .get()
-                .getAngle()
-                .minus(mRobotState
-                        .getSpeakerHeading()
-                        .plus(Rotation2d.fromRadians(Constants.Shooter.kShooterHeadingOffsetInterpolator.get(
-                                mRobotState.getDistanceToSpeaker()))));
-        var robotVelocityTowardsSpeaker =
-                mDrive.getSpeedMetersPerSecond() * Math.cos(headingAngleFromSpeaker.getRadians());
+                * Constants.Shooter.kRollerSpeedToNoteSpeed;
+        var robotVelocityTowardsSpeaker = fieldRelativeSpeeds
+                .rotateBy(mRobotState.getSpeakerHeading().unaryMinus())
+                .getX();
         var timeInAir = mRobotState.getDistanceToSpeaker() / (robotVelocityTowardsSpeaker + droppedVelocity);
         var endTranslation = new Translation2d(
                 currentPose.getX() + fieldRelativeSpeeds.getX() * timeInAir,
                 currentPose.getY() + fieldRelativeSpeeds.getY() * timeInAir);
 
-        var shooterSetpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(endTranslation));
+        var shooterSetpoint = mTuningEnabled.get()
+                ? new ShooterSetpoint(
+                        Constants.Shooter.kTunableShooterSpeedRadiansPerSecond.get(),
+                        Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get()))
+                : ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(endTranslation));
+
+        mShooter.setSetpoint(shooterSetpoint);
 
         var targetHeading = mRobotState
                 .getSpeakerPose()
@@ -175,27 +173,14 @@ public class ShootAndMove extends Command {
         mDrive.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
                 fieldRelativeSpeeds.getX(), fieldRelativeSpeeds.getY(), rotationalVelocity, currentPose.getRotation()));
 
-        Rotation2d targetShooterAngle;
-        ShooterSpeeds targetRollerSpeeds;
-        if (mTuningEnabled.get()) {
-            targetShooterAngle = Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get());
-            targetRollerSpeeds = new ShooterSpeeds(Constants.Shooter.kTunableShooterSpeedRadiansPerSecond.get());
-        } else {
-            targetShooterAngle = shooterSetpoint.angle();
-            targetRollerSpeeds = shooterSetpoint.speeds();
-        }
-
-        mShooter.setRotationAngle(targetShooterAngle);
-
-        mShooter.setRollerSpeeds(targetRollerSpeeds);
-
         var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(), targetShooterAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(), shooterSetpoint.angle(), Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
         var atHeading = GeometryUtil.isNear(targetHeading, mRobotState.getHeading(), headingTolerance);
 
-        var atSpeed = targetRollerSpeeds.allMatch(
-                mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
+        var atSpeed = shooterSetpoint
+                .speeds()
+                .allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
         if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
             mIndexer.setForwardShoot();
@@ -209,36 +194,22 @@ public class ShootAndMove extends Command {
                 mIndexer.setForwardLoad();
             }
         }
-        mRobotState.setShootingState(new ShootingState(true, atAngle, atSpeed, atHeading, mShooting));
+
+        mRobotState.setShootingState(new ShootingState(shooterSetpoint, true, atAngle, atSpeed, atHeading, mShooting));
 
         Logger.recordOutput(kLoggingPrefix + "Setpoint", new Pose2d(endTranslation, setpoint));
-        Logger.recordOutput(kLoggingPrefix + "TargetHeading", targetHeading);
-        Logger.recordOutput(kLoggingPrefix + "TargetAngle", targetShooterAngle);
-        Logger.recordOutput(kLoggingPrefix + "TargetSpeed", targetRollerSpeeds.upperSpeed());
         Logger.recordOutput(kLoggingPrefix + "TimeInAir", timeInAir);
         Logger.recordOutput(kLoggingPrefix + "VelocityTowardsSpeaker", robotVelocityTowardsSpeaker);
-
-        Logger.recordOutput(
-                kLoggingPrefix + "EndTranslation", new Pose2d(endTranslation, GeometryUtil.kRotationIdentity));
-        Logger.recordOutput(kLoggingPrefix + "AtAngle", atAngle);
-        Logger.recordOutput(kLoggingPrefix + "AtHeading", atHeading);
-        Logger.recordOutput(kLoggingPrefix + "AtSpeed", atSpeed);
-        Logger.recordOutput(kLoggingPrefix + "Shooting", mShooting);
     }
 
     @Override
     public void end(boolean interrupted) {
         mShooting = false;
 
-        mRobotState.setShootingState(new ShootingState());
+        mRobotState.setShootingState(ShootingState.kDefault);
         mShooter.stop();
         mIndexer.stop();
         mDrive.stop();
-
-        Logger.recordOutput(kLoggingPrefix + "Shooting", false);
-        Logger.recordOutput(kLoggingPrefix + "AtAngle", false);
-        Logger.recordOutput(kLoggingPrefix + "AtHeading", false);
-        Logger.recordOutput(kLoggingPrefix + "AtSpeed", false);
     }
 
     @Override

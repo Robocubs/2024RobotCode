@@ -21,6 +21,7 @@ import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import com.team1701.robot.util.FieldUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -54,12 +55,14 @@ public class RobotState {
     private Optional<Intake> mIntake = Optional.empty();
     private Optional<Shooter> mShooter = Optional.empty();
 
-    private ShootingState mShootingState = new ShootingState();
+    private ShootingState mShootingState = ShootingState.kDefault;
 
     public RobotState() {
         mField = new Field2d();
         SmartDashboard.putData("Field", mField);
         SmartDashboard.putBoolean("IsSimulation", Robot.isSimulation());
+
+        ShootingState.kDefault.log("RobotState/ShootingState");
     }
 
     @AutoLogOutput
@@ -135,6 +138,14 @@ public class RobotState {
 
     public Rotation2d getHeading() {
         return getPose2d().getRotation();
+    }
+
+    public ChassisSpeeds getFieldRelativeSpeeds() {
+        if (mDrive.isEmpty()) {
+            return new ChassisSpeeds();
+        }
+
+        return ChassisSpeeds.fromRobotRelativeSpeeds(mDrive.get().getVelocity(), getHeading());
     }
 
     public void addDriveMeasurements(DriveMeasurement... driveMeasurements) {
@@ -233,28 +244,19 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d getSpeakerHeading() {
-        return getSpeakerHeading(getPose2d().getTranslation());
+        return FieldUtil.getHeadingToSpeaker(getPose2d().getTranslation());
     }
 
-    public Rotation2d getSpeakerHeading(Translation2d translation) {
-        return getSpeakerPose()
-                .toTranslation2d()
-                .minus(translation)
-                .getAngle()
-                .minus(Rotation2d.fromRadians(
-                        Constants.Shooter.kShooterHeadingOffsetInterpolator.get(getDistanceToSpeaker())));
-    }
-
-    public Rotation2d getMovingSpeakerHeading(Drive drive) {
+    public Rotation2d getMovingSpeakerHeading() {
+        var fieldRelativeSpeeds = getFieldRelativeSpeeds();
         var projectedTranslation = getPose2d()
                 .getTranslation()
                 .plus(new Translation2d(
-                        drive.getFieldRelativeVelocity().vxMetersPerSecond * Constants.kLoopPeriodSeconds,
-                        drive.getFieldRelativeVelocity().vyMetersPerSecond * Constants.kLoopPeriodSeconds));
-        return getSpeakerHeading(projectedTranslation);
+                        fieldRelativeSpeeds.vxMetersPerSecond * Constants.kLoopPeriodSeconds,
+                        fieldRelativeSpeeds.vyMetersPerSecond * Constants.kLoopPeriodSeconds));
+        return FieldUtil.getHeadingToSpeaker(projectedTranslation);
     }
 
-    @AutoLogOutput
     public Rotation2d getToleranceSpeakerHeading() {
         return getToleranceSpeakerHeading(getPose2d().getTranslation());
     }
@@ -264,9 +266,7 @@ public class RobotState {
                 .getTranslation()
                 .toTranslation2d()
                 .minus(translation)
-                .getAngle()
-                .minus(Rotation2d.fromRadians(
-                        Constants.Shooter.kShooterHeadingOffsetInterpolator.get(getDistanceToSpeaker())));
+                .getAngle();
 
         var toleranceRadians = Math.abs(
                 MathUtil.angleModulus(heading.getRadians() - getSpeakerHeading().getRadians()));
@@ -297,7 +297,9 @@ public class RobotState {
                 new Rotation3d(
                         shooterHingePose.getRotation().getX(),
                         shooterHingePose.getRotation().getY()
-                                - mShooter.get().getAngle().getRadians(),
+                                - mShooter.map(Shooter::getAngle)
+                                        .orElse(GeometryUtil.kRotationIdentity)
+                                        .getRadians(),
                         shooterHingePose.getRotation().getZ()));
         return rotatedShooterHingePose.transformBy(Constants.Robot.kShooterHingeToShooterExit);
     }
@@ -332,15 +334,13 @@ public class RobotState {
 
     @AutoLogOutput
     public boolean hasNote() {
-        if (mIntake.isEmpty() || mIndexer.isEmpty()) {
-            return false;
-        }
-        var hasNote = mIntake.get().hasNote() || mIndexer.get().hasNote();
+        var hasNote = mIntake.isPresent() && mIntake.get().hasNote()
+                || mIndexer.isPresent() && mIndexer.get().hasNote();
         return mHasNote.update(hasNote, Timer.getFPGATimestamp());
     }
 
     public boolean hasLoadedNote() {
-        return mIndexer.get().hasNoteAtExit();
+        return mIndexer.isPresent() && mIndexer.get().hasNoteAtExit();
     }
 
     @AutoLogOutput
@@ -350,6 +350,7 @@ public class RobotState {
 
     public void setShootingState(ShootingState shootingState) {
         mShootingState = shootingState;
+        shootingState.log("RobotState/ShootingState");
     }
 
     public ShootingState getShootingState() {
@@ -379,11 +380,6 @@ public class RobotState {
 
     public boolean isClimbMode() {
         return mScoringMode == ScoringMode.CLIMB;
-    }
-
-    public ChassisSpeeds getFieldRelativeSpeeds() {
-        return ChassisSpeeds.fromRobotRelativeSpeeds(
-                mDrive.map(Drive::getVelocity).orElse(new ChassisSpeeds()), getHeading());
     }
 
     public enum ScoringMode {

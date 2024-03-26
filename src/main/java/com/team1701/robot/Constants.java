@@ -346,6 +346,11 @@ public final class Constants {
         public static final double kEncoderToShooterReduction = 30.0 / 50.0;
         public static final double kAngleReduction = (1.0 / 4.0) * (1.0 / 5.0) * (20.0 / 93.0);
 
+        public static final double kRollerRadius = Units.inchesToMeters(2);
+        public static final double kShooterSpeedDrop = 0.907; // Calculated drop in roller speed
+        public static final double kRelativeReleaseSpeed = 0.75; // Approximately how much speed is lost to spin
+        public static final double kRollerSpeedToNoteSpeed = kRollerRadius * kShooterSpeedDrop * kRelativeReleaseSpeed;
+
         public static final int kShooterRightUpperRollerMotorId = 25;
         public static final int kShooterRightLowerRollerMotorId = 23;
         public static final int kShooterLeftLowerRollerMotorId = 22;

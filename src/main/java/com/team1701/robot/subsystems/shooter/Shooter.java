@@ -73,6 +73,13 @@ public class Shooter extends SubsystemBase {
     }
 
     public static record ShooterSetpoint(ShooterSpeeds speeds, Rotation2d angle) {
+        public static final ShooterSetpoint kDefault =
+                new ShooterSetpoint(ShooterSpeeds.kZero, Constants.Shooter.kLoadingAngle);
+
+        public ShooterSetpoint(double radiansPerSecond, Rotation2d angle) {
+            this(new ShooterSpeeds(radiansPerSecond), angle);
+        }
+
         public Rotation2d releaseAngle() {
             return Rotation2d.fromRadians(
                     Constants.Shooter.kShooterHeadingOffsetInterpolator.get(speeds.averageSpeed()));
@@ -84,6 +91,8 @@ public class Shooter extends SubsystemBase {
     }
 
     public static record ShooterSpeeds(double upperSpeed, double lowerSpeed) {
+        public static ShooterSpeeds kZero = new ShooterSpeeds(0);
+
         public ShooterSpeeds(double radiansPerSecond) {
             this(radiansPerSecond, radiansPerSecond);
         }

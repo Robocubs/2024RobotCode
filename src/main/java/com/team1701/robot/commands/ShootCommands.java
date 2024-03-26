@@ -23,30 +23,27 @@ public class ShootCommands {
         return Commands.run(shooter::stop, shooter).withName("StopShooter");
     }
 
-    public static Command shoot(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
-        return new Shoot(shooter, indexer, drive, robotState, false);
+    public static Command shoot(Shooter shooter, Indexer indexer, RobotState robotState) {
+        return new Shoot(shooter, indexer, robotState, true);
     }
 
-    public static Command shoot(
-            Shooter shooter, Indexer indexer, Drive drive, RobotState robotState, boolean waitForHeading) {
-        return new Shoot(shooter, indexer, drive, robotState, waitForHeading);
+    public static Command forceShoot(Shooter shooter, Indexer indexer, RobotState robotState) {
+        return new Shoot(shooter, indexer, robotState, false, false, false).withName("ForceShoot");
     }
 
-    public static Command manualShoot(Shooter shooter, Indexer indexer) {
-        return new ManualShoot(shooter, indexer).withName("ManualShoot");
+    public static Command manualShoot(Shooter shooter, Indexer indexer, RobotState robotState) {
+        return new ManualShoot(shooter, indexer, robotState).withName("ManualShoot");
     }
 
     public static Command aimAndShootInSpeaker(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
-        return Commands.race(
-                        new Shoot(shooter, indexer, drive, robotState, true),
-                        DriveCommands.rotateToSpeaker(
-                                drive, robotState, Constants.Drive.kFastTrapezoidalKinematicLimits, false))
+        return shoot(shooter, indexer, robotState)
+                .deadlineWith(DriveCommands.rotateToSpeaker(
+                        drive, robotState, Constants.Drive.kFastTrapezoidalKinematicLimits, false))
                 .withName("AimAndShootInSpeaker");
     }
 
-    public static Command scoreInAmp(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
-        return Commands.sequence(new Shoot(shooter, indexer, drive, robotState, false))
-                .withName("scoreInAmp");
+    public static Command scoreInAmp(Shooter shooter, Indexer indexer, RobotState robotState) {
+        return new Shoot(shooter, indexer, robotState, false);
     }
 
     public static Command passANote(
@@ -56,14 +53,13 @@ public class ShootCommands {
             RobotState robotState,
             DoubleSupplier throttleSupplier,
             DoubleSupplier strafeSupplier) {
-        return Commands.deadline(
-                        new PassANote(shooter, indexer, robotState),
-                        DriveCommands.rotateToPassTarget(
-                                drive,
-                                throttleSupplier,
-                                strafeSupplier,
-                                robotState,
-                                Constants.Drive.kFastTrapezoidalKinematicLimits))
+        return new PassANote(shooter, indexer, robotState)
+                .deadlineWith(DriveCommands.rotateToPassTarget(
+                        drive,
+                        throttleSupplier,
+                        strafeSupplier,
+                        robotState,
+                        Constants.Drive.kFastTrapezoidalKinematicLimits))
                 .withName("PassANote");
     }
 }
