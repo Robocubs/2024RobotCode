@@ -78,7 +78,8 @@ public class DriveCommands {
             Drive drive, RobotState state, KinematicLimits kinematicLimits, boolean finishAtRotation) {
         return rotateToFieldHeading(
                 drive,
-                state::getSpeakerHeading,
+                () -> state.getSpeakerHeading()
+                        .minus(state.getShootingState().setpoint.releaseAngle()),
                 state::getHeading,
                 state::getToleranceSpeakerHeading,
                 kinematicLimits,
@@ -184,7 +185,7 @@ public class DriveCommands {
                                 drive.getFieldRelativeHeading(),
                                 maxDriveVelocity)
                         .rotateBy(robotState.getHeading())),
-                ShootCommands.shoot(shooter, indexer, robotState, true));
+                ShootCommands.shoot(shooter, indexer, robotState));
     }
 
     // v3
@@ -196,9 +197,18 @@ public class DriveCommands {
             DoubleSupplier throttle,
             DoubleSupplier strafe) {
         var maxDriveVelocity = 2;
-        return new ShootAndMove(drive, shooter, indexer, robotState, () -> calculateDriveWithJoysticksVelocities(
-                        throttle.getAsDouble(), strafe.getAsDouble(), drive.getFieldRelativeHeading(), maxDriveVelocity)
-                .rotateBy(robotState.getHeading()));
+        return new ShootAndMove(
+                drive,
+                shooter,
+                indexer,
+                robotState,
+                () -> calculateDriveWithJoysticksVelocities(
+                                throttle.getAsDouble(),
+                                strafe.getAsDouble(),
+                                drive.getFieldRelativeHeading(),
+                                maxDriveVelocity)
+                        .rotateBy(robotState.getHeading()),
+                false);
     }
 
     public static Command driveWithVelocity(Supplier<ChassisSpeeds> velocity, Drive drive) {
