@@ -9,6 +9,7 @@ import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
+import com.team1701.robot.subsystems.shooter.Shooter.ShooterSetpoint;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -359,7 +360,7 @@ public final class Constants {
         public static final int kShooterRotationMotorId = 26;
 
         public static final Rotation2d kShooterUpperLimit = Rotation2d.fromDegrees(58);
-        public static final Rotation2d kShooterLowerLimit = Rotation2d.fromDegrees(16);
+        public static final Rotation2d kShooterLowerLimit = Rotation2d.fromDegrees(12.5);
 
         public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.1);
 
@@ -413,6 +414,8 @@ public final class Constants {
 
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
+
+        public static final ShooterSetpoint kLowPassSetpoint = new ShooterSetpoint(300, kShooterLowerLimit);
 
         public static final InterpolatingDoubleTreeMap kShooterAngleInterpolator =
                 new InterpolatingDoubleTreeMap(); // Radians
@@ -497,16 +500,16 @@ public final class Constants {
         };
 
         public static final double[][] kShooterDistanceToHeadingOffset = {
-            {460, -9},
-            {540, -5}
+            {0.55, -9},
+            {0.50, -5}
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {
-            {11.53, .7}, {10.3, .75}, {9.02, .8}, {7.15, .9}, {5, .9}, {0, 1}
+            {11.53, .7}, {10.3, .7}, {9.02, .75}, {7.15, .9}, {5, .9}, {0, 1}
         };
 
         public static final double[][] kPassingDistanceToSpeedValues = {
-            {11.53, 490}, {10.3, 450}, {9.02, 415}, {7.15, 330}, {6.15, 315}, {5, 200}, {0, 100}
+            {11.53, 490}, {10.3, 450}, {9.02, 415}, {7.15, 350}, {6.15, 315}, {5, 200}, {0, 100}
         };
 
         static {

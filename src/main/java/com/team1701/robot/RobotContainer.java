@@ -334,7 +334,7 @@ public class RobotContainer {
                         mIntake, mIndexer, mDrive, mDriverController, () -> mRobotState.getHeading()));
 
         mDriverController
-                .x()
+                .start()
                 .onTrue(runOnce(() -> mDrive.zeroGyroscope(
                                 Configuration.isBlueAlliance()
                                         ? GeometryUtil.kRotationIdentity
@@ -351,6 +351,17 @@ public class RobotContainer {
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
                 .whileTrue(ShootCommands.passANote(
+                        mDrive,
+                        mShooter,
+                        mIndexer,
+                        mRobotState,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX()));
+
+        // Pass Low
+        mDriverController
+                .x()
+                .whileTrue(ShootCommands.passLow(
                         mDrive,
                         mShooter,
                         mIndexer,
