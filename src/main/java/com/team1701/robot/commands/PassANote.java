@@ -42,16 +42,13 @@ public class PassANote extends Command {
 
     @Override
     public void execute() {
-        var targetSpeeds = ShooterUtil.calculatePassingShooterSpeeds(mRobotState);
-        mShooter.setRollerSpeeds(targetSpeeds);
+        var setpoint = ShooterUtil.calculatePassingSetpoint(mRobotState);
+        mShooter.setSetpoint(setpoint);
 
-        var targetAngle = ShooterUtil.calculatePassingShooterAngle(mRobotState);
-        mShooter.setRotationAngle(targetAngle);
-
-        var atSpeed = targetSpeeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), 50.0);
+        var atSpeed = setpoint.speeds().allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), 50.0);
 
         var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(), targetAngle, Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(), setpoint.angle(), Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
         var atHeading = GeometryUtil.isNear(
                 mRobotState.getPassingHeading(), mRobotState.getHeading(), Constants.Shooter.kPassingHeadingTolerance);
@@ -80,8 +77,7 @@ public class PassANote extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        mShooter.stopRollers();
-        mShooter.stopRotation();
+        mShooter.stop();
         mIndexer.stop();
     }
 }

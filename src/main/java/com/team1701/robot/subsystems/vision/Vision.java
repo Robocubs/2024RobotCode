@@ -65,7 +65,7 @@ public class Vision extends SubsystemBase {
             visionSim.addAprilTags(mAprilTagFieldLayout);
 
             var cameraProperties = new SimCameraProperties();
-            cameraProperties.setCalibration(960, 720, Rotation2d.fromDegrees(0));
+            cameraProperties.setCalibration(960, 720, Rotation2d.fromDegrees(70));
             cameraProperties.setCalibError(0.035, 0.010);
             cameraProperties.setFPS(70);
             cameraProperties.setAvgLatencyMs(10);

@@ -7,33 +7,41 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
+import com.team1701.lib.util.ChoreoEventMarker;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.PathBuilder;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
+import com.team1701.robot.autonomous.AutoNote;
+import com.team1701.robot.autonomous.AutoNoteSeeker;
 import com.team1701.robot.commands.ShootAndDriveToPose.FinishedState;
 import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import com.team1701.robot.subsystems.shooter.Shooter.ShooterSetpoint;
+import com.team1701.robot.util.FieldUtil;
+import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 
 import static com.team1701.lib.commands.LoggedCommands.*;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 public class AutonomousCommands {
+    private static final KinematicLimits kAutoTrapezoidalKinematicLimits =
+            new KinematicLimits(4.535, 6.733, 14.535); // From Choreo at 60 amps
+
     private final RobotState mRobotState;
     private final Drive mDrive;
     private final Shooter mShooter;
     private final Indexer mIndexer;
     private final PathBuilder mPathBuilder = new PathBuilder();
+    private final AutoNoteSeeker mAutoNoteSeeker;
 
     public static record AutonomousCommand(Command command, Pose2d[] path) {
         public AutonomousCommand(Command command) {
@@ -46,13 +54,34 @@ public class AutonomousCommands {
         mDrive = drive;
         mShooter = shooter;
         mIndexer = indexer;
+        mAutoNoteSeeker = new AutoNoteSeeker(robotState);
 
         NamedCommands.registerCommand("printHello", print("Hello from autonomous path"));
+        NamedCommands.registerCommand("seekA", setNoteToSeek(AutoNote.A));
+        NamedCommands.registerCommand("seekB", setNoteToSeek(AutoNote.B));
+        NamedCommands.registerCommand("seekC", setNoteToSeek(AutoNote.C));
+        NamedCommands.registerCommand("seek1", setNoteToSeek(AutoNote.M1));
+        NamedCommands.registerCommand("seek2", setNoteToSeek(AutoNote.M2));
+        NamedCommands.registerCommand("seek3", setNoteToSeek(AutoNote.M3));
+        NamedCommands.registerCommand("seek4", setNoteToSeek(AutoNote.M4));
+        NamedCommands.registerCommand("seek5", setNoteToSeek(AutoNote.M5));
     }
 
     private Pose2d autoFlipPose(Pose2d pose) {
         var flippedPose = GeometryUtil.flipX(pose, FieldConstants.kFieldLongLengthMeters);
         return Configuration.isRedAlliance() ? flippedPose : pose;
+    }
+
+    private Command idleShooter() {
+        return ShootCommands.stop(mShooter);
+    }
+
+    private Command index() {
+        return IntakeCommands.idleIndexer(mIndexer);
+    }
+
+    private Command stopRoutine() {
+        return parallel(DriveCommands.stop(mDrive), idleShooter(), index()).withName("StopRoutine");
     }
 
     private Command resetPose(Pose2d pose) {
@@ -63,49 +92,63 @@ public class AutonomousCommands {
         return runOnce(() -> mRobotState.resetPose(pose.get())).withName("ResetPose");
     }
 
+    private Command warmShooter(ShooterSetpoint setpoint) {
+        return warmShooter(setpoint, false);
+    }
+
+    private Command warmShooter(ShooterSetpoint setpoint, boolean waitForNote) {
+        return run(
+                        () -> {
+                            if (!waitForNote || mRobotState.hasNote()) {
+                                mShooter.setRollerSpeeds(setpoint.speeds());
+                            } else {
+                                mShooter.stopRollers();
+                            }
+
+                            mShooter.setRotationAngle(
+                                    mRobotState.hasNote() ? setpoint.angle() : Constants.Shooter.kLoadingAngle);
+                        },
+                        mShooter)
+                .withName("WarmShooter");
+    }
+
+    private Command setNoteToSeek(AutoNote note) {
+        return runOnce(() -> mAutoNoteSeeker.setNote(note))
+                .ignoringDisable(true)
+                .withName("SetNoteToSeek");
+    }
+
     private Command timedDriveWithVelocity(ChassisSpeeds speeds, double seconds) {
-        return race(DriveCommands.driveWithVelocity(() -> speeds, mDrive), waitSeconds(seconds))
+        return DriveCommands.driveWithVelocity(() -> speeds, mDrive)
+                .withTimeout(seconds)
                 .withName("TimedDriveWithVelocity");
     }
 
-    private Command driveToPose(Pose2d pose) {
-        return driveToPose(pose, Constants.Drive.kFastTrapezoidalKinematicLimits, true);
+    private Command driveToPoseWhileShooting(Pose2d pose, FinishedState finishedState) {
+        if (pose == null || pose.equals(GeometryUtil.kPoseIdentity)) {
+            return stopRoutine();
+        }
+
+        mPathBuilder.addPose(pose);
+        return new ShootAndDriveToPose(
+                mDrive, mShooter, mIndexer, mRobotState, () -> autoFlipPose(pose), finishedState);
     }
 
-    private Command driveToPose(Pose2d pose, boolean finishAtPose) {
-        return driveToPose(pose, Constants.Drive.kFastTrapezoidalKinematicLimits, finishAtPose);
-    }
+    private Command driveToPoseAndPreWarm(Pose2d pose) {
+        if (pose == null || pose.equals(GeometryUtil.kPoseIdentity)) {
+            return stopRoutine();
+        }
 
-    private Command driveToPose(Pose2d pose, KinematicLimits kinematicLimits) {
-        return driveToPose(pose, kinematicLimits, true);
-    }
-
-    private Command driveToPose(Pose2d pose, KinematicLimits kinematicLimits, boolean finishAtPose) {
+        var setpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(pose.getTranslation()));
         mPathBuilder.addPose(pose);
         return DriveCommands.driveToPose(
-                mDrive, () -> autoFlipPose(pose), mRobotState::getPose2d, kinematicLimits, finishAtPose);
-    }
-
-    private Command driveToPoseWhileShooting(
-            Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits, FinishedState finishedState) {
-        return new ShootAndDriveToPose(mDrive, mShooter, mIndexer, mRobotState, poseSupplier, finishedState);
-    }
-
-    private Command driveToPoseAndPreWarm(Pose2d pose, KinematicLimits kinematicLimits) {
-        var targetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(
-                mRobotState.getSpeakerDistanceFromPose(new Pose3d(pose)));
-
-        var targetAngle = Constants.Shooter.kShooterAngleInterpolator.get(
-                mRobotState.getSpeakerDistanceFromPose(new Pose3d(pose)));
-
-        return Commands.deadline(
-                driveToPose(pose, kinematicLimits),
-                Commands.run(
-                        () -> {
-                            mShooter.setUnifiedSpeed(targetSpeed);
-                            mShooter.setRotationAngle(Rotation2d.fromRadians(targetAngle));
-                        },
-                        mShooter));
+                        mDrive,
+                        () -> setpoint.applyReleaseAngle(autoFlipPose(pose)),
+                        mRobotState::getPose2d,
+                        kAutoTrapezoidalKinematicLimits,
+                        true)
+                .deadlineWith(index(), warmShooter(setpoint))
+                .withName("DriveToPoseAndPreWarm");
     }
 
     private Command followPath(String pathName) {
@@ -113,20 +156,22 @@ public class AutonomousCommands {
     }
 
     private Command followPath(String pathName, boolean resetPose) {
-        var path = PathPlannerPath.fromPathFile(pathName);
-        if (path == null) {
-            return idle(); // Prevent auto mode from continuing if path failed to load
+        PathPlannerPath path;
+        try {
+            path = PathPlannerPath.fromPathFile(pathName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return stopRoutine();
         }
 
         mPathBuilder.addPath(path);
 
-        var command = sequence(
+        return parallel(
                         runOnce(() -> mDrive.setKinematicLimits(Constants.Drive.kFastKinematicLimits)),
-                        resetPose ? resetPose(path.getPreviewStartingHolonomicPose()) : none(),
-                        AutoBuilder.followPath(path))
+                        resetPose ? resetPose(path.getPreviewStartingHolonomicPose()) : none())
+                .andThen(AutoBuilder.followPath(path))
+                .deadlineWith(index(), idleShooter())
                 .withName("DrivePathPlannerPath");
-        command.addRequirements(mDrive);
-        return command;
     }
 
     private Command followChoreoPath(String pathName) {
@@ -136,18 +181,38 @@ public class AutonomousCommands {
     private Command followChoreoPath(String pathName, boolean resetPose) {
         var trajectory = Choreo.getTrajectory(pathName);
         if (trajectory == null) {
-            return idle().withName(
-                            "Empty Idle Command"); // Prevent auto mode from continuing if trajectory failed to load
+            return stopRoutine();
         }
 
         mPathBuilder.addPath(trajectory.getPoses());
 
-        return new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose);
+        var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
+        return new DriveChoreoTrajectory(mDrive, mRobotState, trajectory, eventMarkers, resetPose);
     }
 
     private Pose2d getFirstPose(String pathName) {
         var trajectory = Choreo.getTrajectory(pathName);
-        return trajectory.getInitialPose();
+        return trajectory == null ? GeometryUtil.kPoseIdentity : trajectory.getInitialPose();
+    }
+
+    private Command followChoreoPathAndSeekNote(String pathName) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        if (trajectory == null) {
+            return stopRoutine();
+        }
+
+        mPathBuilder.addPath(trajectory.getPoses());
+
+        var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
+        return new DriveAndSeekNote(
+                        mDrive,
+                        mRobotState,
+                        new DriveChoreoTrajectory(mDrive, mRobotState, trajectory, eventMarkers, false),
+                        mAutoNoteSeeker::getDetectedNoteToSeek,
+                        kAutoTrapezoidalKinematicLimits)
+                .deadlineWith(index(), idleShooter())
+                .finallyDo(mAutoNoteSeeker::clear)
+                .withName("FollowChoreoAndSeekNote");
     }
 
     private Command followChoreoPathAndPreWarm(String pathName) {
@@ -157,45 +222,32 @@ public class AutonomousCommands {
     private Command followChoreoPathAndPreWarm(String pathName, boolean resetPose, boolean waitForNote) {
         var trajectory = Choreo.getTrajectory(pathName);
         if (trajectory == null) {
-            return idle().withName(
-                            "Empty Idle Command"); // Prevent auto mode from continuing if trajectory failed to load
+            return stopRoutine();
         }
 
         mPathBuilder.addPath(trajectory.getPoses());
 
-        var targetSpeed = Constants.Shooter.kShooterSpeedInterpolator.get(
-                mRobotState.getSpeakerDistanceFromPose(new Pose3d(autoFlipPose(trajectory.getFinalPose()))));
-
-        var targetAngle = Constants.Shooter.kShooterAngleInterpolator.get(
-                mRobotState.getSpeakerDistanceFromPose(new Pose3d(autoFlipPose(trajectory.getFinalPose()))));
-
-        return Commands.deadline(
-                        new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose),
-                        Commands.run(
-                                () -> {
-                                    if (mRobotState.hasNote() || !waitForNote) {
-                                        mShooter.setUnifiedSpeed(targetSpeed);
-                                        mShooter.setRotationAngle(Rotation2d.fromRadians(targetAngle));
-                                    }
-                                },
-                                mShooter))
+        var shooterSetpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
+        var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
+        return new DriveChoreoTrajectory(
+                        mDrive, mRobotState, trajectory, eventMarkers, shooterSetpoint::applyReleaseAngle, resetPose)
+                .deadlineWith(index(), warmShooter(shooterSetpoint, waitForNote))
                 .withName("FollowAndPreWarm");
     }
 
     private Command followChoreoPathAndShoot(String pathName, boolean resetPose, double timeout) {
         var trajectory = Choreo.getTrajectory(pathName);
         if (trajectory == null) {
-            return idle().withName(
-                            "Empty Idle Command"); // Prevent auto mode from continuing if trajectory failed to load
+            return stopRoutine();
         }
 
         mPathBuilder.addPath(trajectory.getPoses());
 
-        return Commands.deadline(
-                        new DriveChoreoTrajectory(mDrive, trajectory, mRobotState, resetPose),
-                        new Shoot(mShooter, mIndexer, mDrive, mRobotState, true)
-                                .withTimeout(timeout)
-                                .andThen(forceShootCommand()))
+        var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
+        return new DriveChoreoTrajectory(mDrive, mRobotState, trajectory, eventMarkers, resetPose)
+                .deadlineWith(new Shoot(mShooter, mIndexer, mDrive, mRobotState, true)
+                        .withTimeout(timeout)
+                        .andThen(forceShootCommand(), index()))
                 .withName("FollowAndShoot");
     }
 
@@ -212,13 +264,11 @@ public class AutonomousCommands {
                         print("Starting demo"),
                         followPath("demo1", true),
                         aimAndShoot(),
-                        driveToPose(new Pose2d(2.0, 1.0, Rotation2d.fromRadians(-Math.PI * 2.0 / 3.0))),
-                        driveToPose(new Pose2d(10.0, 1.0, GeometryUtil.kRotationHalfPi)),
-                        driveToPose(
-                                new Pose2d(2.0, 5.0, GeometryUtil.kRotationIdentity),
-                                Constants.Drive.kSlowKinematicLimits),
+                        driveToPoseAndPreWarm(new Pose2d(2.0, 1.0, Rotation2d.fromRadians(-Math.PI * 2.0 / 3.0))),
+                        driveToPoseAndPreWarm(new Pose2d(10.0, 1.0, GeometryUtil.kRotationHalfPi)),
+                        driveToPoseAndPreWarm(new Pose2d(2.0, 5.0, GeometryUtil.kRotationIdentity)),
                         followPath("demo2"),
-                        driveToPose(new Pose2d(10.0, 5.0, GeometryUtil.kRotationMinusHalfPi), false))
+                        driveToPoseAndPreWarm(new Pose2d(10.0, 5.0, GeometryUtil.kRotationMinusHalfPi)))
                 .withName("AutonomousDemo");
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
@@ -269,11 +319,9 @@ public class AutonomousCommands {
     public AutonomousCommand sourceFourPieceTwoOne() {
         var command = loggedSequence(
                         print("Started source four piece two one auto"),
-                        driveToPoseAndPreWarm(
-                                new Pose2d(
-                                        new Translation2d(2.46260666847229, 2.526517391204834),
-                                        new Rotation2d(2.2091161460921795)),
-                                Constants.Drive.kFastTrapezoidalKinematicLimits),
+                        driveToPoseAndPreWarm(new Pose2d(
+                                new Translation2d(2.46260666847229, 2.526517391204834),
+                                new Rotation2d(2.2091161460921795))),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("SourceFourPieceTwoOne.1"),
                         aimAndShoot(),
@@ -339,9 +387,7 @@ public class AutonomousCommands {
     public AutonomousCommand sourceSideMiddleThree() {
         var command = loggedSequence(
                         print("Started source side middle three auto"),
-                        driveToPoseAndPreWarm(
-                                getFirstPose("SourceSideMiddleThree.1"),
-                                Constants.Drive.kFastTrapezoidalKinematicLimits),
+                        driveToPoseAndPreWarm(getFirstPose("SourceSideMiddleThree.1")),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("SourceSideMiddleThree.1"),
                         aimAndShoot(),
@@ -426,10 +472,7 @@ public class AutonomousCommands {
     public AutonomousCommand fiveMiddleMove() {
         var command = loggedSequence(
                         print("Started five middle move auto"),
-                        driveToPoseWhileShooting(
-                                () -> getFirstPose("FiveMiddleToMiddle.3"),
-                                Constants.Drive.kFastTrapezoidalKinematicLimits,
-                                FinishedState.END_AFTER_MOVING),
+                        driveToPoseWhileShooting(getFirstPose("FiveMiddleToMiddle.3"), FinishedState.END_AFTER_MOVING),
                         forceShootCommand(),
                         followChoreoPath("FiveMiddleToMiddle.3"),
                         aimAndShoot(),
@@ -444,12 +487,26 @@ public class AutonomousCommands {
     public AutonomousCommand centerMoveDTP() {
         var command = loggedSequence(
                         print("Started center move DTP auto"),
-                        driveToPoseWhileShooting(
-                                () -> getFirstPose("CenterMove.1"),
-                                Constants.Drive.kFastTrapezoidalKinematicLimits,
-                                FinishedState.END_AFTER_MOVING),
+                        driveToPoseWhileShooting(getFirstPose("CenterMove.1"), FinishedState.END_AFTER_MOVING),
                         forceShootCommand())
                 .withName("CenterMoveAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand source54CSeek() {
+        var command = loggedSequence(
+                        print("Started source 54C seek auto"),
+                        followChoreoPathAndPreWarm("Source54CSeek.1", true, false),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Source54CSeek.2"),
+                        followChoreoPathAndPreWarm("Source54CSeek.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Source54CSeek.4"),
+                        followChoreoPathAndPreWarm("Source54CSeek.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("Source54CSeek.6"),
+                        aimAndShoot())
+                .withName("Source45CSeekAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }
