@@ -148,6 +148,11 @@ public class AprilTagCamera {
         var stdDevs = mStdDevsFunction.apply(
                 lowestAmbiguityTarget.bestCameraToTarget.getTranslation().getNorm());
 
+        if (pipelineResult.targets.length == 1) {
+            // Don't trust single-target rotations at all
+            stdDevs.set(2, 0, Double.POSITIVE_INFINITY);
+        }
+
         Logger.recordOutput(mLoggingPrefix + "StdDev", stdDevs.getData());
 
         return Optional.of(new EstimatedRobotPose(

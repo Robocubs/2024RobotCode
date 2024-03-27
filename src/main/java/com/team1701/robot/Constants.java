@@ -111,17 +111,18 @@ public final class Constants {
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                double scalar = 1.5;
+                double coordScalar = 1.5;
+                double angleScalar = 1.5;
                 for (double[] pair : kMeasuredDistanceToXStdDevValues) {
-                    kVisionXStdDevInterpolater.put(pair[0], pair[1] * scalar);
+                    kVisionXStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
                 }
 
                 for (double[] pair : kMeasuredDistanceToYStdDevValues) {
-                    kVisionYStdDevInterpolater.put(pair[0], pair[1] * scalar);
+                    kVisionYStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
                 }
 
                 for (double[] pair : kMeasuredDistanceToAngleStdDevValues) {
-                    kVisionThetaStdDevInterpolater.put(pair[0], pair[1] * scalar);
+                    kVisionThetaStdDevInterpolater.put(pair[0], pair[1] * angleScalar);
                 }
             }
         }
@@ -130,6 +131,8 @@ public final class Constants {
         public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
         public static final double kMaxPoseAmbiguity = 0.03;
         public static final double kMaxAreaFitInFrame = 0.0;
+        public static final long[] kValidOnboardIds = {0, 2};
+        public static final String[] kBusKeys = {"FL:fc8", "FR:xhci", "BL:fc8", "BR:xhci"};
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
@@ -263,6 +266,7 @@ public final class Constants {
                     kSteerKp.initDefault(4000); // 16.0
                     kSteerKd.initDefault(50);
                     break;
+                case SIMULATION_VISION:
                 case SIMULATION_BOT:
                     kWheelRadiusMeters = Units.inchesToMeters(2);
                     driveMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
@@ -590,6 +594,7 @@ public final class Constants {
 
                     break;
                 case SIMULATION_BOT:
+                case SIMULATION_VISION:
                     kUpperRollerKs.initDefault(0.8548);
                     kUpperRollerKv.initDefault(0.01576);
                     kLowerRollerKs.initDefault(0.8548);
