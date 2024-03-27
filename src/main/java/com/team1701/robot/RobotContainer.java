@@ -268,7 +268,7 @@ public class RobotContainer {
 
         mLED = new LED(mRobotState);
 
-        mRobotState.addSubsystems(this.mShooter, this.mIndexer, this.mIntake);
+        mRobotState.addSubsystems(this.mDrive, this.mShooter, this.mIndexer, this.mIntake);
 
         SmartDashboard.putData(mDrive);
         SmartDashboard.putData(mShooter);
@@ -389,7 +389,7 @@ public class RobotContainer {
         mDriverController
                 .rightTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
-                .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mDrive, mRobotState));
+                .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mRobotState));
 
         /* STREAMDECK BUTTONS */
 
@@ -441,7 +441,8 @@ public class RobotContainer {
                         },
                         mShooter)
                 .withName("StreamDeckShooterDownCommand");
-        var manualShootCommand = ShootCommands.manualShoot(mShooter, mIndexer).withName("StreamDeckShootCommand");
+        var manualShootCommand =
+                ShootCommands.manualShoot(mShooter, mIndexer, mRobotState).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
                         () -> {
                             mClimb.extendWinch();
@@ -541,6 +542,9 @@ public class RobotContainer {
         var straightToMiddleCommand = commands.straightToMiddle();
         var sourceFourUnderStage = commands.sourceFourUnderStage();
         var fiveAmpSideMove = commands.fivePieceAmpAndMove();
+        var centerMove = commands.centerMove();
+        var centerMoveDTP = commands.centerMoveDTP();
+        var fiveMiddleMove = commands.fiveMiddleMove();
         var source54CSeek = commands.source54CSeek();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
@@ -555,6 +559,9 @@ public class RobotContainer {
         mAutonomousPaths.put("Straight To Middle", straightToMiddleCommand.path());
         mAutonomousPaths.put("Source Four Under Stage", sourceFourUnderStage.path());
         mAutonomousPaths.put("Five Piece Amp Move", fiveAmpSideMove.path());
+        mAutonomousPaths.put("Center Move", centerMove.path());
+        mAutonomousPaths.put("Five Middle Move", fiveMiddleMove.path());
+        mAutonomousPaths.put("Center Move DTP", centerMoveDTP.path());
         mAutonomousPaths.put("Source 54C Seek", source54CSeek.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
@@ -568,7 +575,9 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Five Piece Amp Auto", fivePieceAmpCommand.command());
         autonomousModeChooser.addOption("Straight To Middle", straightToMiddleCommand.command());
         autonomousModeChooser.addOption("Source Four Under Stage", sourceFourUnderStage.command());
-        autonomousModeChooser.addOption("Five Piece Amp Move", fiveAmpSideMove.command());
+        autonomousModeChooser.addOption("Center Move", centerMove.command());
+        autonomousModeChooser.addOption("Five Middle Move", fiveMiddleMove.command());
+        autonomousModeChooser.addOption("Center Move DTP", centerMoveDTP.command());
         autonomousModeChooser.addOption("Source 54C Seek", source54CSeek.command());
 
         autonomousModeChooser.addOption(
