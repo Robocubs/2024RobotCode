@@ -143,6 +143,7 @@ public class AutonomousCommands {
         mPathBuilder.addPose(pose);
         return DriveCommands.driveToPose(
                         mDrive,
+                        mRobotState,
                         () -> setpoint.applyReleaseAngle(autoFlipPose(pose)),
                         mRobotState::getPose2d,
                         kAutoTrapezoidalKinematicLimits,
@@ -367,27 +368,6 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public AutonomousCommand greedyMiddle() {
-        var command = loggedSequence(
-                        print("Started greedy middle auto"),
-                        followChoreoPathAndPreWarm("GreedyMiddle.1", true, false),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.2", false, false),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.3", false, false),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.4"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.5"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.6"),
-                        aimAndShoot(),
-                        followChoreoPath("GreedyMiddle.7"))
-                .withName("GreedyMiddleAuto");
-
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
     public AutonomousCommand sourceSideMiddleThree() {
         var command = loggedSequence(
                         print("Started source side middle three auto"),
@@ -497,11 +477,34 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
+    /* Phase 2 Autons */
+
+    public AutonomousCommand greedyMiddle() {
+        var command = loggedSequence(
+                        print("Started greedy middle auto"),
+                        followChoreoPathAndPreWarm("GreedyMiddle.1", true, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("GreedyMiddle.2", false, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("GreedyMiddle.3", false, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("GreedyMiddle.4"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("GreedyMiddle.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("GreedyMiddle.6"),
+                        aimAndShoot(),
+                        followChoreoPath("GreedyMiddle.7"))
+                .withName("GreedyMiddleAuto");
+
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
     public AutonomousCommand source54CSeek() {
         var command = loggedSequence(
                         print("Started source 54C seek auto"),
-                        followChoreoPathAndPreWarm("Source54CSeek.1", true, false),
-                        aimAndShoot(),
+                        driveToPoseWhileShooting(
+                                getFirstPose("Source54CSeek.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
                         followChoreoPathAndSeekNote("Source54CSeek.2"),
                         followChoreoPathAndPreWarm("Source54CSeek.3"),
                         aimAndShoot(),

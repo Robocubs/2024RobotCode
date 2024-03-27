@@ -220,6 +220,8 @@ public final class Constants {
         public static final KinematicLimits kUncappedKinematicLimits;
         public static final KinematicLimits kFastKinematicLimits;
         public static final KinematicLimits kSlowKinematicLimits;
+        public static final KinematicLimits kMaxTrapezoidalKinematicLimits =
+                new KinematicLimits(4.535, 4.489, 14.221); // From Choreo at 40 amps
         public static final KinematicLimits kFastTrapezoidalKinematicLimits;
         public static final KinematicLimits kSlowTrapezoidalKinematicLimits;
         public static final KinematicLimits kFastSmoothKinematicLimits;

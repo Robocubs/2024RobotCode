@@ -271,6 +271,10 @@ public class Drive extends SubsystemBase {
                 .getAsDouble();
     }
 
+    public ChassisSpeeds getVelocitySetpoint() {
+        return Constants.Drive.kKinematics.toChassisSpeeds(mPreviousSetpoint.moduleStates);
+    }
+
     @AutoLogOutput
     public double getSpeedMetersPerSecond() {
         var chassisSpeeds = Constants.Drive.kKinematics.toChassisSpeeds(mMeasuredModuleStates);
