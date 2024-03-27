@@ -355,11 +355,6 @@ public class RobotState {
         return mIndexer.isPresent() && mIndexer.get().hasNoteAtExit();
     }
 
-    @AutoLogOutput
-    public Rotation2d calculateShooterAngleTowardsSpeaker() {
-        return Rotation2d.fromRadians(Constants.Shooter.kShooterAngleInterpolator.get(getDistanceToSpeaker()));
-    }
-
     public void setShootingState(ShootingState shootingState) {
         mShootingState = shootingState;
         shootingState.log("RobotState/ShootingState");

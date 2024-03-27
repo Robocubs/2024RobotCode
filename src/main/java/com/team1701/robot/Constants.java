@@ -8,8 +8,10 @@ import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.lib.swerve.ExtendedSwerveDriveKinematics;
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.PolynomialRegression;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.robot.subsystems.shooter.Shooter.ShooterSetpoint;
+import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -110,17 +112,18 @@ public final class Constants {
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                double scalar = 1.5;
+                double coordScalar = 1.5;
+                double angleScalar = 1.5;
                 for (double[] pair : kMeasuredDistanceToXStdDevValues) {
-                    kVisionXStdDevInterpolater.put(pair[0], pair[1] * scalar);
+                    kVisionXStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
                 }
 
                 for (double[] pair : kMeasuredDistanceToYStdDevValues) {
-                    kVisionYStdDevInterpolater.put(pair[0], pair[1] * scalar);
+                    kVisionYStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
                 }
 
                 for (double[] pair : kMeasuredDistanceToAngleStdDevValues) {
-                    kVisionThetaStdDevInterpolater.put(pair[0], pair[1] * scalar);
+                    kVisionThetaStdDevInterpolater.put(pair[0], pair[1] * angleScalar);
                 }
             }
         }
@@ -129,6 +132,8 @@ public final class Constants {
         public static final double kAprilTagWidth = Units.inchesToMeters(6.5);
         public static final double kMaxPoseAmbiguity = 0.03;
         public static final double kMaxAreaFitInFrame = 0.0;
+        public static final long[] kValidOnboardIds = {0, 2};
+        public static final String[] kBusKeys = {"FL:fc8", "FR:xhci", "BL:fc8", "BR:xhci"};
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
@@ -264,6 +269,7 @@ public final class Constants {
                     kSteerKp.initDefault(4000); // 16.0
                     kSteerKd.initDefault(50);
                     break;
+                case SIMULATION_VISION:
                 case SIMULATION_BOT:
                     kWheelRadiusMeters = Units.inchesToMeters(2);
                     driveMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
@@ -367,6 +373,9 @@ public final class Constants {
         public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.1);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
+        public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-2);
+        public static final double kSpeakerToShooterHingeDifference =
+                FieldConstants.kSpeakerHeight - kShooterAxisHeight;
         public static final LoggedTunableNumber kShooterReleaseAngleDegrees =
                 new LoggedTunableNumber("Shooter/kShooterReleaseAngleDegrees", -7);
 
@@ -434,6 +443,8 @@ public final class Constants {
 
         public static final double kRollerRampRate = 450;
 
+        public static final boolean kUseNewCurves = true;
+
         // public static final double[][] kShooterDistanceToAngleValues = {
         //     {3.47, 0.535},
         //     {2.75, 0.7},
@@ -474,9 +485,9 @@ public final class Constants {
             {3.5, .63},
             {3.8, .58},
             {4.1, .55},
-            {4.7, .50},
-            {5.1, .47},
-            {5.9, .44} // -9
+            {4.7, .505},
+            {5.1, .49},
+            {5.9, .46} // -9
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
@@ -491,14 +502,14 @@ public final class Constants {
             // {6.4, 620},
             // {8.3, 660},
             // delete above
-            {2.3, 400}, // -7
-            {2.7, 400}, // -9
-            {3.5, 430}, // -9
-            {3.8, 450}, // -9
-            {4.1, 460}, // -9
-            {4.7, 500}, // -9
-            {5.1, 540}, // -5
-            {5.9, 580} // -5
+            {2.3, 410}, // -7
+            {2.7, 410}, // -9
+            {3.5, 440}, // -9
+            {3.8, 460}, // -9
+            {4.1, 470}, // -9
+            {4.7, 510}, // -9
+            {5.1, 550}, // -5
+            {5.9, 590} // -5
         };
 
         public static final double[][] kShooterDistanceToHeadingOffset = {
@@ -513,6 +524,11 @@ public final class Constants {
         public static final double[][] kPassingDistanceToSpeedValues = {
             {11.53, 490}, {10.3, 450}, {9.02, 415}, {7.15, 350}, {6.15, 315}, {5, 200}, {0, 100}
         };
+
+        // Regression of Collected (a.k.a used angle) vs Calculated Angle
+        public static final PolynomialRegression kAngleRegression;
+        // Regression of Speed vs Distance to speaker
+        public static final PolynomialRegression kSpeedRegression;
 
         static {
             for (double[] pair : kShooterDistanceToAngleValues) {
@@ -531,6 +547,30 @@ public final class Constants {
                 kPassingSpeedInterpolator.put(pair[0], pair[1]);
             }
 
+            if (kUseNewCurves) {
+                // Angle
+                var collectedDistanceToAngles = kShooterDistanceToAngleValues;
+                double[] theoreticalAngles = new double[collectedDistanceToAngles.length];
+                double[] collectedAngles = new double[collectedDistanceToAngles.length];
+                for (int i = 0; i < collectedDistanceToAngles.length; ++i) {
+                    var d = collectedDistanceToAngles[i][0];
+                    theoreticalAngles[i] = ShooterUtil.calculateTheoreticalAngle(d);
+                    collectedAngles[i] = collectedDistanceToAngles[i][1];
+                }
+
+                kAngleRegression = new PolynomialRegression(theoreticalAngles, collectedAngles, 2);
+
+                // Speed
+                var collectedDistanceToSpeeds = kShooterDistanceToSpeedValues;
+                double[] distances = new double[collectedDistanceToSpeeds.length];
+                double[] collectedSpeeds = new double[collectedDistanceToSpeeds.length];
+                for (int i = 0; i < collectedDistanceToSpeeds.length; ++i) {
+                    distances[i] = collectedDistanceToSpeeds[i][0];
+                    collectedSpeeds[i] = collectedDistanceToSpeeds[i][1];
+                }
+
+                kSpeedRegression = new PolynomialRegression(distances, collectedSpeeds, 2);
+            }
             for (double[] pair : kShooterDistanceToHeadingOffset) {
                 kShooterHeadingOffsetInterpolator.put(pair[0], Units.degreesToRadians(pair[1]));
             }
@@ -559,6 +599,7 @@ public final class Constants {
 
                     break;
                 case SIMULATION_BOT:
+                case SIMULATION_VISION:
                     kUpperRollerKs.initDefault(0.8548);
                     kUpperRollerKv.initDefault(0.01576);
                     kLowerRollerKs.initDefault(0.8548);

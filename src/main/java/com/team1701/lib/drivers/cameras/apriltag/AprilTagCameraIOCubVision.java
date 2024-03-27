@@ -23,6 +23,10 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
 
     private final RawSubscriber mObservationSubscriber;
     private final IntegerSubscriber mFpsSubscriber;
+    private final IntegerSubscriber mTempSubscriber;
+    private final IntegerSubscriber mLatencySubscriber;
+    private final IntegerSubscriber mHeartbeatSubscriber;
+    private int mLastHeartbeat = -1;
 
     public AprilTagCameraIOCubVision(VisionConfig config) {
         mConfig = config;
@@ -52,15 +56,23 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
                         PubSubOption.periodic(0.05)); // Default robot loop
 
         mFpsSubscriber = outputTable.getIntegerTopic("fps").subscribe(0);
+        mTempSubscriber = outputTable.getIntegerTopic("temp").subscribe(0);
+        mLatencySubscriber = outputTable.getIntegerTopic("latency").subscribe(0);
+        mHeartbeatSubscriber = outputTable.getIntegerTopic("heartbeat").subscribe(0);
     }
 
     @Override
     public void updateInputs(AprilTagInputs inputs) {
-        // Use fps to determine if the camera is connected
-        // FPS should always be non-zero and will update at least once every 2 + latency seconds
-        var timestampedFps = mFpsSubscriber.getAtomic();
-        inputs.isConnected = timestampedFps.value > 0
-                && RobotController.getFPGATime() - mFpsSubscriber.getAtomic().timestamp < 5000000; // 5 seconds
+        var heartbeatAtomic = mHeartbeatSubscriber.getAtomic();
+        var heartbeat = (int) heartbeatAtomic.value;
+        inputs.isConnected = (heartbeat >= mLastHeartbeat)
+                && (heartbeat != 0)
+                && (RobotController.getFPGATime() - heartbeatAtomic.timestamp < 1500000);
+        mLastHeartbeat = heartbeat;
+
+        inputs.fps = (int) mFpsSubscriber.get();
+        inputs.temperature = (int) mTempSubscriber.get();
+        inputs.latency = (int) mLatencySubscriber.get();
 
         var observations = mObservationSubscriber.readQueue();
         inputs.pipelineResults = new AprilTagPipelineResult[observations.length];
