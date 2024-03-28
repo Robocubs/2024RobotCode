@@ -445,41 +445,7 @@ public final class Constants {
 
         public static final boolean kUseNewCurves = true;
 
-        // public static final double[][] kShooterDistanceToAngleValues = {
-        //     {3.47, 0.535},
-        //     {2.75, 0.7},
-        //     {2.298, 0.9},
-        //     {4.25, 0.49},
-        //     {4.75, 0.442},
-        //     {5.5, 0.385},
-        //     {6.46, .3785}
-        // };
-
-        // public static final double[][] kShooterDistanceToSpeedValues = {
-        //     {2.3, 200},
-        //     {3.5, 400},
-        //     {3.78, 400},
-        //     {2.75, 300},
-        //     {2.298, 300},
-        //     {4.25, 410},
-        //     {4.75, 410},
-        //     {5.5, 480},
-        //     {6.46, 520}
-        // };
-
         public static final double[][] kShooterDistanceToAngleValues = {
-            // {2.3, 1.01},
-            // {2.75, 0.83},
-            // {3.125, .715},
-            // {3.5, 0.62},
-            // {3.78, 0.56},
-            // {4.25, 0.5},
-            // {4.89, 0.47},
-            // {5.49, 0.43},
-            // {6, 0.4},
-            // {6.4, 0.36},
-            // {8.3, 0.31},
-            // delete above
             {2.3, 1},
             {2.7, .8},
             {3.5, .63},
@@ -487,34 +453,27 @@ public final class Constants {
             {4.1, .55},
             {4.7, .505},
             {5.1, .49},
-            {5.9, .46} // -9
+            {5.9, .46}
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
-            // {2.3, 275},
-            // {2.75, 320},
-            // {3.5, 385},
-            // {3.78, 425},
-            // {4.25, 450},
-            // {4.89, 500},
-            // {5.49, 550},
-            // {6, 600},
-            // {6.4, 620},
-            // {8.3, 660},
-            // delete above
-            {2.3, 410}, // -7
-            {2.7, 410}, // -9
-            {3.5, 440}, // -9
-            {3.8, 460}, // -9
-            {4.1, 470}, // -9
-            {4.7, 510}, // -9
-            {5.1, 550}, // -5
-            {5.9, 590} // -5
+            {2.3, 410},
+            {2.7, 410},
+            {3.5, 440},
+            {3.8, 460},
+            {4.1, 470},
+            {4.7, 510},
+            {5.1, 550},
+            {5.9, 590}
         };
 
-        public static final double[][] kShooterDistanceToHeadingOffset = {
-            {0.55, -9},
-            {0.50, -5}
+        public static final double[][] kShooterAngleToHeadingOffset = {
+            {0.955, -13},
+            {0.835, -11},
+            {0.687, -10},
+            {0.564, -9},
+            {0.500, -7},
+            {0.467, -5},
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {
@@ -547,33 +506,32 @@ public final class Constants {
                 kPassingSpeedInterpolator.put(pair[0], pair[1]);
             }
 
-            if (kUseNewCurves) {
-                // Angle
-                var collectedDistanceToAngles = kShooterDistanceToAngleValues;
-                double[] theoreticalAngles = new double[collectedDistanceToAngles.length];
-                double[] collectedAngles = new double[collectedDistanceToAngles.length];
-                for (int i = 0; i < collectedDistanceToAngles.length; ++i) {
-                    var d = collectedDistanceToAngles[i][0];
-                    theoreticalAngles[i] = ShooterUtil.calculateTheoreticalAngle(d);
-                    collectedAngles[i] = collectedDistanceToAngles[i][1];
-                }
-
-                kAngleRegression = new PolynomialRegression(theoreticalAngles, collectedAngles, 2);
-
-                // Speed
-                var collectedDistanceToSpeeds = kShooterDistanceToSpeedValues;
-                double[] distances = new double[collectedDistanceToSpeeds.length];
-                double[] collectedSpeeds = new double[collectedDistanceToSpeeds.length];
-                for (int i = 0; i < collectedDistanceToSpeeds.length; ++i) {
-                    distances[i] = collectedDistanceToSpeeds[i][0];
-                    collectedSpeeds[i] = collectedDistanceToSpeeds[i][1];
-                }
-
-                kSpeedRegression = new PolynomialRegression(distances, collectedSpeeds, 2);
-            }
-            for (double[] pair : kShooterDistanceToHeadingOffset) {
+            for (double[] pair : kShooterAngleToHeadingOffset) {
                 kShooterHeadingOffsetInterpolator.put(pair[0], Units.degreesToRadians(pair[1]));
             }
+
+            // Angle
+            var collectedDistanceToAngles = kShooterDistanceToAngleValues;
+            double[] theoreticalAngles = new double[collectedDistanceToAngles.length];
+            double[] collectedAngles = new double[collectedDistanceToAngles.length];
+            for (int i = 0; i < collectedDistanceToAngles.length; ++i) {
+                var distance = collectedDistanceToAngles[i][0];
+                theoreticalAngles[i] = ShooterUtil.calculateTheoreticalAngle(distance);
+                collectedAngles[i] = collectedDistanceToAngles[i][1];
+            }
+
+            kAngleRegression = new PolynomialRegression(theoreticalAngles, collectedAngles, 2);
+
+            // Speed
+            var collectedDistanceToSpeeds = kShooterDistanceToSpeedValues;
+            double[] distances = new double[collectedDistanceToSpeeds.length];
+            double[] collectedSpeeds = new double[collectedDistanceToSpeeds.length];
+            for (int i = 0; i < collectedDistanceToSpeeds.length; ++i) {
+                distances[i] = collectedDistanceToSpeeds[i][0];
+                collectedSpeeds[i] = collectedDistanceToSpeeds[i][1];
+            }
+
+            kSpeedRegression = new PolynomialRegression(distances, collectedSpeeds, 2);
         }
 
         static {

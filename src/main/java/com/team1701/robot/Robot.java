@@ -13,7 +13,6 @@ import com.team1701.robot.states.RobotState.ScoringMode;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,7 +30,6 @@ public class Robot extends LoggedRobot {
     private Optional<Command> mAutonomousCommand = Optional.empty();
     private RobotContainer mRobotContainer;
     private Command mZeroCommand;
-    private double mLastTimestamp = 0;
 
     @Override
     public void robotInit() {
@@ -103,10 +101,6 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().run();
         CommandLogger.getInstance().periodic();
         mRobotContainer.getRobotState().periodic();
-
-        var timestamp = Timer.getFPGATimestamp();
-        Logger.recordOutput("Robot/LoopDt", timestamp - mLastTimestamp);
-        mLastTimestamp = timestamp;
     }
 
     @Override

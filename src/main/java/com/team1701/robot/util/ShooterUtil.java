@@ -11,7 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public final class ShooterUtil {
 
     public static double calculateTheoreticalAngle(double distance) {
-        return Math.sin(Constants.Shooter.kSpeakerToShooterHingeDifference / distance);
+        return Math.asin(Constants.Shooter.kSpeakerToShooterHingeDifference / distance);
     }
 
     public static double calculateSpeakerSpeed(double distanceToSpeaker) {
