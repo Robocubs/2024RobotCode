@@ -133,7 +133,7 @@ public final class Constants {
         public static final double kMaxPoseAmbiguity = 0.03;
         public static final double kMaxAreaFitInFrame = 0.0;
         public static final long[] kValidOnboardIds = {0, 2};
-        public static final String[] kBusKeys = {"FL:fc8", "FR:xhci", "BL:fc8", "BR:xhci"};
+        public static final String[] kBusKeys = {"FL:fc8", "FR:xhci", "BL:fc8", "BR:xhci", "Sniper:fc8"};
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
