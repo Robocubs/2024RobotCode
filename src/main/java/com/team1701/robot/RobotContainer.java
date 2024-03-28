@@ -565,6 +565,9 @@ public class RobotContainer {
         var centerMoveDTP = commands.centerMoveDTP();
         var fiveMiddleMove = commands.fiveMiddleMove();
         var source54CSeek = commands.source54CSeek();
+        var amp123Amp = commands.amp123Amp();
+        var centerB342Stage = commands.centerB342Stage();
+        var source543Stage = commands.source543Stage();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
@@ -582,6 +585,9 @@ public class RobotContainer {
         mAutonomousPaths.put("Five Middle Move", fiveMiddleMove.path());
         mAutonomousPaths.put("Center Move DTP", centerMoveDTP.path());
         mAutonomousPaths.put("Source 54C Seek", source54CSeek.path());
+        mAutonomousPaths.put("Amp123Amp", amp123Amp.path());
+        mAutonomousPaths.put("Center B342 Stage", centerB342Stage.path());
+        mAutonomousPaths.put("Source 543 Stage", source543Stage.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
@@ -598,6 +604,9 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Five Middle Move", fiveMiddleMove.command());
         autonomousModeChooser.addOption("Center Move DTP", centerMoveDTP.command());
         autonomousModeChooser.addOption("Source 54C Seek", source54CSeek.command());
+        autonomousModeChooser.addOption("Amp123Amp", amp123Amp.command());
+        autonomousModeChooser.addOption("Center B342 Stage", centerB342Stage.command());
+        autonomousModeChooser.addOption("Source 543 Stage", source543Stage.command());
 
         autonomousModeChooser.addOption(
                 "Drive Characterization",

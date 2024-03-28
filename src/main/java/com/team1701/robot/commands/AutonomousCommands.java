@@ -253,7 +253,7 @@ public class AutonomousCommands {
                 .deadlineWith(ShootCommands.shoot(mShooter, mIndexer, mRobotState)
                         .withTimeout(timeout)
                         .andThen(forceShoot(), index()))
-                .withName("FollowChoreoAndShoot");
+                .withName("FollowChoreoAndShootWithTimeout");
     }
 
     private Command forceShoot() {
@@ -520,6 +520,69 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("Source54CSeek.6"),
                         aimAndShoot())
                 .withName("Source45CSeekAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand amp123Amp() {
+        var command = loggedSequence(
+                        print("Started Amp123Seek auto"),
+                        followChoreoPathAndShoot("Amp123Amp.1", true, 1.0),
+                        forceShoot(),
+                        followChoreoPathAndSeekNote("Amp123Amp.2"),
+                        pauseDrive("Amp123Amp.3"),
+                        followChoreoPathAndPreWarm("Amp123Amp.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Amp123Amp.4"),
+                        pauseDrive("Amp123Amp.5"),
+                        followChoreoPathAndPreWarm("Amp123Amp.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Amp123Amp.6"),
+                        pauseDrive("Amp123Amp.7"),
+                        followChoreoPathAndPreWarm("Amp123Amp.7"),
+                        aimAndShoot())
+                .withName("Amp 123 Amp Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand centerB342Stage() {
+        var command = loggedSequence(
+                        print("Started centerB342Stage auto"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterB342Stage.1"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB342Stage.2"),
+                        pauseDrive("CenterB342Stage.3"),
+                        followChoreoPathAndPreWarm("CenterB342Stage.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB342Stage.4"),
+                        pauseDrive("CenterB342Stage.5"),
+                        followChoreoPathAndPreWarm("CenterB342Stage.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB342Stage.6"),
+                        pauseDrive("CenterB342Stage.7"),
+                        followChoreoPathAndPreWarm("CenterB342Stage.7"),
+                        aimAndShoot())
+                .withName("Center B342 Stage Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand source543Stage() {
+        var command = loggedSequence(
+                        print("Started source 543 stage auto"),
+                        driveToPoseWhileShooting(
+                                getFirstPose("Source543Stage.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
+                        followChoreoPathAndSeekNote("Source543Stage.2"),
+                        pauseDrive("Source543Stage.3"),
+                        followChoreoPathAndPreWarm("Source543Stage.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Source543Stage.4"),
+                        pauseDrive("Source543Stage.5"),
+                        followChoreoPathAndPreWarm("Source543Stage.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Source543Stage.6"),
+                        followChoreoPathAndPreWarm("Source543Stage.7"),
+                        aimAndShoot())
+                .withName("Source453seekAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }
