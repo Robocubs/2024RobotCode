@@ -67,11 +67,12 @@ public class DriveCommands {
 
     public static Command driveToPose(
             Drive drive,
+            RobotState robotState,
             Supplier<Pose2d> poseSupplier,
             Supplier<Pose2d> robotPoseSupplier,
             KinematicLimits kinematicLimits,
             boolean finishAtPose) {
-        return new DriveToPose(drive, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose);
+        return new DriveToPose(drive, robotState, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose);
     }
 
     public static Command rotateToSpeaker(
@@ -132,9 +133,14 @@ public class DriveCommands {
     }
 
     public static Command driveToAmp(
-            Drive drive, Supplier<Pose2d> poseSupplier, KinematicLimits kinematicLimits, boolean oppositeAlliance) {
+            Drive drive,
+            RobotState robotState,
+            Supplier<Pose2d> poseSupplier,
+            KinematicLimits kinematicLimits,
+            boolean oppositeAlliance) {
         return new DriveToPose(
                         drive,
+                        robotState,
                         () -> Configuration.isBlueAlliance() ^ oppositeAlliance
                                 ? FieldConstants.kBlueAmpDrivePose
                                 : FieldConstants.kRedAmpDrivePose,
@@ -150,13 +156,19 @@ public class DriveCommands {
                 robotState,
                 () -> robotState.getDetectedNoteForPickup().map(note -> note.pose()
                         .toPose2d()),
-                kinematicLimits);
+                kinematicLimits,
+                false);
     }
 
     public static Command driveToNote(
-            Drive drive, RobotState robotState, Supplier<Optional<Pose2d>> notePose, KinematicLimits kinematicLimits) {
+            Drive drive,
+            RobotState robotState,
+            Supplier<Optional<Pose2d>> notePose,
+            KinematicLimits kinematicLimits,
+            boolean finishIfHasPiece) {
         return new DriveToPose(
                         drive,
+                        robotState,
                         () -> notePose.get()
                                 .map(pose -> new Pose2d(
                                                 pose.getTranslation(),
@@ -165,7 +177,8 @@ public class DriveCommands {
                                 .orElseGet(robotState::getPose2d),
                         robotState::getPose2d,
                         kinematicLimits,
-                        true)
+                        true,
+                        finishIfHasPiece)
                 .withName("DriveToNote");
     }
 

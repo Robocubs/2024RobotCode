@@ -7,6 +7,7 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
+import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -22,7 +23,7 @@ public class DriveToPose extends Command {
     private static final String kLoggingPrefix = "Command/DriveToPose/";
     private static final TrapezoidProfile.State kZeroState = new TrapezoidProfile.State();
     private static final double kModuleRadius = Constants.Drive.kModuleRadius;
-    private static final KinematicLimits kMaxKinematicLimits = Constants.Drive.kFastTrapezoidalKinematicLimits;
+    private static final KinematicLimits kMaxKinematicLimits = Constants.Drive.kMaxTrapezoidalKinematicLimits;
 
     private static final LoggedTunableNumber kMaxVelocity =
             new LoggedTunableNumber(kLoggingPrefix + "MaxVelocity", kMaxKinematicLimits.maxDriveVelocity());
@@ -47,6 +48,7 @@ public class DriveToPose extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "RotationToleranceRadians", 0.01);
 
     private final Drive mDrive;
+    private final RobotState mRobotState;
     private final Supplier<Pose2d> mTargetPoseSupplier;
     private final Supplier<Pose2d> mRobotPoseSupplier;
     private final KinematicLimits mKinematicLimits;
@@ -59,18 +61,33 @@ public class DriveToPose extends Command {
     private TrapezoidProfile.State mTranslationState = new TrapezoidProfile.State();
     private TrapezoidProfile.State mRotationState = new TrapezoidProfile.State();
     private boolean mAtTargetPose = false;
+    private boolean mEndIfHasPiece = false;
 
     DriveToPose(
             Drive drive,
+            RobotState robotState,
             Supplier<Pose2d> poseSupplier,
             Supplier<Pose2d> robotPoseSupplier,
             KinematicLimits kinematicLimits,
             boolean finishAtPose) {
+        this(drive, robotState, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose, false);
+    }
+
+    DriveToPose(
+            Drive drive,
+            RobotState robotState,
+            Supplier<Pose2d> poseSupplier,
+            Supplier<Pose2d> robotPoseSupplier,
+            KinematicLimits kinematicLimits,
+            boolean finishAtPose,
+            boolean endIfHasPiece) {
         mDrive = drive;
+        mRobotState = robotState;
         mTargetPoseSupplier = poseSupplier;
         mRobotPoseSupplier = robotPoseSupplier;
         mKinematicLimits = kinematicLimits;
         mFinishAtPose = finishAtPose;
+        mEndIfHasPiece = endIfHasPiece;
 
         mTranslationController = new PIDController(
                 kTranslationKp.get(), kTranslationKi.get(), kTranslationKd.get(), Constants.kLoopPeriodSeconds);
@@ -101,8 +118,9 @@ public class DriveToPose extends Command {
         var translationToTarget = targetPose.getTranslation().minus(currentPose.getTranslation());
         var rotationToTarget = translationToTarget.getAngle();
         var fieldRelativeChassisSpeeds = mDrive.getFieldRelativeVelocity();
-        var velocityToTarget =
-                ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeChassisSpeeds, rotationToTarget).vxMetersPerSecond;
+        var velocityToTarget = ChassisSpeeds.fromFieldRelativeSpeeds(
+                        mRobotState.getFieldRelativeSpeedSetpoint(), rotationToTarget)
+                .vxMetersPerSecond;
         mTranslationState = new TrapezoidProfile.State(translationToTarget.getNorm(), -velocityToTarget);
         mRotationState = new TrapezoidProfile.State(
                 MathUtil.inputModulus(
@@ -135,6 +153,7 @@ public class DriveToPose extends Command {
                 kRotationKp,
                 kRotationKi,
                 kRotationKd);
+        Logger.recordOutput(kLoggingPrefix + "InitialVelocity", velocityToTarget);
     }
 
     @Override
@@ -157,6 +176,8 @@ public class DriveToPose extends Command {
 
             // Calculate directional velocity
             var translationPidOutput = mTranslationController.calculate(distanceToTarget, mTranslationState.position);
+            mTranslationState = new TrapezoidProfile.State(
+                    Math.min(distanceToTarget, mTranslationState.position), mTranslationState.velocity);
             mTranslationState =
                     mTranslationProfile.calculate(Constants.kLoopPeriodSeconds, mTranslationState, kZeroState);
             var velocity = new Translation2d(-(mTranslationState.velocity + translationPidOutput), headingToTarget);
@@ -195,6 +216,6 @@ public class DriveToPose extends Command {
 
     @Override
     public boolean isFinished() {
-        return mFinishAtPose && mAtTargetPose;
+        return (mFinishAtPose && mAtTargetPose) || (mEndIfHasPiece && mRobotState.hasNote());
     }
 }

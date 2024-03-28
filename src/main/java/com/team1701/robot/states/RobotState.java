@@ -149,6 +149,14 @@ public class RobotState {
         return ChassisSpeeds.fromRobotRelativeSpeeds(mDrive.get().getVelocity(), getHeading());
     }
 
+    public ChassisSpeeds getFieldRelativeSpeedSetpoint() {
+        if (mDrive.isEmpty()) {
+            return new ChassisSpeeds();
+        }
+
+        return ChassisSpeeds.fromRobotRelativeSpeeds(mDrive.get().getVelocitySetpoint(), getHeading());
+    }
+
     public void addDriveMeasurements(DriveMeasurement... driveMeasurements) {
         mPoseEstimator.addDriveMeasurements(driveMeasurements);
     }

@@ -31,7 +31,8 @@ public class DriveAndSeekNote extends Command {
         mDriveCommand = driveCommand;
         mNotePoseSupplier = notePose;
 
-        mDriveToNoteCommand = DriveCommands.driveToNote(drive, robotState, () -> mNotePose, seekingKinematicLimits);
+        mDriveToNoteCommand =
+                DriveCommands.driveToNote(drive, robotState, () -> mNotePose, seekingKinematicLimits, true);
         CommandScheduler.getInstance().registerComposedCommands(mDriveCommand, mDriveToNoteCommand);
 
         addRequirements(mDriveCommand.getRequirements().toArray(Subsystem[]::new));

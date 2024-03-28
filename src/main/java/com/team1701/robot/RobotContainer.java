@@ -334,7 +334,7 @@ public class RobotContainer {
                         mIntake, mIndexer, mDrive, mDriverController, () -> mRobotState.getHeading()));
 
         mDriverController
-                .x()
+                .start()
                 .onTrue(runOnce(() -> mDrive.zeroGyroscope(
                                 Configuration.isBlueAlliance()
                                         ? GeometryUtil.kRotationIdentity
@@ -358,19 +358,38 @@ public class RobotContainer {
                         () -> -mDriverController.getLeftY(),
                         () -> -mDriverController.getLeftX()));
 
+        // Pass Low
+        mDriverController
+                .x()
+                .whileTrue(ShootCommands.passLow(
+                        mDrive,
+                        mShooter,
+                        mIndexer,
+                        mRobotState,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX()));
+
         // Drive to Amp
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .and(() -> mRobotState.inWing() || mRobotState.getPose2d().getY() > 6.4)
                 .whileTrue(DriveCommands.driveToAmp(
-                        mDrive, mRobotState::getPose2d, Constants.Drive.kMediumTrapezoidalKinematicLimits, false));
+                        mDrive,
+                        mRobotState,
+                        mRobotState::getPose2d,
+                        Constants.Drive.kMediumTrapezoidalKinematicLimits,
+                        false));
 
         mDriverController
                 .povDown()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .whileTrue(DriveCommands.driveToAmp(
-                        mDrive, mRobotState::getPose2d, Constants.Drive.kMediumTrapezoidalKinematicLimits, true));
+                        mDrive,
+                        mRobotState,
+                        mRobotState::getPose2d,
+                        Constants.Drive.kMediumTrapezoidalKinematicLimits,
+                        true));
         mDriverController.leftTrigger().whileTrue(swerveLock(mDrive));
 
         // Shoot (and optionally move)
