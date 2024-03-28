@@ -28,7 +28,7 @@ public final class FieldConstants {
             kSpeakerHeight);
 
     public static final Translation3d kBlueSpeakerToleranceTranslation =
-            new Translation3d(Units.inchesToMeters(8), Units.inchesToMeters(230.42), kSpeakerHeight);
+            new Translation3d(Units.inchesToMeters(8), Units.inchesToMeters(228.42), kSpeakerHeight);
     public static final Translation3d kRedSpeakerToleranceTranslation = new Translation3d(
             kFieldLongLengthMeters - kBlueSpeakerToleranceTranslation.getX(),
             kBlueSpeakerToleranceTranslation.getY(),

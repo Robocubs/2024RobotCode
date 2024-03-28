@@ -12,7 +12,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.RawSubscriber;
 import edu.wpi.first.networktables.TimestampedRaw;
-import edu.wpi.first.wpilibj.RobotController;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
@@ -63,11 +62,8 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
 
     @Override
     public void updateInputs(AprilTagInputs inputs) {
-        var heartbeatAtomic = mHeartbeatSubscriber.getAtomic();
-        var heartbeat = (int) heartbeatAtomic.value;
-        inputs.isConnected = (heartbeat >= mLastHeartbeat)
-                && (heartbeat != 0)
-                && (RobotController.getFPGATime() - heartbeatAtomic.timestamp < 1500000);
+        var heartbeat = (int) mHeartbeatSubscriber.getAtomic().value;
+        inputs.isConnected = heartbeat > 0 && (heartbeat - mLastHeartbeat < 1000000);
         mLastHeartbeat = heartbeat;
 
         inputs.fps = (int) mFpsSubscriber.get();

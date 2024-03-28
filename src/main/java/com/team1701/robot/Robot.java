@@ -8,19 +8,16 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import com.team1701.lib.commands.CommandLogger;
-import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.states.RobotState.ScoringMode;
-import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -31,7 +28,6 @@ public class Robot extends LoggedRobot {
     private Optional<Command> mAutonomousCommand = Optional.empty();
     private RobotContainer mRobotContainer;
     private Command mZeroCommand;
-    private double mLastTimestamp = 0;
 
     @Override
     public void robotInit() {
@@ -70,13 +66,9 @@ public class Robot extends LoggedRobot {
                 break;
         }
 
-        // Default to blue alliance in sim
-        if (Configuration.getMode() == Mode.SIMULATION) {
-            DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
-        }
-
         // Start AdvantageKit logger
         setUseTiming(Configuration.getMode() != Configuration.Mode.REPLAY);
+        LogTable.disableProtobufWarning();
         Logger.start();
 
         // Build robot container
@@ -103,10 +95,6 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().run();
         CommandLogger.getInstance().periodic();
         mRobotContainer.getRobotState().periodic();
-
-        var timestamp = Timer.getFPGATimestamp();
-        Logger.recordOutput("Robot/LoopDt", timestamp - mLastTimestamp);
-        mLastTimestamp = timestamp;
     }
 
     @Override
