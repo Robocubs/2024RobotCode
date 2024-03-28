@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO.AprilTagInputs;
+import com.team1701.robot.Constants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -149,6 +150,8 @@ public class AprilTagCamera {
                 lowestAmbiguityTarget.bestCameraToTarget.getTranslation().getNorm());
 
         // Don't trust single-target rotations at all
+        // Trust XY in general much less
+        stdDevs.times(Constants.Vision.kSingleTargetStdDevScalar);
         stdDevs.set(2, 0, Double.POSITIVE_INFINITY);
 
         Logger.recordOutput(mLoggingPrefix + "StdDev", stdDevs.getData());

@@ -112,7 +112,7 @@ public final class Constants {
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                double coordScalar = 1.5;
+                double coordScalar = 10;
                 double angleScalar = 1.5;
                 for (double[] pair : kMeasuredDistanceToXStdDevValues) {
                     kVisionXStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
@@ -134,6 +134,7 @@ public final class Constants {
         public static final double kMaxAreaFitInFrame = 0.0;
         public static final long[] kValidOnboardIds = {0, 2};
         public static final String[] kBusKeys = {"FL:fc8", "FR:xhci", "BL:fc8", "BR:xhci", "Sniper:fc8"};
+        public static final double kSingleTargetStdDevScalar = 100;
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
