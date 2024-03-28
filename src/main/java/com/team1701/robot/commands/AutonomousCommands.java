@@ -264,6 +264,10 @@ public class AutonomousCommands {
         return ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState);
     }
 
+    private Command pauseDrive(String pathName) {
+        return new PauseDrive(mDrive, mRobotState, () -> getFirstPose(pathName));
+    }
+
     public AutonomousCommand demo() {
         var command = loggedSequence(
                         print("Starting demo"),
@@ -477,8 +481,6 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    /* Phase 2 Autons */
-
     public AutonomousCommand greedyMiddle() {
         var command = loggedSequence(
                         print("Started greedy middle auto"),
@@ -500,15 +502,19 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
+    /* Phase 2 Autons */
+
     public AutonomousCommand source54CSeek() {
         var command = loggedSequence(
                         print("Started source 54C seek auto"),
                         driveToPoseWhileShooting(
                                 getFirstPose("Source54CSeek.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
                         followChoreoPathAndSeekNote("Source54CSeek.2"),
+                        pauseDrive("Source54CSeek.3"),
                         followChoreoPathAndPreWarm("Source54CSeek.3"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("Source54CSeek.4"),
+                        pauseDrive("Source54CSeek.5"),
                         followChoreoPathAndPreWarm("Source54CSeek.5"),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("Source54CSeek.6"),
