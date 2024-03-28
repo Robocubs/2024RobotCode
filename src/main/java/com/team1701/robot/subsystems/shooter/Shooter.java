@@ -203,7 +203,6 @@ public class Shooter extends SubsystemBase {
             mLowerRollerSlewRateLimiter.reset(mLowerShooterMotorInputs.velocityRadiansPerSecond);
         }
 
-        Logger.recordOutput("Shooter/calculatedAngle", angle);
         Logger.recordOutput("Shooter/calculatedAngleModulus", mAngle);
         Logger.recordOutput("Shooter/mech", mShooterMechanism);
     }
@@ -306,13 +305,13 @@ public class Shooter extends SubsystemBase {
     public void stopUpperRoller() {
         mUpperRollerMotorIO.stopMotor();
         mUpperRollerStopped = true;
-        Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", 0);
+        Logger.recordOutput("Shooter/Motors/UpperRoller/DemandRadiansPerSecond", 0.0);
     }
 
     public void stopLowerRoller() {
         mLowerRollerMotorIO.stopMotor();
         mLowerRollerStopped = true;
-        Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", 0);
+        Logger.recordOutput("Shooter/Motors/LowerRoller/DemandRadiansPerSecond", 0.0);
     }
 
     public void stopRotation() {
