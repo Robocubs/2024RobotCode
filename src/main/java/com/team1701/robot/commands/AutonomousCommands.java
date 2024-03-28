@@ -526,9 +526,8 @@ public class AutonomousCommands {
     public AutonomousCommand amp123Amp() {
         var command = loggedSequence(
                         print("Started Amp123Seek auto"),
-                        followChoreoPathAndShoot("Amp123Amp.1", true, 1.0),
-                        forceShoot(),
-                        followChoreoPathAndSeekNote("Amp123Amp.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Amp123Amp.1"),
                         pauseDrive("Amp123Amp.3"),
                         followChoreoPathAndPreWarm("Amp123Amp.3"),
                         aimAndShoot(),
@@ -582,7 +581,29 @@ public class AutonomousCommands {
                         followChoreoPathAndSeekNote("Source543Stage.6"),
                         followChoreoPathAndPreWarm("Source543Stage.7"),
                         aimAndShoot())
-                .withName("Source453seekAuto");
+                .withName("Source453stageAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand centerB231Center() {
+        var command = loggedSequence(
+                        print("Started centerB231Stage auto"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterB231Center.1", false, false),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB231Center.2"),
+                        pauseDrive("CenterB231Center.3"),
+                        followChoreoPathAndPreWarm("CenterB231Center.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB231Center.4"),
+                        pauseDrive("CenterB231Center.5"),
+                        followChoreoPathAndPreWarm("CenterB231Center.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB231Center.6"),
+                        pauseDrive("CenterB231Center.7"),
+                        followChoreoPathAndPreWarm("CenterB231Center.7"),
+                        aimAndShoot())
+                .withName("Center B231 Stage Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }
