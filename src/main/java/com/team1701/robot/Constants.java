@@ -241,8 +241,9 @@ public final class Constants {
         public static final LoggedTunableNumber kSteerKp = new LoggedTunableNumber("Drive/Module/SteerKp");
         public static final LoggedTunableNumber kSteerKd = new LoggedTunableNumber("Drive/Module/SteerKd");
 
-        public static final double kPathTranslationKp = 4.0;
-        public static final double kPathRotationKp = 2.0;
+        public static final double kPathTranslationKp = 6.0;
+        public static final double kPathTranslationKd = 0.5;
+        public static final double kPathRotationKp = 6.0;
 
         public static final HolonomicPathFollowerConfig kPathFollowerConfig;
 

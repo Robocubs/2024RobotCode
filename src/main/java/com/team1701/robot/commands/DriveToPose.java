@@ -39,9 +39,9 @@ public class DriveToPose extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "TranslationKi", 0.0);
     private static final LoggedTunableNumber kTranslationKd =
             new LoggedTunableNumber(kLoggingPrefix + "TranslationKd", 0.0);
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 4.0);
+    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
-    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
+    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.5);
     private static final LoggedTunableNumber kTranslationToleranceMeters =
             new LoggedTunableNumber(kLoggingPrefix + "TranslationToleranceMeters", 0.01);
     private static final LoggedTunableNumber kRotationToleranceRadians =

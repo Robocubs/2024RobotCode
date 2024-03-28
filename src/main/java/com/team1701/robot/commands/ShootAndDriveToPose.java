@@ -115,7 +115,7 @@ public class ShootAndDriveToPose extends Command {
         Translation2d velocity;
 
         mAtTranslation =
-                GeometryUtil.isNear(mTargetPoseSupplier.get().getTranslation(), currentPose.getTranslation(), .01);
+                GeometryUtil.isNear(mTargetPoseSupplier.get().getTranslation(), currentPose.getTranslation(), .02);
 
         if (mAtTranslation) {
             velocity = new Translation2d();

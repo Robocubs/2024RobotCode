@@ -58,8 +58,8 @@ public class DriveChoreoTrajectory extends Command {
         mEventMarkers = eventMarkers;
         mFlippedTrajectory = trajectory.flipped();
         mControlFunction = Choreo.choreoSwerveController(
-                new PIDController(Constants.Drive.kPathTranslationKp, 0.0, 0.0),
-                new PIDController(Constants.Drive.kPathTranslationKp, 0.0, 0.0),
+                new PIDController(Constants.Drive.kPathTranslationKp, 0.0, Constants.Drive.kPathTranslationKd),
+                new PIDController(Constants.Drive.kPathTranslationKp, 0.0, Constants.Drive.kPathTranslationKd),
                 new PIDController(Constants.Drive.kPathRotationKp, 0.0, 0.0));
         mPoseMutator = poseMutator;
         mResetPose = resetPose;
