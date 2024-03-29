@@ -606,4 +606,26 @@ public class AutonomousCommands {
                 .withName("Center B231 Stage Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
+
+    public AutonomousCommand centerB21AAmp() {
+        var command = loggedSequence(
+                        print("Started centerB21AAmp auto"),
+                        followChoreoPathAndPreWarm("CenterB21AAmp.1", true, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterB21AAmp.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterB21AAmp.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB21AAmp.4"),
+                        pauseDrive("CenterB21AAmp.5"),
+                        followChoreoPathAndPreWarm("CenterB21AAmp.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB21AAmp.6"),
+                        pauseDrive("CenterB21AAmp.7"),
+                        followChoreoPathAndPreWarm("CenterB21AAmp.7"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB21AAmp.8"))
+                .withName("Center B21A Amp Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
 }
