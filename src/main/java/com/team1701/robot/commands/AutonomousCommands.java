@@ -607,25 +607,25 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public AutonomousCommand centerB21AAmp() {
+    public AutonomousCommand centerBA123Amp() {
         var command = loggedSequence(
                         print("Started centerB21AAmp auto"),
-                        followChoreoPathAndPreWarm("CenterB21AAmp.1", true, false),
+                        followChoreoPathAndPreWarm("CenterBA123Amp.1", true, false),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("CenterB21AAmp.2"),
+                        followChoreoPathAndPreWarm("CenterBA123Amp.2"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("CenterB21AAmp.3"),
+                        followChoreoPathAndPreWarm("CenterBA123Amp.3"),
                         aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterB21AAmp.4"),
-                        pauseDrive("CenterB21AAmp.5"),
-                        followChoreoPathAndPreWarm("CenterB21AAmp.5"),
+                        followChoreoPathAndSeekNote("CenterBA123Amp.4"),
+                        pauseDrive("CenterBA123Amp.5"),
+                        followChoreoPathAndPreWarm("CenterBA123Amp.5"),
                         aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterB21AAmp.6"),
-                        pauseDrive("CenterB21AAmp.7"),
-                        followChoreoPathAndPreWarm("CenterB21AAmp.7"),
+                        followChoreoPathAndSeekNote("CenterBA123Amp.6"),
+                        pauseDrive("CenterBA123Amp.7"),
+                        followChoreoPathAndPreWarm("CenterBA123Amp.7"),
                         aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterB21AAmp.8"))
-                .withName("Center B21A Amp Auto");
+                        followChoreoPathAndSeekNote("CenterBA123Amp.8"))
+                .withName("Center BA123 Amp Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }
