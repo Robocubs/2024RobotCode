@@ -403,17 +403,23 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public AutonomousCommand straightToMiddle() {
+    public AutonomousCommand source4321CenterStage() {
         var command = loggedSequence(
-                        print("Started straight to middle auto"),
+                        print("Started source 4321 center stage auto"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("StraightToMiddle.1", false, false),
+                        followChoreoPathAndSeekNote("Source4321CenterStage.1"),
+                        pauseDrive("Source4321CenterStage.2"),
+                        followChoreoPathAndPreWarm("Source4321CenterStage.2"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("StraightToMiddle.2"),
+                        followChoreoPathAndSeekNote("Source4321CenterStage.3"),
+                        pauseDrive("Source4321CenterStage.4"),
+                        followChoreoPathAndPreWarm("Source4321CenterStage.4"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("StraightToMiddle.3"),
+                        followChoreoPathAndSeekNote("Source4321CenterStage.5"),
+                        pauseDrive("Source4321CenterStage.6"),
+                        followChoreoPathAndPreWarm("Source4321CenterStage.6"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("StraightToMiddle.4"))
+                        followChoreoPathAndSeekNote("Source4321CenterStage.7"))
                 .withName("StraightToMiddleAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
@@ -581,6 +587,7 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("Source543Stage.5"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("Source543Stage.6"),
+                        pauseDrive("Source543Stage.6"),
                         followChoreoPathAndPreWarm("Source543Stage.7"),
                         aimAndShoot())
                 .withName("Source453stageAuto");

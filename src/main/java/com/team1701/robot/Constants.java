@@ -453,9 +453,9 @@ public final class Constants {
             {3.5, .64},
             {3.8, .59},
             {4.1, .56},
-            {4.7, .515},
-            {5.1, .50},
-            {5.9, .47}
+            {4.7, .525},
+            {5.1, .52},
+            {5.9, .49}
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {

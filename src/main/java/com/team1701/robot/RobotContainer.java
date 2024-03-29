@@ -558,7 +558,7 @@ public class RobotContainer {
         var greedyMiddleCommand = commands.greedyMiddle();
         var sourceMiddleThreeCommand = commands.sourceSideMiddleThree();
         var fivePieceAmpCommand = commands.fivePieceAmp();
-        var straightToMiddleCommand = commands.straightToMiddle();
+        var straightToMiddleCommand = commands.source4321CenterStage();
         var sourceFourUnderStage = commands.sourceFourUnderStage();
         var fiveAmpSideMove = commands.fivePieceAmpAndMove();
         var centerMove = commands.centerMove();
