@@ -112,7 +112,7 @@ public final class Constants {
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                double coordScalar = 10;
+                double coordScalar = 1.5;
                 double angleScalar = 1.5;
                 for (double[] pair : kMeasuredDistanceToXStdDevValues) {
                     kVisionXStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
@@ -134,7 +134,7 @@ public final class Constants {
         public static final double kMaxAreaFitInFrame = 0.0;
         public static final long[] kValidOnboardIds = {0, 2};
         public static final String[] kBusKeys = {"FL:fc8", "FR:xhci", "BL:fc8", "BR:xhci", "Sniper:fc8"};
-        public static final double kSingleTargetStdDevScalar = 100;
+        public static final double kSingleTargetStdDevScalar = 50;
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
@@ -450,32 +450,32 @@ public final class Constants {
         public static final double[][] kShooterDistanceToAngleValues = {
             {2.3, 1},
             {2.7, .8},
-            {3.5, .63},
-            {3.8, .58},
-            {4.1, .55},
-            {4.7, .505},
-            {5.1, .49},
-            {5.9, .46}
+            {3.5, .64},
+            {3.8, .59},
+            {4.1, .56},
+            {4.7, .515},
+            {5.1, .50},
+            {5.9, .47}
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
-            {2.3, 410},
-            {2.7, 410},
-            {3.5, 440},
-            {3.8, 460},
-            {4.1, 470},
-            {4.7, 510},
-            {5.1, 550},
-            {5.9, 590}
+            {2.3, 430},
+            {2.7, 440},
+            {3.5, 470},
+            {3.8, 490},
+            {4.1, 500},
+            {4.7, 540},
+            {5.1, 580},
+            {5.9, 630}
         };
 
         public static final double[][] kShooterAngleToHeadingOffset = {
-            {0.955, -13},
-            {0.835, -11},
-            {0.687, -10},
-            {0.564, -9},
-            {0.500, -7},
-            {0.467, -5},
+            {0.955, -10},
+            {0.835, -8},
+            {0.687, -7},
+            {0.564, -6},
+            {0.500, -4},
+            {0.467, -3},
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {
@@ -483,7 +483,7 @@ public final class Constants {
         };
 
         public static final double[][] kPassingDistanceToSpeedValues = {
-            {11.53, 490}, {10.3, 450}, {9.02, 415}, {7.15, 350}, {6.15, 315}, {5, 200}, {0, 100}
+            {11.53, 510}, {10.3, 470}, {9.02, 435}, {7.15, 370}, {6.15, 335}, {5, 220}, {0, 120}
         };
 
         // Regression of Collected (a.k.a used angle) vs Calculated Angle
