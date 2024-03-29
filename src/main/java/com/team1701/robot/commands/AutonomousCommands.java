@@ -486,17 +486,19 @@ public class AutonomousCommands {
                         print("Started greedy middle auto"),
                         followChoreoPathAndPreWarm("GreedyMiddle.1", true, false),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.2", false, false),
+                        followChoreoPathAndPreWarm("GreedyMiddle.2"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.3", false, false),
+                        followChoreoPathAndPreWarm("GreedyMiddle.3"),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("GreedyMiddle.4"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.5"),
-                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("GreedyMiddle.5"),
                         followChoreoPathAndPreWarm("GreedyMiddle.6"),
                         aimAndShoot(),
-                        followChoreoPath("GreedyMiddle.7"))
+                        followChoreoPathAndSeekNote("GreedyMiddle.7"),
+                        followChoreoPathAndPreWarm("GreedyMiddle.8"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("GreedyMiddle.9"))
                 .withName("GreedyMiddleAuto");
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());

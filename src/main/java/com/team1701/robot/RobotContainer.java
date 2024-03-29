@@ -549,9 +549,9 @@ public class RobotContainer {
         // TODO: Create wrapper class for autonomous chooser
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         var demoCommand = commands.demo();
-        var fourPieceCommand = commands.fourPiece();
-        var fourPieceAmpSideCommand = commands.fourPieceAmp();
-        var sourceFourPieceTwoOneCommand = commands.sourceFourPieceTwoOne();
+        // var fourPieceCommand = commands.fourPiece();
+        // var fourPieceAmpSideCommand = commands.fourPieceAmp();
+        // var sourceFourPieceTwoOneCommand = commands.sourceFourPieceTwoOne();
         var shootAndBackupCommand = commands.shootAndBackup();
         var middleToMiddleCommand = commands.middleToMiddle();
         var fiveMiddleToMiddleCommand = commands.fiveMiddleToMiddle();
@@ -572,9 +572,9 @@ public class RobotContainer {
         var centerBA123Amp = commands.centerBA123Amp();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
-        mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
-        mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
-        mAutonomousPaths.put("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.path());
+        // mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
+        // mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
+        // mAutonomousPaths.put("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.path());
         mAutonomousPaths.put("Middle To Middle Auto", middleToMiddleCommand.path());
         mAutonomousPaths.put("Five Middle To Middle Auto", fiveMiddleToMiddleCommand.path());
         mAutonomousPaths.put("Greedy Middle Auto", greedyMiddleCommand.path());
@@ -594,9 +594,9 @@ public class RobotContainer {
         mAutonomousPaths.put("Center BA123 Amp", centerBA123Amp.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
-        autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
-        autonomousModeChooser.addOption("Four Piece Amp Side", fourPieceAmpSideCommand.command());
-        autonomousModeChooser.addOption("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.command());
+        // autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
+        // autonomousModeChooser.addOption("Four Piece Amp Side", fourPieceAmpSideCommand.command());
+        // autonomousModeChooser.addOption("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.command());
         autonomousModeChooser.addOption("Middle To Middle Auto", middleToMiddleCommand.command());
         autonomousModeChooser.addOption("Five Middle To Middle Auto", fiveMiddleToMiddleCommand.command());
         autonomousModeChooser.addOption("Greedy Middle Auto", greedyMiddleCommand.command());
