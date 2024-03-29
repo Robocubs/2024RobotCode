@@ -466,16 +466,18 @@ public final class Constants {
             {4.1, 500},
             {4.7, 540},
             {5.1, 580},
-            {5.9, 630}
+            {5.9, 650}
         };
 
-        public static final double[][] kShooterAngleToHeadingOffset = {
-            {0.955, -10},
-            {0.835, -8},
-            {0.687, -7},
-            {0.564, -6},
-            {0.500, -4},
-            {0.467, -3},
+        public static final double[][] kShooterValuesToHeadingOffset = {
+            {232, -10},
+            {307, -8.25},
+            {377, -7.25},
+            {407, -6.5},
+            {424, -6},
+            {470, -5},
+            {508, -4},
+            {580, -3},
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {
@@ -508,7 +510,7 @@ public final class Constants {
                 kPassingSpeedInterpolator.put(pair[0], pair[1]);
             }
 
-            for (double[] pair : kShooterAngleToHeadingOffset) {
+            for (double[] pair : kShooterValuesToHeadingOffset) {
                 kShooterHeadingOffsetInterpolator.put(pair[0], Units.degreesToRadians(pair[1]));
             }
 
