@@ -637,4 +637,26 @@ public class AutonomousCommands {
                 .withName("Center BA123 Amp Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
+
+    public AutonomousCommand centerBC123center() {
+        var command = loggedSequence(
+                        print("Started center BC123 center auto"),
+                        followChoreoPathAndPreWarm("CenterBC123Center.1", true, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterBC123Center.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterBC123Center.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterBC123Center.4"),
+                        followChoreoPathAndPreWarm("CenterBC123Center.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterBC123Center.6"),
+                        pauseDrive("CenterBC123Center.7"),
+                        followChoreoPathAndPreWarm("CenterBC123Center.7"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterBC123Center.8"))
+                .withName("CenterBC123CenterAuto");
+
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
 }

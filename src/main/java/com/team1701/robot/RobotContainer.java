@@ -570,6 +570,7 @@ public class RobotContainer {
         var source543Stage = commands.source543Stage();
         var centerB231Center = commands.centerB231Center();
         var centerBA123Amp = commands.centerBA123Amp();
+        var centerBC123center = commands.centerBC123center();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         // mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
@@ -592,6 +593,7 @@ public class RobotContainer {
         mAutonomousPaths.put("Source 543 Stage", source543Stage.path());
         mAutonomousPaths.put("Center B231 Center", centerB231Center.path());
         mAutonomousPaths.put("Center BA123 Amp", centerBA123Amp.path());
+        mAutonomousPaths.put("Center BC123 Center", centerBC123center.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         // autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
@@ -613,6 +615,7 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Source 543 Stage", source543Stage.command());
         autonomousModeChooser.addOption("Center B231 Center", centerB231Center.command());
         autonomousModeChooser.addOption("Center BA123 Amp", centerBA123Amp.command());
+        autonomousModeChooser.addOption("Center BC123 Center", centerBC123center.command());
 
         autonomousModeChooser.addOption(
                 "Drive Characterization",

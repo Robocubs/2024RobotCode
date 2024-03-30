@@ -163,15 +163,5 @@
       "timestamp": 1.4593709590242927
     }
   ],
-  "eventMarkers": [
-    {
-      "timestamp": 1.4593709590242927,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "seek8"
-        }
-      }
-    }
-  ]
+  "eventMarkers": []
 }

@@ -2188,33 +2188,5 @@
       "timestamp": 10.351338509190118
     }
   ],
-  "eventMarkers": [
-    {
-      "timestamp": 1.7307703521801985,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "seek4"
-        }
-      }
-    },
-    {
-      "timestamp": 4.062784298941525,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "seek6"
-        }
-      }
-    },
-    {
-      "timestamp": 7.015567615438414,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "seek8"
-        }
-      }
-    }
-  ]
+  "eventMarkers": []
 }
