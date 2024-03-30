@@ -450,12 +450,13 @@ public final class Constants {
         public static final double[][] kShooterDistanceToAngleValues = {
             {2.3, 1},
             {2.7, .8},
-            {3.5, .64},
-            {3.8, .59},
-            {4.1, .56},
-            {4.7, .525},
-            {5.1, .52},
-            {5.9, .49}
+            {3.5, .62}, // .625
+            {3.8, .58}, // .58
+            {4.1, .57}, // .57
+            {4.28, .53},
+            {4.7, .55}, // .505
+            {5.1, .525} // .495
+            // {5.9, .465}
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
@@ -464,9 +465,10 @@ public final class Constants {
             {3.5, 470},
             {3.8, 490},
             {4.1, 500},
+            {4.28, 520},
             {4.7, 540},
-            {5.1, 580},
-            {5.9, 650}
+            {5.1, 580}
+            // {5.9, 650}
         };
 
         public static final double[][] kShooterValuesToHeadingOffset = {
