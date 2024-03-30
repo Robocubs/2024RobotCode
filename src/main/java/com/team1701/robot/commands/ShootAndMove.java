@@ -45,7 +45,7 @@ public class ShootAndMove extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "MaxAngularAcceleration", kMaxAngularVelocity.get() / 2.0);
 
     private static final LoggedTunableNumber kAngleToleranceRadians =
-            new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.005);
+            new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.01);
     private static final LoggedTunableNumber kSpeedToleranceRadiansPerSecond =
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 25.0);
     private Rotation2d headingTolerance;
