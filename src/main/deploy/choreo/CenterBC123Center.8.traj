@@ -768,20 +768,11 @@
   ],
   "eventMarkers": [
     {
-      "timestamp": 0.941835559998232,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": ""
-        }
-      }
-    },
-    {
       "timestamp": 0.9823688154516006,
       "command": {
         "type": "named",
         "data": {
-          "name": "Seek13"
+          "name": "seek3"
         }
       }
     }

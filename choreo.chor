@@ -17141,8 +17141,45 @@
             "defaultControlIntervalCount": 40,
             "usesDefaultFieldObstacles": true,
             "circleObstacles": [],
-            "eventMarkers": [],
-            "isTrajectoryStale": true
+            "eventMarkers": [
+                {
+                    "name": "Seek 1",
+                    "target": 7,
+                    "targetTimestamp": 6.884101605738314,
+                    "offset": -0.9,
+                    "command": {
+                        "type": "named",
+                        "data": {
+                            "name": "seek1"
+                        }
+                    }
+                },
+                {
+                    "name": "Seek 2",
+                    "target": 10,
+                    "targetTimestamp": 10.438694827296768,
+                    "offset": -0.9,
+                    "command": {
+                        "type": "named",
+                        "data": {
+                            "name": "seek2"
+                        }
+                    }
+                },
+                {
+                    "name": "Seek 3",
+                    "target": 14,
+                    "targetTimestamp": 14.179848493639675,
+                    "offset": -1,
+                    "command": {
+                        "type": "named",
+                        "data": {
+                            "name": "seek3"
+                        }
+                    }
+                }
+            ],
+            "isTrajectoryStale": false
         },
         "StraightToMiddle": {
             "waypoints": [
@@ -31038,7 +31075,7 @@
                 {
                     "name": "Seek 5",
                     "target": 1,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 0.7274080196754866,
                     "offset": 1.2,
                     "command": {
                         "type": "named",
@@ -31050,7 +31087,7 @@
                 {
                     "name": "Seek 4",
                     "target": 5,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 6.177029284915445,
                     "offset": 0.2,
                     "command": {
                         "type": "named",
@@ -33553,43 +33590,43 @@
             "circleObstacles": [],
             "eventMarkers": [
                 {
-                    "name": "Seek 4",
+                    "name": "Seek 1",
                     "target": 3,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 1.5307703521801985,
                     "offset": 0.2,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "seek4"
+                            "name": "seek1"
                         }
                     }
                 },
                 {
-                    "name": "Seek6",
+                    "name": "Seek 2",
                     "target": 5,
-                    "targetTimestamp": null,
-                    "offset": 0,
+                    "targetTimestamp": 4.062784298941525,
+                    "offset": 0.6,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "seek6"
+                            "name": "seek2"
                         }
                     }
                 },
                 {
-                    "name": "Seek8",
+                    "name": "Seek 3",
                     "target": 7,
-                    "targetTimestamp": null,
-                    "offset": 0,
+                    "targetTimestamp": 7.015567615438414,
+                    "offset": 0.6,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "seek8"
+                            "name": "seek3"
                         }
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "CenterB342Stage": {
             "waypoints": [
@@ -36206,41 +36243,41 @@
                 {
                     "name": "Seek 3",
                     "target": 2,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 2.0884517694222833,
                     "offset": 0.1,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek3"
+                            "name": "seek3"
                         }
                     }
                 },
                 {
-                    "name": "Seek 5",
+                    "name": "Seek 4",
                     "target": 5,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 4.675476541035631,
                     "offset": 1,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek5"
+                            "name": "seek4"
                         }
                     }
                 },
                 {
-                    "name": "Seek 9",
+                    "name": "Seek 2",
                     "target": 8,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 8.986538727527956,
                     "offset": 0.15,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek9"
+                            "name": "seek2"
                         }
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "Source543Stage": {
             "waypoints": [
@@ -38299,7 +38336,7 @@
                 {
                     "name": "Seek 5",
                     "target": 1,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 0.7274080859352318,
                     "offset": 1.2,
                     "command": {
                         "type": "named",
@@ -38311,7 +38348,7 @@
                 {
                     "name": "Seek 4",
                     "target": 5,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 5.490990009850586,
                     "offset": 0.2,
                     "command": {
                         "type": "named",
@@ -38321,19 +38358,19 @@
                     }
                 },
                 {
-                    "name": "Seek 10",
+                    "name": "Seek 3",
                     "target": 9,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 9.39461994279796,
                     "offset": 0.1,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "seek10"
+                            "name": "seek3"
                         }
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "CenterB231Center": {
             "waypoints": [
@@ -40753,43 +40790,43 @@
             "circleObstacles": [],
             "eventMarkers": [
                 {
-                    "name": "Seek 3",
+                    "name": "Seek 2",
                     "target": 2,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 2.0296183061977198,
                     "offset": 0.1,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek3"
+                            "name": "seek2"
                         }
                     }
                 },
                 {
-                    "name": "Seek 7",
+                    "name": "Seek 3",
                     "target": 6,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 5.374975535372661,
                     "offset": 0.2,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek7"
+                            "name": "seek3"
                         }
                     }
                 },
                 {
-                    "name": "Seek10",
+                    "name": "Seek 1",
                     "target": 9,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 8.517826841948144,
                     "offset": 0.8,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek10"
+                            "name": "seek1"
                         }
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "CenterBA123Amp": {
             "waypoints": [
@@ -43484,38 +43521,38 @@
             "circleObstacles": [],
             "eventMarkers": [
                 {
-                    "name": "Seek 5",
+                    "name": "Seek 1",
                     "target": 5,
                     "targetTimestamp": 4.7209703862836205,
                     "offset": -0.9,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "seek5"
+                            "name": "seek1"
                         }
                     }
                 },
                 {
-                    "name": "Seek 7",
+                    "name": "Seek 2",
                     "target": 8,
                     "targetTimestamp": 8.35767280274142,
                     "offset": -0.9,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek7"
+                            "name": "seek2"
                         }
                     }
                 },
                 {
-                    "name": "Seek 10",
+                    "name": "Seek 3",
                     "target": 12,
                     "targetTimestamp": 12.154706605587704,
                     "offset": -0.9,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek10"
+                            "name": "seek3"
                         }
                     }
                 }
@@ -46536,9 +46573,33 @@
             "circleObstacles": [],
             "eventMarkers": [
                 {
-                    "name": "Seek 2",
+                    "name": "Seek 4",
                     "target": 1,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 1.4155699836571218,
+                    "offset": 0.1,
+                    "command": {
+                        "type": "named",
+                        "data": {
+                            "name": "seek4"
+                        }
+                    }
+                },
+                {
+                    "name": "Seek 3",
+                    "target": 4,
+                    "targetTimestamp": 5.080958245616397,
+                    "offset": 0.1,
+                    "command": {
+                        "type": "named",
+                        "data": {
+                            "name": "seek3"
+                        }
+                    }
+                },
+                {
+                    "name": "Seek 2",
+                    "target": 8,
+                    "targetTimestamp": 8.543433031529885,
                     "offset": 0.1,
                     "command": {
                         "type": "named",
@@ -46548,43 +46609,19 @@
                     }
                 },
                 {
-                    "name": "Seek 5",
-                    "target": 4,
-                    "targetTimestamp": null,
-                    "offset": 0.1,
-                    "command": {
-                        "type": "named",
-                        "data": {
-                            "name": "Seek5"
-                        }
-                    }
-                },
-                {
-                    "name": "Seek 9",
-                    "target": 8,
-                    "targetTimestamp": null,
-                    "offset": 0.1,
-                    "command": {
-                        "type": "named",
-                        "data": {
-                            "name": "seek9"
-                        }
-                    }
-                },
-                {
-                    "name": "Seek 11",
+                    "name": "Seek 1",
                     "target": 11,
-                    "targetTimestamp": null,
+                    "targetTimestamp": 11.277500366885354,
                     "offset": 0.8,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek11"
+                            "name": "seek1"
                         }
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "CenterBC123Center": {
             "waypoints": [
@@ -49632,55 +49669,43 @@
             "circleObstacles": [],
             "eventMarkers": [
                 {
-                    "name": "Marker",
-                    "target": 12,
-                    "targetTimestamp": 11.509515321135382,
-                    "offset": 0,
-                    "command": {
-                        "type": "named",
-                        "data": {
-                            "name": ""
-                        }
-                    }
-                },
-                {
-                    "name": "Seek 6",
+                    "name": "Seek 1",
                     "target": 6,
                     "targetTimestamp": 5.254301688687392,
                     "offset": -0.9,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "seek6"
+                            "name": "seek1"
                         }
                     }
                 },
                 {
-                    "name": "Seek 9",
+                    "name": "Seek 2",
                     "target": 9,
                     "targetTimestamp": 8.808894910245844,
                     "offset": -0.85,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek9"
+                            "name": "seek2"
                         }
                     }
                 },
                 {
-                    "name": "Seek 13",
+                    "name": "Seek 3",
                     "target": 13,
                     "targetTimestamp": 12.55004857658875,
                     "offset": -1,
                     "command": {
                         "type": "named",
                         "data": {
-                            "name": "Seek13"
+                            "name": "seek3"
                         }
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         }
     },
     "splitTrajectoriesAtStopPoints": true,

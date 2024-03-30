@@ -280,5 +280,15 @@
       "timestamp": 2.1163748410127137
     }
   ],
-  "eventMarkers": []
+  "eventMarkers": [
+    {
+      "timestamp": 1.2,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "seek5"
+        }
+      }
+    }
+  ]
 }

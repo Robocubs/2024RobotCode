@@ -475,7 +475,7 @@
       "command": {
         "type": "named",
         "data": {
-          "name": "Seek7"
+          "name": "seek2"
         }
       }
     }

@@ -766,5 +766,15 @@
       "timestamp": 1.9823688154516006
     }
   ],
-  "eventMarkers": []
+  "eventMarkers": [
+    {
+      "timestamp": 0.9823688154516006,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "seek3"
+        }
+      }
+    }
+  ]
 }

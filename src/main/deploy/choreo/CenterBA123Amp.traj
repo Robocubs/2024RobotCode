@@ -2365,7 +2365,7 @@
       "command": {
         "type": "named",
         "data": {
-          "name": "seek5"
+          "name": "seek1"
         }
       }
     },
@@ -2374,7 +2374,7 @@
       "command": {
         "type": "named",
         "data": {
-          "name": "Seek7"
+          "name": "seek2"
         }
       }
     },
@@ -2383,7 +2383,7 @@
       "command": {
         "type": "named",
         "data": {
-          "name": "Seek10"
+          "name": "seek3"
         }
       }
     }
