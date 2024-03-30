@@ -28,6 +28,7 @@ public class Robot extends LoggedRobot {
     private Optional<Command> mAutonomousCommand = Optional.empty();
     private RobotContainer mRobotContainer;
     private Command mZeroCommand;
+    private boolean mHasZeroed = false;
 
     @Override
     public void robotInit() {
@@ -107,7 +108,10 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void disabledExit() {
-        mZeroCommand.schedule();
+        if (!mHasZeroed) {
+            mZeroCommand.schedule();
+            mHasZeroed = true;
+        }
     }
 
     @Override
