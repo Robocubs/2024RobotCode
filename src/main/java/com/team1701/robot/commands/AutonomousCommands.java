@@ -420,7 +420,7 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("Source4321CenterStage.6"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("Source4321CenterStage.7"))
-                .withName("StraightToMiddleAuto");
+                .withName("Source 4321 CenterStage Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
