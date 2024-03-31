@@ -30,9 +30,11 @@ public class Shoot extends Command {
     private final boolean mWaitForHeading;
     private final boolean mWaitForSpeed;
     private final boolean mWaitForAngle;
+    private final Timer mTimer = new Timer();
 
     private TimeLockedBoolean mLockedReadyToShoot;
     private boolean mShooting;
+    private boolean mStartedWithNote;
 
     public Shoot(Shooter shooter, Indexer indexer, RobotState robotState, boolean waitForHeading) {
         this(shooter, indexer, robotState, waitForHeading, true, true);
@@ -60,7 +62,10 @@ public class Shoot extends Command {
     @Override
     public void initialize() {
         mShooting = false;
+        mStartedWithNote = mRobotState.hasNote();
         mLockedReadyToShoot.update(false, Timer.getFPGATimestamp());
+        mTimer.reset();
+        mTimer.start();
     }
 
     @Override
@@ -127,6 +132,7 @@ public class Shoot extends Command {
     @Override
     public void end(boolean interrupted) {
         mShooting = false;
+        mTimer.stop();
 
         mRobotState.setShootingState(ShootingState.kDefault);
         mShooter.stop();
@@ -135,6 +141,7 @@ public class Shoot extends Command {
 
     @Override
     public boolean isFinished() {
-        return mShooting && !mRobotState.hasNote();
+        var doesNotHaveNote = !mRobotState.hasNote() && (mStartedWithNote || mTimer.hasElapsed(0.25));
+        return mShooting && doesNotHaveNote;
     }
 }

@@ -549,27 +549,33 @@ public class RobotContainer {
         // TODO: Create wrapper class for autonomous chooser
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         var demoCommand = commands.demo();
-        var fourPieceCommand = commands.fourPiece();
-        var fourPieceAmpSideCommand = commands.fourPieceAmp();
-        var sourceFourPieceTwoOneCommand = commands.sourceFourPieceTwoOne();
+        // var fourPieceCommand = commands.fourPiece();
+        // var fourPieceAmpSideCommand = commands.fourPieceAmp();
+        // var sourceFourPieceTwoOneCommand = commands.sourceFourPieceTwoOne();
         var shootAndBackupCommand = commands.shootAndBackup();
         var middleToMiddleCommand = commands.middleToMiddle();
         var fiveMiddleToMiddleCommand = commands.fiveMiddleToMiddle();
         var greedyMiddleCommand = commands.greedyMiddle();
         var sourceMiddleThreeCommand = commands.sourceSideMiddleThree();
         var fivePieceAmpCommand = commands.fivePieceAmp();
-        var straightToMiddleCommand = commands.straightToMiddle();
+        var straightToMiddleCommand = commands.source4321CenterStage();
         var sourceFourUnderStage = commands.sourceFourUnderStage();
         var fiveAmpSideMove = commands.fivePieceAmpAndMove();
         var centerMove = commands.centerMove();
         var centerMoveDTP = commands.centerMoveDTP();
         var fiveMiddleMove = commands.fiveMiddleMove();
         var source54CSeek = commands.source54CSeek();
+        var amp123Amp = commands.amp123Amp();
+        var centerB342Stage = commands.centerB342Stage();
+        var source543Stage = commands.source543Stage();
+        var centerB231Center = commands.centerB231Center();
+        var centerBA123Amp = commands.centerBA123Amp();
+        var centerBC123center = commands.centerBC123center();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
-        mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
-        mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
-        mAutonomousPaths.put("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.path());
+        // mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
+        // mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
+        // mAutonomousPaths.put("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.path());
         mAutonomousPaths.put("Middle To Middle Auto", middleToMiddleCommand.path());
         mAutonomousPaths.put("Five Middle To Middle Auto", fiveMiddleToMiddleCommand.path());
         mAutonomousPaths.put("Greedy Middle Auto", greedyMiddleCommand.path());
@@ -582,11 +588,17 @@ public class RobotContainer {
         mAutonomousPaths.put("Five Middle Move", fiveMiddleMove.path());
         mAutonomousPaths.put("Center Move DTP", centerMoveDTP.path());
         mAutonomousPaths.put("Source 54C Seek", source54CSeek.path());
+        mAutonomousPaths.put("Amp123Amp", amp123Amp.path());
+        mAutonomousPaths.put("Center B342 Stage", centerB342Stage.path());
+        mAutonomousPaths.put("Source 543 Stage", source543Stage.path());
+        mAutonomousPaths.put("Center B231 Center", centerB231Center.path());
+        mAutonomousPaths.put("Center BA123 Amp", centerBA123Amp.path());
+        mAutonomousPaths.put("Center BC123 Center", centerBC123center.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
-        autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
-        autonomousModeChooser.addOption("Four Piece Amp Side", fourPieceAmpSideCommand.command());
-        autonomousModeChooser.addOption("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.command());
+        // autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
+        // autonomousModeChooser.addOption("Four Piece Amp Side", fourPieceAmpSideCommand.command());
+        // autonomousModeChooser.addOption("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.command());
         autonomousModeChooser.addOption("Middle To Middle Auto", middleToMiddleCommand.command());
         autonomousModeChooser.addOption("Five Middle To Middle Auto", fiveMiddleToMiddleCommand.command());
         autonomousModeChooser.addOption("Greedy Middle Auto", greedyMiddleCommand.command());
@@ -598,6 +610,12 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Five Middle Move", fiveMiddleMove.command());
         autonomousModeChooser.addOption("Center Move DTP", centerMoveDTP.command());
         autonomousModeChooser.addOption("Source 54C Seek", source54CSeek.command());
+        autonomousModeChooser.addOption("Amp123Amp", amp123Amp.command());
+        autonomousModeChooser.addOption("Center B342 Stage", centerB342Stage.command());
+        autonomousModeChooser.addOption("Source 543 Stage", source543Stage.command());
+        autonomousModeChooser.addOption("Center B231 Center", centerB231Center.command());
+        autonomousModeChooser.addOption("Center BA123 Amp", centerBA123Amp.command());
+        autonomousModeChooser.addOption("Center BC123 Center", centerBC123center.command());
 
         autonomousModeChooser.addOption(
                 "Drive Characterization",

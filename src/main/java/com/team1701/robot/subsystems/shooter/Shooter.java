@@ -80,8 +80,12 @@ public class Shooter extends SubsystemBase {
             this(new ShooterSpeeds(radiansPerSecond), angle);
         }
 
+        @AutoLogOutput
         public Rotation2d releaseAngle() {
-            return Rotation2d.fromRadians(Constants.Shooter.kShooterHeadingOffsetInterpolator.get(angle.getRadians()));
+            var forwardVelocity = speeds.averageSpeed() * Math.cos(angle.getRadians());
+            return Rotation2d.fromRadians(forwardVelocity * -0.00009 + 0.0546);
+            // return
+            // Rotation2d.fromRadians(Constants.Shooter.kShooterHeadingOffsetInterpolator.get(angle.getRadians()));
         }
 
         public Pose2d applyReleaseAngle(Pose2d pose) {

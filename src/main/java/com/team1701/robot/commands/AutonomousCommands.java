@@ -253,7 +253,7 @@ public class AutonomousCommands {
                 .deadlineWith(ShootCommands.shoot(mShooter, mIndexer, mRobotState)
                         .withTimeout(timeout)
                         .andThen(forceShoot(), index()))
-                .withName("FollowChoreoAndShoot");
+                .withName("FollowChoreoAndShootWithTimeout");
     }
 
     private Command forceShoot() {
@@ -262,6 +262,10 @@ public class AutonomousCommands {
 
     private Command aimAndShoot() {
         return ShootCommands.aimAndShootInSpeaker(mShooter, mIndexer, mDrive, mRobotState);
+    }
+
+    private Command pauseDrive(String pathName) {
+        return new PauseDrive(mDrive, mRobotState, () -> getFirstPose(pathName));
     }
 
     public AutonomousCommand demo() {
@@ -399,18 +403,24 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public AutonomousCommand straightToMiddle() {
+    public AutonomousCommand source4321CenterStage() {
         var command = loggedSequence(
-                        print("Started straight to middle auto"),
+                        print("Started source 4321 center stage auto"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("StraightToMiddle.1", false, false),
+                        followChoreoPathAndSeekNote("Source4321CenterStage.1"),
+                        pauseDrive("Source4321CenterStage.2"),
+                        followChoreoPathAndPreWarm("Source4321CenterStage.2"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("StraightToMiddle.2"),
+                        followChoreoPathAndSeekNote("Source4321CenterStage.3"),
+                        pauseDrive("Source4321CenterStage.4"),
+                        followChoreoPathAndPreWarm("Source4321CenterStage.4"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("StraightToMiddle.3"),
+                        followChoreoPathAndSeekNote("Source4321CenterStage.5"),
+                        pauseDrive("Source4321CenterStage.6"),
+                        followChoreoPathAndPreWarm("Source4321CenterStage.6"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("StraightToMiddle.4"))
-                .withName("StraightToMiddleAuto");
+                        followChoreoPathAndSeekNote("Source4321CenterStage.7"))
+                .withName("Source 4321 CenterStage Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
@@ -477,28 +487,30 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    /* Phase 2 Autons */
-
     public AutonomousCommand greedyMiddle() {
         var command = loggedSequence(
                         print("Started greedy middle auto"),
                         followChoreoPathAndPreWarm("GreedyMiddle.1", true, false),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.2", false, false),
+                        followChoreoPathAndPreWarm("GreedyMiddle.2"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.3", false, false),
+                        followChoreoPathAndPreWarm("GreedyMiddle.3"),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("GreedyMiddle.4"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("GreedyMiddle.5"),
-                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("GreedyMiddle.5"),
                         followChoreoPathAndPreWarm("GreedyMiddle.6"),
                         aimAndShoot(),
-                        followChoreoPath("GreedyMiddle.7"))
+                        followChoreoPathAndSeekNote("GreedyMiddle.7"),
+                        followChoreoPathAndPreWarm("GreedyMiddle.8"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("GreedyMiddle.9"))
                 .withName("GreedyMiddleAuto");
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
+
+    /* Phase 2 Autons */
 
     public AutonomousCommand source54CSeek() {
         var command = loggedSequence(
@@ -506,14 +518,145 @@ public class AutonomousCommands {
                         driveToPoseWhileShooting(
                                 getFirstPose("Source54CSeek.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
                         followChoreoPathAndSeekNote("Source54CSeek.2"),
+                        pauseDrive("Source54CSeek.3"),
                         followChoreoPathAndPreWarm("Source54CSeek.3"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("Source54CSeek.4"),
+                        pauseDrive("Source54CSeek.5"),
                         followChoreoPathAndPreWarm("Source54CSeek.5"),
                         aimAndShoot(),
                         followChoreoPathAndPreWarm("Source54CSeek.6"),
                         aimAndShoot())
                 .withName("Source45CSeekAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand amp123Amp() {
+        var command = loggedSequence(
+                        print("Started Amp123Seek auto"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Amp123Amp.1"),
+                        pauseDrive("Amp123Amp.2"),
+                        followChoreoPathAndPreWarm("Amp123Amp.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Amp123Amp.3"),
+                        pauseDrive("Amp123Amp.4"),
+                        followChoreoPathAndPreWarm("Amp123Amp.4"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Amp123Amp.5"),
+                        pauseDrive("Amp123Amp.6"),
+                        followChoreoPathAndPreWarm("Amp123Amp.6"),
+                        aimAndShoot())
+                .withName("Amp 123 Amp Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand centerB342Stage() {
+        var command = loggedSequence(
+                        print("Started centerB342Stage auto"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterB342Stage.1"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB342Stage.2"),
+                        pauseDrive("CenterB342Stage.3"),
+                        followChoreoPathAndPreWarm("CenterB342Stage.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB342Stage.4"),
+                        pauseDrive("CenterB342Stage.5"),
+                        followChoreoPathAndPreWarm("CenterB342Stage.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB342Stage.6"),
+                        pauseDrive("CenterB342Stage.7"),
+                        followChoreoPathAndPreWarm("CenterB342Stage.7"),
+                        aimAndShoot())
+                .withName("Center B342 Stage Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand source543Stage() {
+        var command = loggedSequence(
+                        print("Started source 543 stage auto"),
+                        driveToPoseWhileShooting(
+                                getFirstPose("Source543Stage.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
+                        followChoreoPathAndSeekNote("Source543Stage.2"),
+                        pauseDrive("Source543Stage.3"),
+                        followChoreoPathAndPreWarm("Source543Stage.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Source543Stage.4"),
+                        pauseDrive("Source543Stage.5"),
+                        followChoreoPathAndPreWarm("Source543Stage.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("Source543Stage.6"),
+                        pauseDrive("Source543Stage.6"),
+                        followChoreoPathAndPreWarm("Source543Stage.7"),
+                        aimAndShoot())
+                .withName("Source453stageAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand centerB231Center() {
+        var command = loggedSequence(
+                        print("Started centerB231Stage auto"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterB231Center.1", false, false),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB231Center.2"),
+                        pauseDrive("CenterB231Center.3"),
+                        followChoreoPathAndPreWarm("CenterB231Center.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB231Center.4"),
+                        pauseDrive("CenterB231Center.5"),
+                        followChoreoPathAndPreWarm("CenterB231Center.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterB231Center.6"),
+                        pauseDrive("CenterB231Center.7"),
+                        followChoreoPathAndPreWarm("CenterB231Center.7"),
+                        aimAndShoot())
+                .withName("Center B231 Stage Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand centerBA123Amp() {
+        var command = loggedSequence(
+                        print("Started centerB21AAmp auto"),
+                        followChoreoPathAndPreWarm("CenterBA123Amp.1", true, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterBA123Amp.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterBA123Amp.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterBA123Amp.4"),
+                        pauseDrive("CenterBA123Amp.5"),
+                        followChoreoPathAndPreWarm("CenterBA123Amp.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterBA123Amp.6"),
+                        pauseDrive("CenterBA123Amp.7"),
+                        followChoreoPathAndPreWarm("CenterBA123Amp.7"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterBA123Amp.8"))
+                .withName("Center BA123 Amp Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand centerBC123center() {
+        var command = loggedSequence(
+                        print("Started center BC123 center auto"),
+                        followChoreoPathAndPreWarm("CenterBC123Center.1", true, false),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterBC123Center.2"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("CenterBC123Center.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterBC123Center.4"),
+                        followChoreoPathAndPreWarm("CenterBC123Center.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterBC123Center.6"),
+                        pauseDrive("CenterBC123Center.7"),
+                        followChoreoPathAndPreWarm("CenterBC123Center.7"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("CenterBC123Center.8"))
+                .withName("CenterBC123CenterAuto");
+
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }

@@ -134,6 +134,7 @@ public final class Constants {
         public static final double kMaxAreaFitInFrame = 0.0;
         public static final long[] kValidOnboardIds = {0, 2};
         public static final String[] kBusKeys = {"FL:fc8", "FR:xhci", "BL:fc8", "BR:xhci", "Sniper:fc8"};
+        public static final double kSingleTargetStdDevScalar = 50;
 
         public static final VisionConfig kFrontLeftCameraConfig = new VisionConfig(
                 "CubVisionFL",
@@ -241,8 +242,9 @@ public final class Constants {
         public static final LoggedTunableNumber kSteerKp = new LoggedTunableNumber("Drive/Module/SteerKp");
         public static final LoggedTunableNumber kSteerKd = new LoggedTunableNumber("Drive/Module/SteerKd");
 
-        public static final double kPathTranslationKp = 4.0;
-        public static final double kPathRotationKp = 2.0;
+        public static final double kPathTranslationKp = 6.0;
+        public static final double kPathTranslationKd = 0.5;
+        public static final double kPathRotationKp = 6.0;
 
         public static final HolonomicPathFollowerConfig kPathFollowerConfig;
 
@@ -447,13 +449,13 @@ public final class Constants {
 
         public static final double[][] kShooterDistanceToAngleValues = {
             {2.3, 1},
-            {2.7, .8},
-            {3.5, .63},
-            {3.8, .58},
-            {4.1, .55},
-            {4.7, .505},
-            {5.1, .49},
-            {5.9, .46}
+            {2.7, .81},
+            {3.5, .675},
+            {3.8, .64},
+            {4.1, .61},
+            {4.7, .575},
+            {5.1, .54},
+            // {5.9, .46}
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
@@ -464,16 +466,18 @@ public final class Constants {
             {4.1, 470},
             {4.7, 510},
             {5.1, 550},
-            {5.9, 590}
+            // {5.9, 590}
         };
 
-        public static final double[][] kShooterAngleToHeadingOffset = {
-            {0.955, -13},
-            {0.835, -11},
-            {0.687, -10},
-            {0.564, -9},
-            {0.500, -7},
-            {0.467, -5},
+        public static final double[][] kShooterValuesToHeadingOffset = {
+            {232, -10},
+            {307, -8.25},
+            {377, -7.25},
+            {407, -6.5},
+            {424, -6},
+            {470, -5},
+            {508, -4},
+            {580, -3},
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {
@@ -481,7 +485,7 @@ public final class Constants {
         };
 
         public static final double[][] kPassingDistanceToSpeedValues = {
-            {11.53, 490}, {10.3, 450}, {9.02, 415}, {7.15, 350}, {6.15, 315}, {5, 200}, {0, 100}
+            {11.53, 510}, {10.3, 470}, {9.02, 435}, {7.15, 370}, {6.15, 335}, {5, 220}, {0, 120}
         };
 
         // Regression of Collected (a.k.a used angle) vs Calculated Angle
@@ -506,7 +510,7 @@ public final class Constants {
                 kPassingSpeedInterpolator.put(pair[0], pair[1]);
             }
 
-            for (double[] pair : kShooterAngleToHeadingOffset) {
+            for (double[] pair : kShooterValuesToHeadingOffset) {
                 kShooterHeadingOffsetInterpolator.put(pair[0], Units.degreesToRadians(pair[1]));
             }
 

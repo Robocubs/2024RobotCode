@@ -50,9 +50,9 @@ public class ShootAndMove extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 25.0);
     private Rotation2d headingTolerance;
 
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
+    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 8.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
-    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.5);
+    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.75);
 
     private final Drive mDrive;
     private final Shooter mShooter;
@@ -152,7 +152,7 @@ public class ShootAndMove extends Command {
                 .minus(shooterSetpoint.releaseAngle());
         var headingError = currentPose.getRotation().minus(targetHeading);
 
-        // headingTolerance = Rotation2d.fromDegrees(0.5);
+        // headingTolerance = Rotation2d.fromDegrees(0.75);
         headingTolerance = mRobotState.getToleranceSpeakerHeading();
 
         Rotation2d setpoint;

@@ -81,7 +81,7 @@ public class Climb extends SubsystemBase {
     }
 
     public void stop() {
-        Logger.recordOutput("Climb/PercentOutput", 0);
+        Logger.recordOutput("Climb/PercentOutput", 0.0);
         mLeftWinchIO.stopMotor();
         mRightWinchIO.stopMotor();
     }
