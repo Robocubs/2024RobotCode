@@ -248,6 +248,11 @@ public final class Constants {
 
         public static final HolonomicPathFollowerConfig kPathFollowerConfig;
 
+        public static final Rotation2d kFrontLeftModuleEncoderOffset;
+        public static final Rotation2d kFrontRightModuleEncoderOffset;
+        public static final Rotation2d kBackLeftModuleEncoderOffset;
+        public static final Rotation2d kBackRightModuleEncoderOffset;
+
         static {
             double driveMotorMaxRPM;
             double turnMotorMaxRPM;
@@ -270,6 +275,10 @@ public final class Constants {
                     kDriveKd.initDefault(0);
                     kSteerKp.initDefault(4000); // 16.0
                     kSteerKd.initDefault(50);
+                    kFrontLeftModuleEncoderOffset = Rotation2d.fromRadians(-2.262);
+                    kFrontRightModuleEncoderOffset = Rotation2d.fromRadians(-3.069);
+                    kBackLeftModuleEncoderOffset = Rotation2d.fromRadians(-1.291);
+                    kBackRightModuleEncoderOffset = Rotation2d.fromRadians(-5.639);
                     break;
                 case SIMULATION_VISION:
                 case SIMULATION_BOT:
@@ -289,6 +298,10 @@ public final class Constants {
                     kDriveKd.initDefault(0);
                     kSteerKp.initDefault(16.0);
                     kSteerKd.initDefault(0);
+                    kFrontLeftModuleEncoderOffset = Rotation2d.fromRadians(Math.random() * 2 * Math.PI);
+                    kFrontRightModuleEncoderOffset = Rotation2d.fromRadians(Math.random() * 2 * Math.PI);
+                    kBackLeftModuleEncoderOffset = Rotation2d.fromRadians(Math.random() * 2 * Math.PI);
+                    kBackRightModuleEncoderOffset = Rotation2d.fromRadians(Math.random() * 2 * Math.PI);
                     break;
                 default:
                     throw new UnsupportedOperationException("No drive configuration for " + Configuration.getRobot());

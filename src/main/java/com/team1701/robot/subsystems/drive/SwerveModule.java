@@ -31,13 +31,12 @@ public class SwerveModule {
 
     public static record SwerveModuleIO(
             MotorIO driveMotorIO, MotorIO steerMotorIO, EncoderIO steerEncoderIO, Rotation2d steerEncoderOffset) {
-        public static SwerveModuleIO createSim(DCMotor driveMotor, DCMotor steerMotor) {
+        public static SwerveModuleIO createSim(DCMotor driveMotor, DCMotor steerMotor, Rotation2d encoderOffset) {
             var driveMotorIO =
                     new MotorIOSim(driveMotor, Constants.Drive.kDriveReduction, 0.025, Constants.kLoopPeriodSeconds);
             var steerMotorIO =
                     new MotorIOSim(steerMotor, Constants.Drive.kSteerReduction, 0.004, Constants.kLoopPeriodSeconds);
             steerMotorIO.enableContinuousInput(0, 2 * Math.PI);
-            var encoderOffset = Rotation2d.fromRadians(Math.random() * 2 * Math.PI);
             var encoderIO = new EncoderIOSim(() -> steerMotorIO
                     .getPosition()
                     .times(Constants.Drive.kSteerReduction)
@@ -143,7 +142,7 @@ public class SwerveModule {
 
     public void runCharacterization(double input) {
         mDriveMotorIO.runCharacterization(input);
-        mSteerMotorIO.setPositionControl(GeometryUtil.kRotationIdentity.minus(mAngleOffset));
+        mSteerMotorIO.setPositionControl(mAngleOffset.unaryMinus());
     }
 
     public void setDriveBrakeMode(boolean enable) {
