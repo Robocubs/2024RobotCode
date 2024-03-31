@@ -164,7 +164,13 @@ public class RobotContainer {
                     var gyroIO = new GyroIOSim(mRobotState::getHeading);
                     var simDrive = new Drive(
                             gyroIO,
-                            Stream.generate(() -> SwerveModuleIO.createSim(DCMotor.getKrakenX60(1), DCMotor.getNEO(1)))
+                            Stream.of(
+                                            Constants.Drive.kFrontLeftModuleEncoderOffset,
+                                            Constants.Drive.kFrontRightModuleEncoderOffset,
+                                            Constants.Drive.kBackLeftModuleEncoderOffset,
+                                            Constants.Drive.kBackRightModuleEncoderOffset)
+                                    .map(rotation -> SwerveModuleIO.createSim(
+                                            DCMotor.getKrakenX60(1), DCMotor.getNEO(1), rotation))
                                     .limit(Constants.Drive.kNumModules)
                                     .toArray(SwerveModuleIO[]::new),
                             mRobotState);
@@ -232,6 +238,24 @@ public class RobotContainer {
                             new DetectorCameraIO[] {() -> Constants.Vision.kLimelightConfig}));
 
                     // new DetectorCameraIO[] {new DetectorCameraIOLimelight(Constants.Vision.kLimelightConfig)}));
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            switch (Configuration.getRobot()) {
+                case COMPETITION_BOT:
+                    drive = Optional.of(new Drive(
+                            new GyroIO() {},
+                            Stream.of(
+                                            Constants.Drive.kFrontLeftModuleEncoderOffset,
+                                            Constants.Drive.kFrontRightModuleEncoderOffset,
+                                            Constants.Drive.kBackLeftModuleEncoderOffset,
+                                            Constants.Drive.kBackRightModuleEncoderOffset)
+                                    .map(rotation -> new SwerveModuleIO(
+                                            new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}, rotation))
+                                    .toArray(SwerveModuleIO[]::new),
+                            mRobotState));
                     break;
                 default:
                     break;
