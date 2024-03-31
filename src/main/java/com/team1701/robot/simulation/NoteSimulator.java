@@ -2,7 +2,6 @@ package com.team1701.robot.simulation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
@@ -173,10 +172,9 @@ public class NoteSimulator extends SubsystemBase {
 
                     break;
                 case SHOOTER:
-                    var averageRollerSpeed = DoubleStream.of(
-                                    mShooter.getRollerSpeedsRadiansPerSecond().toArray())
-                            .average()
-                            .orElse(0);
+                    var averageRollerSpeed =
+                            mShooter.getRollerSpeedsRadiansPerSecond().averageSpeed();
+
                     if (MathUtil.isNear(0, averageRollerSpeed, 0.1)) {
                         continue;
                     }
@@ -269,8 +267,10 @@ public class NoteSimulator extends SubsystemBase {
     public Pose3d[] getNotePoses() {
         return Stream.concat(
                         mNotesOnField.stream().map(note -> note.pose),
-                        mNotesInRobot.stream()
-                                .map(note -> mRobotState.getPose3d().transformBy(note.getRobotToNote())))
+                        mNotesInRobot.stream().map(note -> mRobotState
+                                .getShooterExitPose()
+                                .transformBy(new Transform3d(
+                                        new Translation3d(-kNoteRadius, 0.0, 0.0), GeometryUtil.kRotation3dIdentity))))
                 .toArray(Pose3d[]::new);
     }
 
@@ -318,10 +318,6 @@ public class NoteSimulator extends SubsystemBase {
         public NoteInRobot(double position, NoteLocation location) {
             this.position = position;
             this.location = location;
-        }
-
-        public Transform3d getRobotToNote() {
-            return new Transform3d(0, 0, 0.5, GeometryUtil.kRotation3dIdentity);
         }
 
         public double getTotalPosition() {
