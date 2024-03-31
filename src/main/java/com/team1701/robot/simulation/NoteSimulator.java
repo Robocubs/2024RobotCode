@@ -267,11 +267,10 @@ public class NoteSimulator extends SubsystemBase {
     public Pose3d[] getNotePoses() {
         return Stream.concat(
                         mNotesOnField.stream().map(note -> note.pose),
-                        mNotesInRobot.stream().map(note -> {
-                            var exitPose = mRobotState.getShooterExitPose();
-                            var pose = mRobotState.getPose2d();
-                            return new Pose3d(pose.getX(), pose.getY(), exitPose.getZ(), exitPose.getRotation());
-                        }))
+                        mNotesInRobot.stream().map(note -> mRobotState
+                                .getShooterExitPose()
+                                .transformBy(new Transform3d(
+                                        new Translation3d(-kNoteRadius, 0.0, 0.0), GeometryUtil.kRotation3dIdentity))))
                 .toArray(Pose3d[]::new);
     }
 
