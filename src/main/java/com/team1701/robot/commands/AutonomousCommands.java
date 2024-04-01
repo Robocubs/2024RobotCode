@@ -293,22 +293,6 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public AutonomousCommand fivePieceAmp() {
-        var command = loggedSequence(
-                        print("Started five piece near amp auto"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveAmp.1", false, false),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveAmp.2"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveAmp.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveAmp.4"),
-                        aimAndShoot())
-                .withName("FivePieceAmpAuto");
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
     public AutonomousCommand source4321CenterStage() {
         var command = loggedSequence(
                         print("Started source 4321 center stage auto"),
@@ -330,18 +314,25 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public AutonomousCommand fivePieceAmpAndMove() {
+    public AutonomousCommand ampA123amp() {
         var command = loggedSequence(
-                        print("Started five piece amp and move auto"),
-                        followChoreoPathAndShoot("FiveAmpMove.1", true, 0.6710751070512755),
-                        forceShoot(),
-                        followChoreoPathAndPreWarm("FiveAmpMove.2"),
+                        print("Started AmpA123Amp auto"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveAmpMove.3"),
+                        followChoreoPathAndPreWarm("AmpA123Amp.1"),
                         aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveAmpMove.4"),
+                        followChoreoPathAndSeekNote("AmpA123Amp.2"),
+                        pauseDrive("AmpA123Amp.3"),
+                        followChoreoPathAndPreWarm("AmpA123Amp.3"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("AmpA123Amp.4"),
+                        pauseDrive("AmpA123Amp.5"),
+                        followChoreoPathAndPreWarm("AmpA123Amp.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("AmpA123Amp.6"),
+                        pauseDrive("AmpA123Amp.7"),
+                        followChoreoPathAndPreWarm("AmpA123Amp.7"),
                         aimAndShoot())
-                .withName("FivePieceAmpAuto");
+                .withName("Amp A123 Amp Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 

@@ -573,9 +573,8 @@ public class RobotContainer {
         var demoCommand = commands.demo();
         var shootAndBackupCommand = commands.shootAndBackup();
         var greedyMiddleCommand = commands.greedyMiddle();
-        var fivePieceAmpCommand = commands.fivePieceAmp();
         var source4321CenterStageCommand = commands.source4321CenterStage();
-        var fiveAmpSideMove = commands.fivePieceAmpAndMove();
+        var ampA123ampCommand = commands.ampA123amp();
         var source54CSeek = commands.source54CSeek();
         var amp123Amp = commands.amp123Amp();
         var centerB342Stage = commands.centerB342Stage();
@@ -586,9 +585,8 @@ public class RobotContainer {
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Greedy Middle Auto", greedyMiddleCommand.path());
-        mAutonomousPaths.put("Five Piece Amp Auto", fivePieceAmpCommand.path());
         mAutonomousPaths.put("Source 4321 CenterStage", source4321CenterStageCommand.path());
-        mAutonomousPaths.put("Five Piece Amp Move", fiveAmpSideMove.path());
+        mAutonomousPaths.put("Amp A123 Amp", ampA123ampCommand.path());
         mAutonomousPaths.put("Source 54C Seek", source54CSeek.path());
         mAutonomousPaths.put("Amp123Amp", amp123Amp.path());
         mAutonomousPaths.put("Center B342 Stage", centerB342Stage.path());
@@ -599,8 +597,8 @@ public class RobotContainer {
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Greedy Middle Auto", greedyMiddleCommand.command());
-        autonomousModeChooser.addOption("Five Piece Amp Auto", fivePieceAmpCommand.command());
         autonomousModeChooser.addOption("Source 4321 CenterStage", source4321CenterStageCommand.command());
+        autonomousModeChooser.addOption("Amp A123 Amp", ampA123ampCommand.command());
         autonomousModeChooser.addOption("Source 54C Seek", source54CSeek.command());
         autonomousModeChooser.addOption("Amp123Amp", amp123Amp.command());
         autonomousModeChooser.addOption("Center B342 Stage", centerB342Stage.command());
