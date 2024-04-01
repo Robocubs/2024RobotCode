@@ -294,99 +294,6 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public AutonomousCommand fourPiece() {
-        var command = loggedSequence(
-                        print("Started four piece auto"),
-                        followChoreoPathAndPreWarm("FourPiece.1", true, false),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FourPiece.2", false, false),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FourPiece.3", false, false),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FourPiece.4", false, false),
-                        aimAndShoot())
-                .withName("FourPieceAuto");
-
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
-    public AutonomousCommand fourPieceAmp() {
-        var command = loggedSequence(
-                        print("Started four piece near amp auto"),
-                        followChoreoPathAndPreWarm("FourPieceAmp.1", true, false),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FourPieceAmp.2"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FourPieceAmp.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FourPieceAmp.4"),
-                        aimAndShoot())
-                .withName("FourPieceAmpAuto");
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
-    public AutonomousCommand sourceFourPieceTwoOne() {
-        var command = loggedSequence(
-                        print("Started source four piece two one auto"),
-                        driveToPoseAndPreWarm(new Pose2d(
-                                new Translation2d(2.46260666847229, 2.526517391204834),
-                                new Rotation2d(2.2091161460921795))),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("SourceFourPieceTwoOne.1"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("SourceFourPieceTwoOne.2"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("SourceFourPieceTwoOne.3"),
-                        aimAndShoot())
-                .withName("SourceFourPieceTwoOneAuto");
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
-    public AutonomousCommand middleToMiddle() {
-        var command = loggedSequence(
-                        print("Started middle to middle auto"),
-                        followChoreoPathAndPreWarm("MiddleToMiddle.1", true, false),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("MiddleToMiddle.2"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("MiddleToMiddle.3"),
-                        aimAndShoot())
-                .withName("MiddleToMiddleAuto");
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
-    public AutonomousCommand fiveMiddleToMiddle() {
-        var command = loggedSequence(
-                        print("Started five middle to middle auto"),
-                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.1", true, false),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.2"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.4"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.5"),
-                        aimAndShoot())
-                .withName("FiveMiddleToMiddleAuto");
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
-    public AutonomousCommand sourceSideMiddleThree() {
-        var command = loggedSequence(
-                        print("Started source side middle three auto"),
-                        driveToPoseAndPreWarm(getFirstPose("SourceSideMiddleThree.1")),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("SourceSideMiddleThree.1"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("SourceSideMiddleThree.2"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("SourceSideMiddleThree.3"),
-                        aimAndShoot())
-                .withName("SourceThreeMiddleAuto");
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
     public AutonomousCommand fivePieceAmp() {
         var command = loggedSequence(
                         print("Started five piece near amp auto"),
@@ -424,21 +331,6 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    public AutonomousCommand sourceFourUnderStage() {
-        var command = loggedSequence(
-                        print("Started source four under stage auto"),
-                        followChoreoPathAndPreWarm("SourceFourUnderStage.1"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("SourceFourUnderStage.2"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("SourceFourUnderStage.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("SourceFourUnderStage.4"),
-                        aimAndShoot())
-                .withName("SourceFourUnderStageAuto");
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
     public AutonomousCommand fivePieceAmpAndMove() {
         var command = loggedSequence(
                         print("Started five piece amp and move auto"),
@@ -451,39 +343,6 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("FiveAmpMove.4"),
                         aimAndShoot())
                 .withName("FivePieceAmpAuto");
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
-    public AutonomousCommand centerMove() {
-        var command = loggedSequence(
-                        print("Started center move auto"),
-                        followChoreoPathAndShoot("CenterMove.1", true, 1.5),
-                        forceShoot())
-                .withName("CenterMoveAuto");
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
-    public AutonomousCommand fiveMiddleMove() {
-        var command = loggedSequence(
-                        print("Started five middle move auto"),
-                        driveToPoseWhileShooting(
-                                getFirstPose("FiveMiddleToMiddle.3"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
-                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.4"),
-                        aimAndShoot(),
-                        followChoreoPathAndPreWarm("FiveMiddleToMiddle.5"),
-                        aimAndShoot())
-                .withName("FiveMiddleMoveAuto");
-        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
-    }
-
-    public AutonomousCommand centerMoveDTP() {
-        var command = loggedSequence(
-                        print("Started center move DTP auto"),
-                        driveToPoseWhileShooting(getFirstPose("CenterMove.1"), FinishedState.END_AFTER_MOVING),
-                        forceShoot())
-                .withName("CenterMoveAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 

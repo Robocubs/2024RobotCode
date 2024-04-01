@@ -570,24 +570,13 @@ public class RobotContainer {
         PathPlannerLogging.setLogActivePathCallback(
                 poses -> Logger.recordOutput("PathPlanner/Path", poses.toArray(Pose2d[]::new)));
 
-        // TODO: Create wrapper class for autonomous chooser
         var commands = new AutonomousCommands(mRobotState, mDrive, mShooter, mIndexer);
         var demoCommand = commands.demo();
-        // var fourPieceCommand = commands.fourPiece();
-        // var fourPieceAmpSideCommand = commands.fourPieceAmp();
-        // var sourceFourPieceTwoOneCommand = commands.sourceFourPieceTwoOne();
         var shootAndBackupCommand = commands.shootAndBackup();
-        var middleToMiddleCommand = commands.middleToMiddle();
-        var fiveMiddleToMiddleCommand = commands.fiveMiddleToMiddle();
         var greedyMiddleCommand = commands.greedyMiddle();
-        var sourceMiddleThreeCommand = commands.sourceSideMiddleThree();
         var fivePieceAmpCommand = commands.fivePieceAmp();
-        var straightToMiddleCommand = commands.source4321CenterStage();
-        var sourceFourUnderStage = commands.sourceFourUnderStage();
+        var source4321CenterStageCommand = commands.source4321CenterStage();
         var fiveAmpSideMove = commands.fivePieceAmpAndMove();
-        var centerMove = commands.centerMove();
-        var centerMoveDTP = commands.centerMoveDTP();
-        var fiveMiddleMove = commands.fiveMiddleMove();
         var source54CSeek = commands.source54CSeek();
         var amp123Amp = commands.amp123Amp();
         var centerB342Stage = commands.centerB342Stage();
@@ -597,20 +586,10 @@ public class RobotContainer {
         var centerBC123center = commands.centerBC123center();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
-        // mAutonomousPaths.put("Four Piece", fourPieceCommand.path());
-        // mAutonomousPaths.put("Four Piece Amp Side", fourPieceAmpSideCommand.path());
-        // mAutonomousPaths.put("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.path());
-        mAutonomousPaths.put("Middle To Middle Auto", middleToMiddleCommand.path());
-        mAutonomousPaths.put("Five Middle To Middle Auto", fiveMiddleToMiddleCommand.path());
         mAutonomousPaths.put("Greedy Middle Auto", greedyMiddleCommand.path());
-        mAutonomousPaths.put("Source Middle Three Auto", sourceMiddleThreeCommand.path());
         mAutonomousPaths.put("Five Piece Amp Auto", fivePieceAmpCommand.path());
-        mAutonomousPaths.put("Straight To Middle", straightToMiddleCommand.path());
-        mAutonomousPaths.put("Source Four Under Stage", sourceFourUnderStage.path());
+        mAutonomousPaths.put("Source 4321 CenterStage", source4321CenterStageCommand.path());
         mAutonomousPaths.put("Five Piece Amp Move", fiveAmpSideMove.path());
-        mAutonomousPaths.put("Center Move", centerMove.path());
-        mAutonomousPaths.put("Five Middle Move", fiveMiddleMove.path());
-        mAutonomousPaths.put("Center Move DTP", centerMoveDTP.path());
         mAutonomousPaths.put("Source 54C Seek", source54CSeek.path());
         mAutonomousPaths.put("Amp123Amp", amp123Amp.path());
         mAutonomousPaths.put("Center B342 Stage", centerB342Stage.path());
@@ -620,19 +599,9 @@ public class RobotContainer {
         mAutonomousPaths.put("Center BC123 Center", centerBC123center.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
-        // autonomousModeChooser.addOption("Four Piece", fourPieceCommand.command());
-        // autonomousModeChooser.addOption("Four Piece Amp Side", fourPieceAmpSideCommand.command());
-        // autonomousModeChooser.addOption("Source Four Piece Two One Auto", sourceFourPieceTwoOneCommand.command());
-        autonomousModeChooser.addOption("Middle To Middle Auto", middleToMiddleCommand.command());
-        autonomousModeChooser.addOption("Five Middle To Middle Auto", fiveMiddleToMiddleCommand.command());
         autonomousModeChooser.addOption("Greedy Middle Auto", greedyMiddleCommand.command());
-        autonomousModeChooser.addOption("Source Middle Three Auto", sourceMiddleThreeCommand.command());
         autonomousModeChooser.addOption("Five Piece Amp Auto", fivePieceAmpCommand.command());
-        autonomousModeChooser.addOption("Straight To Middle", straightToMiddleCommand.command());
-        autonomousModeChooser.addOption("Source Four Under Stage", sourceFourUnderStage.command());
-        autonomousModeChooser.addOption("Center Move", centerMove.command());
-        autonomousModeChooser.addOption("Five Middle Move", fiveMiddleMove.command());
-        autonomousModeChooser.addOption("Center Move DTP", centerMoveDTP.command());
+        autonomousModeChooser.addOption("Source 4321 CenterStage", source4321CenterStageCommand.command());
         autonomousModeChooser.addOption("Source 54C Seek", source54CSeek.command());
         autonomousModeChooser.addOption("Amp123Amp", amp123Amp.command());
         autonomousModeChooser.addOption("Center B342 Stage", centerB342Stage.command());
@@ -641,16 +610,16 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Center BA123 Amp", centerBA123Amp.command());
         autonomousModeChooser.addOption("Center BC123 Center", centerBC123center.command());
 
-        autonomousModeChooser.addOption(
-                "Drive Characterization",
-                CharacterizationCommands.runDriveCharacterization(mDrive)
-                        .deadlineWith(Commands.idle(mShooter, mIndexer, mIntake))
-                        .withName("DriveCharacterization"));
-        autonomousModeChooser.addOption(
-                "Shooter Characterization",
-                CharacterizationCommands.runShooterCharacterization(mShooter)
-                        .deadlineWith(Commands.idle(mDrive, mIndexer, mIntake))
-                        .withName("ShooterCharacterization"));
+        // autonomousModeChooser.addOption(
+        //         "Drive Characterization",
+        //         CharacterizationCommands.runDriveCharacterization(mDrive)
+        //                 .deadlineWith(Commands.idle(mShooter, mIndexer, mIntake))
+        //                 .withName("DriveCharacterization"));
+        // autonomousModeChooser.addOption(
+        //         "Shooter Characterization",
+        //         CharacterizationCommands.runShooterCharacterization(mShooter)
+        //                 .deadlineWith(Commands.idle(mDrive, mIndexer, mIntake))
+        //                 .withName("ShooterCharacterization"));
 
         if (Configuration.getMode() == Mode.SIMULATION) {
             mAutonomousPaths.put("Demo", demoCommand.path());
