@@ -152,8 +152,8 @@ public class ShootAndMove extends Command {
                 .minus(shooterSetpoint.releaseAngle());
         var headingError = currentPose.getRotation().minus(targetHeading);
 
-        // headingTolerance = Rotation2d.fromDegrees(0.75);
-        headingTolerance = mRobotState.getToleranceSpeakerHeading();
+        headingTolerance = Rotation2d.fromDegrees(0.75);
+        // headingTolerance = mRobotState.getToleranceSpeakerHeading();
 
         Rotation2d setpoint;
         double rotationalVelocity;
