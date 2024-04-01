@@ -10,6 +10,7 @@ import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.drivers.motors.MotorInputsAutoLogged;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
+import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
 import edu.wpi.first.math.MathUtil;
@@ -40,6 +41,8 @@ public class Shooter extends SubsystemBase {
     private final MotorInputsAutoLogged mRotationShooterMotorInputs = new MotorInputsAutoLogged();
 
     private final EncoderInputsAutoLogged mAngleEncoderInputs = new EncoderInputsAutoLogged();
+
+    private static LoggedTunableNumber mHeadingTunable = new LoggedTunableNumber("TunableHeadingOffsetDegrees", 0);
 
     private Mechanism2d mShooterMechanism;
     private MechanismLigament2d mShooterLigament;
@@ -80,12 +83,12 @@ public class Shooter extends SubsystemBase {
             this(new ShooterSpeeds(radiansPerSecond), angle);
         }
 
-        @AutoLogOutput
+        // @AutoLogOutput
         public Rotation2d releaseAngle() {
             var forwardVelocity = speeds.averageSpeed() * Math.cos(angle.getRadians());
-            return Rotation2d.fromRadians(forwardVelocity * -0.00009 + 0.0546);
-            // return
-            // Rotation2d.fromRadians(Constants.Shooter.kShooterHeadingOffsetInterpolator.get(angle.getRadians()));
+            Logger.recordOutput("forwardVelocity", forwardVelocity);
+            // return Rotation2d.fromRadians(forwardVelocity * -0.00009 + 0.0546);
+            return Rotation2d.fromDegrees(mHeadingTunable.get());
         }
 
         public Pose2d applyReleaseAngle(Pose2d pose) {

@@ -112,7 +112,7 @@ public final class Constants {
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                double coordScalar = 1.5;
+                double coordScalar = 7.7;
                 double angleScalar = 1.5;
                 for (double[] pair : kMeasuredDistanceToXStdDevValues) {
                     kVisionXStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
@@ -461,36 +461,36 @@ public final class Constants {
         public static final boolean kUseNewCurves = true;
 
         public static final double[][] kShooterDistanceToAngleValues = {
-            {2.3, 1},
-            {2.7, .81},
-            {3.5, .675},
-            {3.8, .64},
-            {4.1, .61},
-            {4.7, .575},
-            {5.1, .54},
+            {2.35, 1}, // 40 in
+            {2.7, .83}, // .83 - 67 in
+            {3.0, .77}, // 85.75 in
+            {3.5, .64}, // .64 - 110.75 in
+            {3.8, .62}, // .62 - 123.5 in
+            {4.1, .58}, // .58 - 136.5 in
+            {4.7, .52}, // .52 - 158
+            {5.1, .5075}, // .5075 - 173.5
+            {5.9, .4675} // 212 in
             // {5.9, .46}
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
-            {2.3, 410},
-            {2.7, 410},
-            {3.5, 440},
-            {3.8, 460},
-            {4.1, 470},
-            {4.7, 510},
-            {5.1, 550},
+            {2.3, 300}, // 300
+            {2.7, 330}, // 330
+            {3.0, 375}, // 375
+            {3.5, 390}, // 390
+            {3.8, 410}, // 410
+            {4.1, 430}, // 430
+            {4.7, 450}, // 450
+            {5.1, 480}, // 480
+            {5.9, 500}
             // {5.9, 590}
         };
 
-        public static final double[][] kShooterValuesToHeadingOffset = {
-            {232, -10},
-            {307, -8.25},
-            {377, -7.25},
-            {407, -6.5},
-            {424, -6},
-            {470, -5},
-            {508, -4},
-            {580, -3},
+        public static final double[][] kShooterForwardVelocityToHeadingOffset = {
+            {66, 13},
+            {73, 9},
+            {89, 2},
+            {100, 2}
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {
@@ -498,7 +498,7 @@ public final class Constants {
         };
 
         public static final double[][] kPassingDistanceToSpeedValues = {
-            {11.53, 510}, {10.3, 470}, {9.02, 435}, {7.15, 370}, {6.15, 335}, {5, 220}, {0, 120}
+            {11.53, 325}, {10.3, 315}, {9.02, 300}, {7.15, 275}, {6.15, 230}, {5, 200}, {0, 100}
         };
 
         // Regression of Collected (a.k.a used angle) vs Calculated Angle
@@ -523,7 +523,7 @@ public final class Constants {
                 kPassingSpeedInterpolator.put(pair[0], pair[1]);
             }
 
-            for (double[] pair : kShooterValuesToHeadingOffset) {
+            for (double[] pair : kShooterForwardVelocityToHeadingOffset) {
                 kShooterHeadingOffsetInterpolator.put(pair[0], Units.degreesToRadians(pair[1]));
             }
 
