@@ -112,7 +112,7 @@ public final class Constants {
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                double coordScalar = 1.5;
+                double coordScalar = 7.7;
                 double angleScalar = 1.5;
                 for (double[] pair : kMeasuredDistanceToXStdDevValues) {
                     kVisionXStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
