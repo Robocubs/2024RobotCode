@@ -283,7 +283,7 @@ public class RobotState {
         var toleranceRadians = Math.abs(
                 MathUtil.angleModulus(heading.getRadians() - getSpeakerHeading().getRadians()));
 
-        return Rotation2d.fromRadians(Math.max(0.017, toleranceRadians));
+        return Rotation2d.fromRadians(Math.max(0.017, toleranceRadians / 2));
     }
 
     public Rotation2d getAmpHeading() {

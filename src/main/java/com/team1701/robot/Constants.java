@@ -421,7 +421,7 @@ public final class Constants {
         public static final LoggedTunableNumber kIdleSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/IdleSpeedRadiansPerSecond", 200);
         public static final LoggedTunableNumber kShooterAmpAngleDegrees =
-                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 58);
+                new LoggedTunableNumber("Shooter/Rotation/AmpAngleDegrees", 55);
         public static final LoggedTunableNumber kAmpRollerSpeedRadiansPerSecond =
                 new LoggedTunableNumber("Shooter/Roller/AmpSpeedRadiansPerSecond", 150);
         public static final LoggedTunableNumber kTrapRollerSpeedRadiansPerSecond =
@@ -433,10 +433,10 @@ public final class Constants {
                 new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
 
         public static final LoggedTunableNumber kLowerAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 87);
+                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 80);
 
         public static final LoggedTunableNumber kUpperAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 52);
+                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 80);
 
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
@@ -461,15 +461,15 @@ public final class Constants {
         public static final boolean kUseNewCurves = true;
 
         public static final double[][] kShooterDistanceToAngleValues = {
-            {2.35, 1}, // 40 in
-            {2.7, .83}, // .83 - 67 in
-            {3.0, .77}, // 85.75 in
-            {3.5, .64}, // .64 - 110.75 in
-            {3.8, .62}, // .62 - 123.5 in
-            {4.1, .58}, // .58 - 136.5 in
-            {4.7, .52}, // .52 - 158
-            {5.1, .5075}, // .5075 - 173.5
-            {5.9, .4675} // 212 in
+            {2.36, 1}, // 40 in - 23.5
+            {2.76, .83}, // .83 - 67 in - 2.7
+            {3.1, .77}, // 85.75 in - 3.0
+            {3.6, .64}, // .64 - 110.75 in - 3.5
+            {3.85, .62}, // .62 - 123.5 in - 3.8
+            {4.14, .58}, // .58 - 136.5 in - 4.1
+            {4.62, .52}, // .52 - 158 in - 4.7
+            {5, .48}, // .5075 - 173.5 in - 5.1
+            {5.99, .4675} // 212 in - 5.9
             // {5.9, .46}
         };
 
