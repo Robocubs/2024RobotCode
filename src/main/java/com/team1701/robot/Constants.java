@@ -433,10 +433,10 @@ public final class Constants {
                 new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
 
         public static final LoggedTunableNumber kLowerAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 77);
+                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 70);
 
         public static final LoggedTunableNumber kUpperAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 77);
+                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 70);
 
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
@@ -462,15 +462,15 @@ public final class Constants {
 
         public static final double[][] kShooterDistanceToAngleValues = {
             {2.32, 1}, // 40 in
-            {2.69, .83}, // .83 - 67 in
+            {2.69, .83}, //67 in
             {3.01, .77}, // 85.75 in
-            {3.48, .64}, // .64 - 110.75 in
-            {3.85, .62}, // .62 - 123.5 in
-            {3.95, .58}, // .58 - 136.5 in
-            {4.4, .52}, // .52 - 158 in - 4.7
-            {4.77, .48}, // .5075 - 173.5 in - 5.1
+            {3.48, .64}, //110.75 in
+            {3.85, .62}, //123.5 in
+            {3.95, .58}, //136.5 in
+            {4.4, .52}, //158 in
+            {4.77, .48}, // 173.5 in
             {5.4, .455}, // 203 in
-            {5.7, .4325}, // 218 in - 5.9
+            {5.7, .4325}, // 218 in
             {6.17, .41}, // 240 in
             {6.88, .382}, // 270 in
             {7.24, .37}, // 285 in
