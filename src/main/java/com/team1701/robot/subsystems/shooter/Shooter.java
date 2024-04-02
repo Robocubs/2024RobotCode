@@ -88,7 +88,7 @@ public class Shooter extends SubsystemBase {
             var forwardVelocity = speeds.averageSpeed() * Math.cos(angle.getRadians());
             Logger.recordOutput("forwardVelocity", forwardVelocity);
             // return Rotation2d.fromRadians(forwardVelocity * -0.00009 + 0.0546);
-            return Rotation2d.fromDegrees(mHeadingTunable.get());
+            return Rotation2d.fromRadians(Constants.Shooter.kShooterHeadingOffsetInterpolator.get(forwardVelocity));
         }
 
         public Pose2d applyReleaseAngle(Pose2d pose) {
