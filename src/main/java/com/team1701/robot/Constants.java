@@ -259,7 +259,7 @@ public final class Constants {
 
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kWheelRadiusMeters = Units.inchesToMeters(1.95379394);
+                    kWheelRadiusMeters = Units.inchesToMeters(1.9575);
                     driveMotorMaxRPM = 5500; // Measured + 10%
                     turnMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
                     kDriveReduction = k16ToothKitReduction * kL3DriveReduction;

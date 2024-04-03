@@ -47,6 +47,7 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.leds.LED;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import com.team1701.robot.subsystems.shooter.Shooter.ShooterOffset;
 import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.SparkMotorFactory;
 import com.team1701.robot.util.SparkMotorFactory.MotorUsage;
@@ -140,7 +141,8 @@ public class RobotContainer {
                                     Constants.Shooter.kShooterRightLowerRollerMotorId, MotorUsage.SHOOTER_ROLLER, true),
                             SparkMotorFactory.createShooterMotorIOSparkFlex(
                                     Constants.Shooter.kShooterRotationMotorId, MotorUsage.ROTATION, false),
-                            new EncoderIORevThroughBore(Constants.Shooter.kShooterThroughBoreEncoderId, true)));
+                            new EncoderIORevThroughBore(Constants.Shooter.kShooterThroughBoreEncoderId, true),
+                            mRobotState));
 
                     indexer = Optional.of(new Indexer(
                             SparkMotorFactory.createIndexerMotorIOSparkFlex(Constants.Indexer.kIndexerMotorId),
@@ -197,7 +199,8 @@ public class RobotContainer {
                             Shooter.createRollerMotorSim(DCMotor.getNeoVortex(1)),
                             Shooter.createRollerMotorSim(DCMotor.getNeoVortex(1)),
                             rotationMotor,
-                            Shooter.createEncoderSim(rotationMotor)));
+                            Shooter.createEncoderSim(rotationMotor),
+                            mRobotState));
 
                     indexer = Optional.of(new Indexer(
                             new MotorIOSim(
@@ -280,8 +283,8 @@ public class RobotContainer {
                 },
                 new DetectorCameraIO[] {() -> Constants.Vision.kLimelightConfig}));
 
-        mShooter = shooter.orElseGet(
-                () -> new Shooter(new MotorIO() {}, new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}));
+        mShooter = shooter.orElseGet(() ->
+                new Shooter(new MotorIO() {}, new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}, mRobotState));
 
         mIndexer = indexer.orElseGet(() -> new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {}));
 
@@ -468,21 +471,18 @@ public class RobotContainer {
         var setClimbModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB))
                 .ignoringDisable(true)
                 .withName("SetClimbScoringMode");
-        var shooterUpCommand = run(
-                        () -> {
-                            mShooter.setShooterUp();
-                        },
-                        mShooter)
-                .withName("StreamDeckShooterUpCommand");
-        var shooterDownCommand = startEnd(
-                        () -> {
-                            mShooter.setShooterDown();
-                        },
-                        () -> {
-                            mShooter.stopRotation();
-                        },
-                        mShooter)
-                .withName("StreamDeckShooterDownCommand");
+        // if shots are low/normal, use high
+        var useHighCommand = startEnd(
+                        () -> Shooter.mShooterOffset = ShooterOffset.kUseHigh,
+                        () -> Shooter.mShooterOffset = ShooterOffset.kUseDefault)
+                .ignoringDisable(true)
+                .withName("StreamDeckUseHighCommand");
+        // but if shots are high, use low
+        var useLowCommand = startEnd(
+                        () -> Shooter.mShooterOffset = ShooterOffset.kUseLow,
+                        () -> Shooter.mShooterOffset = ShooterOffset.kUseDefault)
+                .ignoringDisable(true)
+                .withName("StreamDeckUseLowCommand");
         var manualShootCommand =
                 ShootCommands.manualShoot(mShooter, mIndexer, mRobotState).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
@@ -509,8 +509,8 @@ public class RobotContainer {
                 .add(StreamDeckButton.kLeftClimbButton, leftClimbCommand::isScheduled)
                 .add(StreamDeckButton.kRightClimbButton, rightClimbCommand::isScheduled)
                 .add(StreamDeckButton.kCenterClimbButton, centerClimbCommand::isScheduled)
-                .add(StreamDeckButton.kShooterUpButton, shooterUpCommand::isScheduled)
-                .add(StreamDeckButton.kShooterDownButton, shooterDownCommand::isScheduled)
+                .add(StreamDeckButton.kUseHighButton, () -> Shooter.mShooterOffset == ShooterOffset.kUseHigh)
+                .add(StreamDeckButton.kUseLowButton, () -> Shooter.mShooterOffset == ShooterOffset.kUseLow)
                 .add(StreamDeckButton.kShootButton, manualShootCommand::isScheduled)
                 .add(StreamDeckButton.kExtendWinchButton, extendWinchCommand::isScheduled)
                 .add(StreamDeckButton.kRetractWinchButton, retractWinchCommand::isScheduled)
@@ -525,14 +525,8 @@ public class RobotContainer {
         mStreamDeck.button(StreamDeckButton.kRightClimbButton).onTrue(rightClimbCommand);
         mStreamDeck.button(StreamDeckButton.kCenterClimbButton).onTrue(centerClimbCommand);
 
-        mStreamDeck
-                .button(StreamDeckButton.kShooterUpButton)
-                .whileTrue(shooterUpCommand)
-                .onFalse(stopShooterCommand);
-        mStreamDeck
-                .button(StreamDeckButton.kShooterDownButton)
-                .whileTrue(shooterDownCommand)
-                .onFalse(stopShooterCommand);
+        mStreamDeck.button(StreamDeckButton.kUseHighButton).toggleOnTrue(useHighCommand);
+        mStreamDeck.button(StreamDeckButton.kUseLowButton).toggleOnTrue(useLowCommand);
         mStreamDeck
                 .button(StreamDeckButton.kShootButton)
                 .whileTrue(manualShootCommand)

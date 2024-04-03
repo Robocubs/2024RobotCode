@@ -66,7 +66,7 @@ public class NoteSimulator extends SubsystemBase {
     private final VisionConfig mDetectorVisionConfig;
     private Intake mIntake = new Intake(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {});
     private Indexer mIndexer = new Indexer(new MotorIO() {}, new DigitalIO() {}, new DigitalIO() {});
-    private Shooter mShooter = new Shooter(new MotorIO() {}, new MotorIO() {}, new MotorIO() {}, new EncoderIO() {});
+    private Shooter mShooter;
 
     private final List<NoteOnField> mNotesOnField = new ArrayList<>();
     private final List<NoteInRobot> mNotesInRobot = new ArrayList<>();
@@ -79,6 +79,7 @@ public class NoteSimulator extends SubsystemBase {
 
     public NoteSimulator(RobotState robotState, VisionConfig detectorVisionConfig) {
         mRobotState = robotState;
+        mShooter = new Shooter(new MotorIO() {}, new MotorIO() {}, new MotorIO() {}, new EncoderIO() {}, mRobotState);
         mDetectorVisionConfig = detectorVisionConfig;
 
         mNotesInRobot.add(new NoteInRobot(kIndexerPathLength / 2, NoteLocation.INTAKE));
