@@ -50,7 +50,8 @@ public class PauseDrive extends Command {
                     .get()
                     .getTranslation()
                     .minus(mRobotState.getPose2d().getTranslation())
-                    .getAngle());
+                    .getAngle()
+                    .rotateBy(mRobotState.getHeading()));
         } else {
             mRotationCommand.execute();
         }

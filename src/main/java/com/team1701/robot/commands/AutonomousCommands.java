@@ -192,9 +192,62 @@ public class AutonomousCommands {
                 .withName("FollowChoreo");
     }
 
+    private Command driveBackPreWarmAndShoot(String pathName) {
+        return loggedSequence(
+                pauseDrive(pathName),
+                followChoreoPathAndPreWarm(pathName),
+                aimAndShoot(),
+                runOnce(() -> mRobotState.setUseAutonFallback(false)));
+    }
+
+    private Command followLogicalTrajectory(String choreoPathName, AutoNote nextNote) {
+        return either(
+                driveTrajectoryToNextPiece(nextNote),
+                driveBackPreWarmAndShoot(choreoPathName),
+                mRobotState::getUseAutonFallback);
+    }
+
+    private Command driveTrajectoryToNextPiece(AutoNote nextNote) {
+        return new DriveAndSeekNote(
+                mDrive,
+                mRobotState,
+                new DriveToPose(
+                        mDrive,
+                        mRobotState,
+                        () -> new Pose2d(
+                                nextNote.pose().getTranslation(),
+                                mRobotState
+                                        .getPose2d()
+                                        .getTranslation()
+                                        .minus(nextNote.pose().getTranslation())
+                                        .getAngle()),
+                        mRobotState::getPose2d,
+                        kAutoTrapezoidalKinematicLimits,
+                        true,
+                        true),
+                mAutoNoteSeeker::getDetectedNoteToSeek,
+                kAutoTrapezoidalKinematicLimits);
+    }
+
     private Pose2d getFirstPose(String pathName) {
         var trajectory = Choreo.getTrajectory(pathName);
         return trajectory == null ? GeometryUtil.kPoseIdentity : trajectory.getInitialPose();
+    }
+
+    private Pose2d getFinalPose(String pathName) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        return trajectory == null ? GeometryUtil.kPoseIdentity : trajectory.getFinalPose();
+    }
+
+    private Command followPreWarmShootOrSkipToNext(String pathName, String returnPath, AutoNote nextNote) {
+        return race(
+                        driveBackPreWarmAndShoot(pathName).andThen(followChoreoPathAndSeekNote(returnPath)),
+                        waitSeconds(.7)
+                                .andThen(either(
+                                        idle(),
+                                        runOnce(() -> mRobotState.setUseAutonFallback(true)),
+                                        mRobotState::hasNote)))
+                .andThen(either(driveTrajectoryToNextPiece(nextNote), none(), mRobotState::getUseAutonFallback));
     }
 
     private Command followChoreoPathAndSeekNote(String pathName) {
@@ -359,21 +412,14 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
-    /* Phase 2 Autons */
-
     public AutonomousCommand source54CSeek() {
         var command = loggedSequence(
                         print("Started source 54C seek auto"),
                         driveToPoseWhileShooting(
                                 getFirstPose("Source54CSeek.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
                         followChoreoPathAndSeekNote("Source54CSeek.2"),
-                        pauseDrive("Source54CSeek.3"),
-                        followChoreoPathAndPreWarm("Source54CSeek.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("Source54CSeek.4"),
-                        pauseDrive("Source54CSeek.5"),
-                        followChoreoPathAndPreWarm("Source54CSeek.5"),
-                        aimAndShoot(),
+                        followPreWarmShootOrSkipToNext("Source54CSeek.3", "Source54CSeek.4", AutoNote.M4),
+                        driveBackPreWarmAndShoot("Source54CSeek.5"),
                         followChoreoPathAndPreWarm("Source54CSeek.6"),
                         aimAndShoot())
                 .withName("Source45CSeekAuto");

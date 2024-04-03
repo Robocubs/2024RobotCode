@@ -12,6 +12,7 @@ import com.team1701.lib.drivers.encoders.EncoderIO;
 import com.team1701.lib.drivers.motors.MotorIO;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.lib.util.Util;
+import com.team1701.lib.util.tuning.LoggedTunableBoolean;
 import com.team1701.robot.Constants;
 import com.team1701.robot.FieldConstants;
 import com.team1701.robot.autonomous.AutoNote;
@@ -70,6 +71,8 @@ public class NoteSimulator extends SubsystemBase {
 
     private final List<NoteOnField> mNotesOnField = new ArrayList<>();
     private final List<NoteInRobot> mNotesInRobot = new ArrayList<>();
+
+    private static LoggedTunableBoolean mRandomlyExcludeNotes = new LoggedTunableBoolean("RandomlyExcludeNotes", false);
 
     public record NoteSimulatorSensors(
             DigitalIO intakeEntranceSensor,
@@ -237,7 +240,9 @@ public class NoteSimulator extends SubsystemBase {
     public void placeAutonNotes() {
         mNotesOnField.clear();
         for (var note : kStartingNotePoses) {
-            mNotesOnField.add(new NoteOnField(note));
+            if (!mRandomlyExcludeNotes.get() || Math.random() > .2) {
+                mNotesOnField.add(new NoteOnField(note));
+            }
         }
 
         mNotesInRobot.clear();
