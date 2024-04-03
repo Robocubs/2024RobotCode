@@ -112,7 +112,7 @@ public final class Constants {
 
         static {
             if (kUseInterpolatedVisionStdDevValues) {
-                double coordScalar = 7.7;
+                double coordScalar = 3;
                 double angleScalar = 1.5;
                 for (double[] pair : kMeasuredDistanceToXStdDevValues) {
                     kVisionXStdDevInterpolater.put(pair[0], pair[1] * coordScalar);
@@ -433,10 +433,10 @@ public final class Constants {
                 new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
 
         public static final LoggedTunableNumber kLowerAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 87);
+                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 70);
 
         public static final LoggedTunableNumber kUpperAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 52);
+                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 70);
 
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
@@ -461,36 +461,44 @@ public final class Constants {
         public static final boolean kUseNewCurves = true;
 
         public static final double[][] kShooterDistanceToAngleValues = {
-            {2.3, 1},
-            {2.7, .81},
-            {3.5, .675},
-            {3.8, .64},
-            {4.1, .61},
-            {4.7, .575},
-            {5.1, .54},
-            // {5.9, .46}
+            {2.32, 1}, // 40 in
+            {2.69, .83}, // 67 in
+            {3.01, .77}, // 85.75 in
+            {3.48, .64}, // 110.75 in
+            {3.85, .62}, // 123.5 in
+            {3.95, .58}, // 136.5 in
+            {4.4, .52}, // 158 in
+            {4.77, .48}, // 173.5 in
+            {5.4, .455}, // 203 in
+            {5.7, .4325}, // 218 in
+            {6.17, .41}, // 240 in
+            {6.88, .382}, // 270 in
+            {7.24, .37}, // 285 in
+            {7.7, .357} // 300 in
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
-            {2.3, 410},
-            {2.7, 410},
-            {3.5, 440},
-            {3.8, 460},
-            {4.1, 470},
-            {4.7, 510},
-            {5.1, 550},
-            // {5.9, 590}
+            {2.32, 300}, // 300
+            {2.69, 330}, // 330
+            {3.01, 375}, // 375
+            {3.48, 390}, // 390
+            {3.85, 410}, // 410
+            {3.95, 430}, // 430
+            {4.4, 450}, // 450
+            {4.77, 480}, // 480
+            {5.4, 490},
+            {5.7, 510},
+            {6.17, 530},
+            {6.88, 550},
+            {7.24, 560},
+            {7.7, 570}
         };
 
-        public static final double[][] kShooterValuesToHeadingOffset = {
-            {232, -10},
-            {307, -8.25},
-            {377, -7.25},
-            {407, -6.5},
-            {424, -6},
-            {470, -5},
-            {508, -4},
-            {580, -3},
+        public static final double[][] kShooterForwardVelocityToHeadingOffset = {
+            {66, 13},
+            {73, 9},
+            {89, 2},
+            {100, 2}
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {
@@ -498,7 +506,7 @@ public final class Constants {
         };
 
         public static final double[][] kPassingDistanceToSpeedValues = {
-            {11.53, 510}, {10.3, 470}, {9.02, 435}, {7.15, 370}, {6.15, 335}, {5, 220}, {0, 120}
+            {11.53, 325}, {10.3, 315}, {9.02, 300}, {7.15, 275}, {6.15, 230}, {5, 200}, {0, 100}
         };
 
         // Regression of Collected (a.k.a used angle) vs Calculated Angle
@@ -523,7 +531,7 @@ public final class Constants {
                 kPassingSpeedInterpolator.put(pair[0], pair[1]);
             }
 
-            for (double[] pair : kShooterValuesToHeadingOffset) {
+            for (double[] pair : kShooterForwardVelocityToHeadingOffset) {
                 kShooterHeadingOffsetInterpolator.put(pair[0], Units.degreesToRadians(pair[1]));
             }
 
