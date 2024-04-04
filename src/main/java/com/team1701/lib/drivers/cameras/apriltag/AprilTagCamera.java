@@ -115,7 +115,7 @@ public class AprilTagCamera {
 
     private Optional<EstimatedRobotPose> getEstimatedPose(AprilTagPipelineResult pipelineResult) {
         if (pipelineResult.multiTargetResult.isPresent()
-                && pipelineResult.multiTargetResult.get().reprojectionError < 0.6) {
+                && pipelineResult.multiTargetResult.get().cameraPose.getZ() < 1.0) {
             var multiTargetResult = pipelineResult.multiTargetResult.get();
             var fieldLayout = mFieldLayoutSupplier.get();
             var stdDevs = getStdDevs(multiTargetResult.targetIds, multiTargetResult.cameraPose);
