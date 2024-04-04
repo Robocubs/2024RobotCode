@@ -196,11 +196,7 @@ public class AutonomousCommands {
     }
 
     private Command driveBackPreWarmAndShoot(String pathName) {
-        return loggedSequence(
-                pauseDrive(pathName),
-                followChoreoPathAndPreWarm(pathName),
-                aimAndShoot(),
-                runOnce(() -> mRobotState.setUseAutonFallback(false)));
+        return loggedSequence(pauseDrive(pathName), followChoreoPathAndPreWarm(pathName), aimAndShoot());
     }
 
     private Command driveToNextPiece(AutoNote nextNote) {
@@ -246,15 +242,24 @@ public class AutonomousCommands {
         return trajectory == null ? GeometryUtil.kPoseIdentity : trajectory.getFinalPose();
     }
 
+    private class UseEfficientAutonFallback {
+        boolean useFallback = false;
+
+        public UseEfficientAutonFallback(boolean use) {
+            useFallback = use;
+        }
+    }
+
     private Command efficientlyPreWarmShootAndDrive(String pathName, String returnPath, AutoNote nextNote) {
+        var useAutonFallback = new UseEfficientAutonFallback(false);
         return race(
                         driveBackPreWarmAndShoot(pathName).andThen(followChoreoPathAndSeekNote(returnPath)),
                         waitSeconds(.7)
                                 .andThen(either(
                                         idle(),
-                                        runOnce(() -> mRobotState.setUseAutonFallback(true)),
+                                        runOnce(() -> useAutonFallback.useFallback = true),
                                         mRobotState::hasNote)))
-                .andThen(either(driveToNextPiece(nextNote), none(), mRobotState::getUseAutonFallback));
+                .andThen(either(driveToNextPiece(nextNote), none(), () -> useAutonFallback.useFallback));
     }
 
     private Command followChoreoPathAndSeekNote(String pathName) {

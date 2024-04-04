@@ -58,8 +58,6 @@ public class RobotState {
 
     private ShootingState mShootingState = ShootingState.kDefault;
 
-    private boolean mUseAutonFallback = false;
-
     public RobotState() {
         mField = new Field2d();
         SmartDashboard.putData("Field", mField);
@@ -389,15 +387,6 @@ public class RobotState {
 
     public boolean isClimbMode() {
         return mScoringMode == ScoringMode.CLIMB;
-    }
-
-    public boolean getUseAutonFallback() {
-        return mUseAutonFallback;
-    }
-
-    public boolean setUseAutonFallback(boolean use) {
-        mUseAutonFallback = use;
-        return mUseAutonFallback;
     }
 
     public enum ScoringMode {
