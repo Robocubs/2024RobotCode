@@ -67,8 +67,11 @@ public class AutonomousCommands {
     }
 
     private Pose2d autoFlipPose(Pose2d pose) {
-        var flippedPose = GeometryUtil.flipX(pose, FieldConstants.kFieldLongLengthMeters);
-        return Configuration.isRedAlliance() ? flippedPose : pose;
+        return Configuration.isRedAlliance() ? GeometryUtil.flipX(pose, FieldConstants.kFieldLongLengthMeters) : pose;
+    }
+
+    private Rotation2d autoFlipRotation(Rotation2d rotation) {
+        return Configuration.isRedAlliance() ? GeometryUtil.flipX(rotation) : rotation;
     }
 
     private Command idleShooter() {
@@ -197,6 +200,17 @@ public class AutonomousCommands {
         return trajectory == null ? GeometryUtil.kPoseIdentity : trajectory.getInitialPose();
     }
 
+    private Rotation2d getInitialVelocityHeading(String pathName) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        if (trajectory == null) {
+            return GeometryUtil.kRotationIdentity;
+        }
+
+        // Velocity of initial state is 0
+        var firstState = trajectory.sample(Constants.kLoopPeriodSeconds);
+        return new Rotation2d(firstState.velocityX, firstState.velocityY);
+    }
+
     private Command followChoreoPathAndSeekNote(String pathName) {
         var trajectory = Choreo.getTrajectory(pathName);
         if (trajectory == null) {
@@ -264,7 +278,11 @@ public class AutonomousCommands {
     }
 
     private Command pauseDrive(String pathName) {
-        return new PauseDrive(mDrive, mRobotState, () -> getFirstPose(pathName));
+        var moduleHeading = getInitialVelocityHeading(pathName);
+        var robotPose = getFirstPose(pathName).getRotation();
+        return new PauseDrive(
+                        mDrive, mRobotState, () -> autoFlipRotation(moduleHeading), () -> autoFlipRotation(robotPose))
+                .withName("PauseDrive");
     }
 
     public AutonomousCommand demo() {
