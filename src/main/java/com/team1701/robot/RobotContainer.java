@@ -569,6 +569,7 @@ public class RobotContainer {
         var centerB231Center = commands.centerB231Center();
         var centerBA123Amp = commands.centerBA123Amp();
         var centerBC123center = commands.centerBC123center();
+        var source543source = commands.source543Source();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Greedy Middle Auto", greedyMiddleCommand.path());
@@ -581,6 +582,7 @@ public class RobotContainer {
         mAutonomousPaths.put("Center B231 Center", centerB231Center.path());
         mAutonomousPaths.put("Center BA123 Amp", centerBA123Amp.path());
         mAutonomousPaths.put("Center BC123 Center", centerBC123center.path());
+        mAutonomousPaths.put("Source 543 Source", source543source.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Greedy Middle Auto", greedyMiddleCommand.command());
@@ -593,6 +595,7 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Center B231 Center", centerB231Center.command());
         autonomousModeChooser.addOption("Center BA123 Amp", centerBA123Amp.command());
         autonomousModeChooser.addOption("Center BC123 Center", centerBC123center.command());
+        autonomousModeChooser.addOption("Source 543 Source", source543source.command());
 
         // autonomousModeChooser.addOption(
         //         "Drive Characterization",
