@@ -433,8 +433,8 @@ public class AutonomousCommands {
                         driveToPoseWhileShooting(
                                 getFirstPose("Source543Stage.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
                         followChoreoPathAndSeekNote("Source543Stage.2"),
-                        efficientlyPreWarmShootAndDrive("Source543Stage.3", "CenterB342Stage.4", AutoNote.M4),
-                        efficientlyPreWarmShootAndDrive("Source543Stage.5", "CenterB342Stage.6", AutoNote.M4),
+                        efficientlyPreWarmShootAndDrive("Source543Stage.3", "Source543Stage.4", AutoNote.M4),
+                        efficientlyPreWarmShootAndDrive("Source543Stage.5", "Source543Stage.6", AutoNote.M3),
                         driveBackPreWarmAndShoot("Source543Stage.7"))
                 .withName("Source453stageAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
