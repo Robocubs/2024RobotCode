@@ -14,7 +14,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1701.lib.alerts.TriggeredAlert;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOCubVision;
-import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIOPhotonCamera;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOLimelight;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIOSim;
@@ -47,7 +46,6 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.leds.LED;
 import com.team1701.robot.subsystems.shooter.Shooter;
-import com.team1701.robot.subsystems.shooter.Shooter.ShooterOffset;
 import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.SparkMotorFactory;
 import com.team1701.robot.util.SparkMotorFactory.MotorUsage;
@@ -183,12 +181,19 @@ public class RobotContainer {
                     vision = Optional.of(new Vision(
                             mRobotState,
                             new AprilTagCameraIO[] {
-                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontLeftCameraConfig),
-                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontRightCameraConfig),
-                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackLeftCameraConfig),
-                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackRightCameraConfig),
-                                new AprilTagCameraIOPhotonCamera(Constants.Vision.kSniperCameraConfig)
+                                () -> Constants.Vision.kFrontLeftCameraConfig,
+                                () -> Constants.Vision.kFrontRightCameraConfig,
+                                () -> Constants.Vision.kBackLeftCameraConfig,
+                                () -> Constants.Vision.kBackRightCameraConfig,
+                                () -> Constants.Vision.kSniperCameraConfig
                             },
+                            // new AprilTagCameraIO[] {
+                            //     new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontLeftCameraConfig),
+                            //     new AprilTagCameraIOPhotonCamera(Constants.Vision.kFrontRightCameraConfig),
+                            //     new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackLeftCameraConfig),
+                            //     new AprilTagCameraIOPhotonCamera(Constants.Vision.kBackRightCameraConfig),
+                            //     new AprilTagCameraIOPhotonCamera(Constants.Vision.kSniperCameraConfig)
+                            // },
                             new DetectorCameraIO[] {
                                 new DetectorCameraIOSim(
                                         Constants.Vision.kLimelightConfig, noteSimulator::getDetectedObjects)
@@ -471,18 +476,6 @@ public class RobotContainer {
         var setClimbModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB))
                 .ignoringDisable(true)
                 .withName("SetClimbScoringMode");
-        // if shots are low/normal, use high
-        var useHighCommand = startEnd(
-                        () -> Shooter.mShooterOffset = ShooterOffset.kUseHigh,
-                        () -> Shooter.mShooterOffset = ShooterOffset.kUseDefault)
-                .ignoringDisable(true)
-                .withName("StreamDeckUseHighCommand");
-        // but if shots are high, use low
-        var useLowCommand = startEnd(
-                        () -> Shooter.mShooterOffset = ShooterOffset.kUseLow,
-                        () -> Shooter.mShooterOffset = ShooterOffset.kUseDefault)
-                .ignoringDisable(true)
-                .withName("StreamDeckUseLowCommand");
         var manualShootCommand =
                 ShootCommands.manualShoot(mShooter, mIndexer, mRobotState).withName("StreamDeckShootCommand");
         var extendWinchCommand = run(
@@ -509,8 +502,8 @@ public class RobotContainer {
                 .add(StreamDeckButton.kLeftClimbButton, leftClimbCommand::isScheduled)
                 .add(StreamDeckButton.kRightClimbButton, rightClimbCommand::isScheduled)
                 .add(StreamDeckButton.kCenterClimbButton, centerClimbCommand::isScheduled)
-                .add(StreamDeckButton.kUseHighButton, () -> Shooter.mShooterOffset == ShooterOffset.kUseHigh)
-                .add(StreamDeckButton.kUseLowButton, () -> Shooter.mShooterOffset == ShooterOffset.kUseLow)
+                .add(StreamDeckButton.kUseHighButton, () -> false)
+                .add(StreamDeckButton.kUseLowButton, () -> false)
                 .add(StreamDeckButton.kShootButton, manualShootCommand::isScheduled)
                 .add(StreamDeckButton.kExtendWinchButton, extendWinchCommand::isScheduled)
                 .add(StreamDeckButton.kRetractWinchButton, retractWinchCommand::isScheduled)
@@ -525,8 +518,6 @@ public class RobotContainer {
         mStreamDeck.button(StreamDeckButton.kRightClimbButton).onTrue(rightClimbCommand);
         mStreamDeck.button(StreamDeckButton.kCenterClimbButton).onTrue(centerClimbCommand);
 
-        mStreamDeck.button(StreamDeckButton.kUseHighButton).toggleOnTrue(useHighCommand);
-        mStreamDeck.button(StreamDeckButton.kUseLowButton).toggleOnTrue(useLowCommand);
         mStreamDeck
                 .button(StreamDeckButton.kShootButton)
                 .whileTrue(manualShootCommand)

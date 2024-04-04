@@ -37,7 +37,14 @@ export class TopBar extends LitElement {
   render(): TemplateResult {
     return html`
       <div id="top-bar-root" class="flex flex-row justify-between w-full">
-        <frc-sendable-chooser source-key="/SmartDashboard/Auto Mode"></frc-sendable-chooser>
+        <div class="flex flex-row gap-2">
+          <frc-sendable-chooser source-key="/SmartDashboard/Auto Mode"></frc-sendable-chooser>
+          <team1701-incrementable-number
+            source-key="/SmartDashboard/ShooterSpeakerRotationOffsetRadians"
+            label="Speaker Offset"
+            step="0.01"
+          ></team1701-incrementable-number>
+        </div>
         <ul class="flex flex-wrap gap-2 cursor-pointer select-none text-md font-medium text-center text-white border-b-2 border-primary h-full">
           <li>
             <div @click="${() => this.#dispatchPageChange('Field')}" class="${classMap(this.tabClass('Field'))}">Field</div>
