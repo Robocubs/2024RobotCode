@@ -259,7 +259,7 @@ public final class Constants {
 
             switch (Configuration.getRobot()) {
                 case COMPETITION_BOT:
-                    kWheelRadiusMeters = Units.inchesToMeters(1.95379394);
+                    kWheelRadiusMeters = Units.inchesToMeters(1.9575);
                     driveMotorMaxRPM = 5500; // Measured + 10%
                     turnMotorMaxRPM = Constants.Motors.kMaxKrakenRPM;
                     kDriveReduction = k16ToothKitReduction * kL3DriveReduction;
@@ -461,37 +461,37 @@ public final class Constants {
         public static final boolean kUseNewCurves = true;
 
         public static final double[][] kShooterDistanceToAngleValues = {
-            {2.32, 1}, // 40 in
-            {2.69, .83}, // 67 in
-            {3.01, .77}, // 85.75 in
-            {3.48, .64}, // 110.75 in
-            {3.85, .62}, // 123.5 in
-            {3.95, .58}, // 136.5 in
-            {4.4, .52}, // 158 in
-            {4.77, .48}, // 173.5 in
-            {5.4, .455}, // 203 in
-            {5.7, .4325}, // 218 in
-            {6.17, .41}, // 240 in
-            {6.88, .382}, // 270 in
-            {7.24, .37}, // 285 in
-            {7.7, .357} // 300 in
+            {2.34, 1}, // 3.875 in
+            {2.716, .83}, // 30.875 in
+            {3.034, .77}, // 49.625 in
+            {3.501, .64}, // 74.625 in
+            {3.766, .62}, // 87.375 in
+            {4.085, .58}, // 100.375 in
+            {4.4, .52}, // 121.875 in
+            {4.805, .48}, // 137.375 in
+            {5.441, .455}, // 166.875 in
+            {5.984, .4325}, // 181.875 in
+            {6.27, .41}, // 203.875 in
+            {7.172, .382}, // 233.875 in
+            {7.753, .37}, // 248.875 in
+            {8.017, .357} // 263.875 in
         };
 
         public static final double[][] kShooterDistanceToSpeedValues = {
-            {2.32, 300}, // 300
-            {2.69, 330}, // 330
-            {3.01, 375}, // 375
-            {3.48, 390}, // 390
-            {3.85, 410}, // 410
-            {3.95, 430}, // 430
-            {4.4, 450}, // 450
-            {4.77, 480}, // 480
-            {5.4, 490},
-            {5.7, 510},
-            {6.17, 530},
-            {6.88, 550},
-            {7.24, 560},
-            {7.7, 570}
+            {2.34, 300},
+            {2.716, 330},
+            {3.034, 375},
+            {3.501, 390},
+            {3.766, 410},
+            {4.085, 430},
+            {4.4, 450},
+            {4.805, 480},
+            {5.441, 490},
+            {5.984, 510},
+            {6.27, 530},
+            {7.172, 550},
+            {7.753, 560},
+            {8.017, 570}
         };
 
         public static final double[][] kShooterForwardVelocityToHeadingOffset = {

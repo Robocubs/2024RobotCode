@@ -13,6 +13,7 @@ import com.team1701.lib.util.Util;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
+import com.team1701.robot.states.RobotState;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -28,6 +29,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
+    private final RobotState mRobotState;
+
     private final MotorIO mUpperRollerMotorIO;
     private final MotorIO mLowerRollerMotorIO;
 
@@ -57,9 +60,18 @@ public class Shooter extends SubsystemBase {
 
     private Optional<Rotation2d> mRotationMotorOffset = Optional.empty();
 
-    public Shooter(MotorIO upperMotor, MotorIO lowerMotor, MotorIO rotationMotor, EncoderIO angleEncoder) {
+    public static ShooterOffset mShooterOffset;
+
+    public Shooter(
+            MotorIO upperMotor,
+            MotorIO lowerMotor,
+            MotorIO rotationMotor,
+            EncoderIO angleEncoder,
+            RobotState robotState) {
         mUpperRollerMotorIO = upperMotor;
         mLowerRollerMotorIO = lowerMotor;
+
+        mRobotState = robotState;
 
         mRotationMotorIO = rotationMotor;
 
@@ -71,6 +83,8 @@ public class Shooter extends SubsystemBase {
         setPIDValues();
 
         mAngleEncoderIO = angleEncoder;
+
+        mShooterOffset = ShooterOffset.kUseDefault;
 
         createMechanism2d();
     }
@@ -175,6 +189,7 @@ public class Shooter extends SubsystemBase {
         Logger.recordOutput(
                 "Shooter/Motors/LowerRollerWattage",
                 mLowerShooterMotorInputs.appliedVoltage * mLowerShooterMotorInputs.outputCurrent);
+        Logger.recordOutput("Shooter/Motors/Rotation/Offset", mShooterOffset.offset);
 
         LoggedTunableValue.ifChanged(
                 hashCode(),
@@ -230,7 +245,10 @@ public class Shooter extends SubsystemBase {
 
     @AutoLogOutput
     public Rotation2d getAngle() {
-        return Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians);
+        return mRobotState.isSpeakerMode()
+                ? Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians)
+                        .minus(mShooterOffset.offset)
+                : Rotation2d.fromRadians(mRotationShooterMotorInputs.positionRadians);
     }
 
     public ShooterSpeeds getRollerSpeedsRadiansPerSecond() {
@@ -240,7 +258,7 @@ public class Shooter extends SubsystemBase {
 
     public void setSetpoint(ShooterSetpoint setpoint) {
         setRollerSpeeds(setpoint.speeds);
-        setRotationAngle(setpoint.angle);
+        setRotationAngle(setpoint.angle());
     }
 
     public void setRollerSpeeds(ShooterSpeeds shooterSpeeds) {
@@ -285,10 +303,13 @@ public class Shooter extends SubsystemBase {
             mRotationMotorIO.setPercentOutput(0.0);
             return;
         }
-        mRotationMotorIO.setPositionControl(rotation);
 
-        mShooterLigament.setAngle(rotation.getDegrees() - 90);
-        Logger.recordOutput("Shooter/Motors/Rotation/Demand", rotation);
+        var angle = mRobotState.isSpeakerMode() ? rotation.plus(mShooterOffset.offset) : rotation;
+
+        mRotationMotorIO.setPositionControl(angle);
+
+        mShooterLigament.setAngle(angle.getDegrees() - 90);
+        Logger.recordOutput("Shooter/Motors/Rotation/Demand", angle);
     }
 
     public void setShooterUp() {
@@ -327,5 +348,18 @@ public class Shooter extends SubsystemBase {
 
     public void setRotationPercentOutput(double percent) {
         mRotationMotorIO.setPercentOutput(percent);
+    }
+
+    public static enum ShooterOffset {
+        // value to adjust by (ie. if shooter is high, useLow)
+        kUseHigh(0.02),
+        kUseDefault(0.0),
+        kUseLow(-0.02);
+
+        public Rotation2d offset;
+
+        ShooterOffset(double radians) {
+            offset = Rotation2d.fromRadians(radians);
+        }
     }
 }
