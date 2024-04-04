@@ -195,6 +195,36 @@ public class AutonomousCommands {
                 .withName("FollowChoreo");
     }
 
+    private Command driveBackPreWarmAndShoot(String pathName) {
+        return loggedSequence(
+                pauseDrive(pathName),
+                followChoreoPathAndPreWarm(pathName),
+                aimAndShoot(),
+                runOnce(() -> mRobotState.setUseAutonFallback(false)));
+    }
+
+    private Command driveToNextPiece(AutoNote nextNote) {
+        return new DriveAndSeekNote(
+                mDrive,
+                mRobotState,
+                new DriveToPose(
+                        mDrive,
+                        mRobotState,
+                        () -> new Pose2d(
+                                nextNote.pose().getTranslation(),
+                                mRobotState
+                                        .getPose2d()
+                                        .getTranslation()
+                                        .minus(nextNote.pose().getTranslation())
+                                        .getAngle()),
+                        mRobotState::getPose2d,
+                        kAutoTrapezoidalKinematicLimits,
+                        true,
+                        true),
+                mAutoNoteSeeker::getDetectedNoteToSeek,
+                kAutoTrapezoidalKinematicLimits);
+    }
+
     private Pose2d getFirstPose(String pathName) {
         var trajectory = Choreo.getTrajectory(pathName);
         return trajectory == null ? GeometryUtil.kPoseIdentity : trajectory.getInitialPose();
@@ -209,6 +239,22 @@ public class AutonomousCommands {
         // Velocity of initial state is 0
         var firstState = trajectory.sample(Constants.kLoopPeriodSeconds);
         return new Rotation2d(firstState.velocityX, firstState.velocityY);
+    }
+
+    private Pose2d getFinalPose(String pathName) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        return trajectory == null ? GeometryUtil.kPoseIdentity : trajectory.getFinalPose();
+    }
+
+    private Command efficientlyPreWarmShootAndDrive(String pathName, String returnPath, AutoNote nextNote) {
+        return race(
+                        driveBackPreWarmAndShoot(pathName).andThen(followChoreoPathAndSeekNote(returnPath)),
+                        waitSeconds(.7)
+                                .andThen(either(
+                                        idle(),
+                                        runOnce(() -> mRobotState.setUseAutonFallback(true)),
+                                        mRobotState::hasNote)))
+                .andThen(either(driveToNextPiece(nextNote), none(), mRobotState::getUseAutonFallback));
     }
 
     private Command followChoreoPathAndSeekNote(String pathName) {
@@ -316,18 +362,12 @@ public class AutonomousCommands {
                         print("Started source 4321 center stage auto"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("Source4321CenterStage.1"),
-                        pauseDrive("Source4321CenterStage.2"),
-                        followChoreoPathAndPreWarm("Source4321CenterStage.2"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("Source4321CenterStage.3"),
-                        pauseDrive("Source4321CenterStage.4"),
-                        followChoreoPathAndPreWarm("Source4321CenterStage.4"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("Source4321CenterStage.5"),
-                        pauseDrive("Source4321CenterStage.6"),
-                        followChoreoPathAndPreWarm("Source4321CenterStage.6"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("Source4321CenterStage.7"))
+                        efficientlyPreWarmShootAndDrive(
+                                "Source4321CenterStage.2", "Source4321CenterStage.3", AutoNote.M3),
+                        efficientlyPreWarmShootAndDrive(
+                                "Source4321CenterStage.4", "Source4321CenterStage.5", AutoNote.M2),
+                        efficientlyPreWarmShootAndDrive(
+                                "Source4321CenterStage.6", "Source4321CenterStage.7", AutoNote.M1))
                 .withName("Source 4321 CenterStage Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
@@ -339,17 +379,9 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("AmpA123Amp.1"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("AmpA123Amp.2"),
-                        pauseDrive("AmpA123Amp.3"),
-                        followChoreoPathAndPreWarm("AmpA123Amp.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("AmpA123Amp.4"),
-                        pauseDrive("AmpA123Amp.5"),
-                        followChoreoPathAndPreWarm("AmpA123Amp.5"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("AmpA123Amp.6"),
-                        pauseDrive("AmpA123Amp.7"),
-                        followChoreoPathAndPreWarm("AmpA123Amp.7"),
-                        aimAndShoot())
+                        efficientlyPreWarmShootAndDrive("AmpA123Amp.3", "AmpA123Amp.4", AutoNote.M2),
+                        efficientlyPreWarmShootAndDrive("AmpA123Amp.5", "AmpA123Amp.6", AutoNote.M3),
+                        driveBackPreWarmAndShoot("AmpA123Amp.7"))
                 .withName("Amp A123 Amp Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
@@ -366,18 +398,12 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("GreedyMiddle.4"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("GreedyMiddle.5"),
-                        followChoreoPathAndPreWarm("GreedyMiddle.6"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("GreedyMiddle.7"),
-                        followChoreoPathAndPreWarm("GreedyMiddle.8"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("GreedyMiddle.9"))
+                        efficientlyPreWarmShootAndDrive("GreedyMiddle.6", "GreedyMiddle.7", AutoNote.M2),
+                        efficientlyPreWarmShootAndDrive("GreedyMiddle.8", "GreedyMiddle.9", AutoNote.M3))
                 .withName("GreedyMiddleAuto");
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
-
-    /* Phase 2 Autons */
 
     public AutonomousCommand source54CSeek() {
         var command = loggedSequence(
@@ -385,13 +411,8 @@ public class AutonomousCommands {
                         driveToPoseWhileShooting(
                                 getFirstPose("Source54CSeek.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
                         followChoreoPathAndSeekNote("Source54CSeek.2"),
-                        pauseDrive("Source54CSeek.3"),
-                        followChoreoPathAndPreWarm("Source54CSeek.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("Source54CSeek.4"),
-                        pauseDrive("Source54CSeek.5"),
-                        followChoreoPathAndPreWarm("Source54CSeek.5"),
-                        aimAndShoot(),
+                        efficientlyPreWarmShootAndDrive("Source54CSeek.3", "Source54CSeek.4", AutoNote.M4),
+                        driveBackPreWarmAndShoot("Source54CSeek.5"),
                         followChoreoPathAndPreWarm("Source54CSeek.6"),
                         aimAndShoot())
                 .withName("Source45CSeekAuto");
@@ -403,17 +424,9 @@ public class AutonomousCommands {
                         print("Started Amp123Seek auto"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("Amp123Amp.1"),
-                        pauseDrive("Amp123Amp.2"),
-                        followChoreoPathAndPreWarm("Amp123Amp.2"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("Amp123Amp.3"),
-                        pauseDrive("Amp123Amp.4"),
-                        followChoreoPathAndPreWarm("Amp123Amp.4"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("Amp123Amp.5"),
-                        pauseDrive("Amp123Amp.6"),
-                        followChoreoPathAndPreWarm("Amp123Amp.6"),
-                        aimAndShoot())
+                        efficientlyPreWarmShootAndDrive("Amp123Amp.2", "Amp123Amp.3", AutoNote.M2),
+                        efficientlyPreWarmShootAndDrive("Amp123Amp.4", "Amp123Amp.5", AutoNote.M3),
+                        driveBackPreWarmAndShoot("Amp123Amp.6"))
                 .withName("Amp 123 Amp Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
@@ -425,17 +438,9 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("CenterB342Stage.1"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("CenterB342Stage.2"),
-                        pauseDrive("CenterB342Stage.3"),
-                        followChoreoPathAndPreWarm("CenterB342Stage.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterB342Stage.4"),
-                        pauseDrive("CenterB342Stage.5"),
-                        followChoreoPathAndPreWarm("CenterB342Stage.5"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterB342Stage.6"),
-                        pauseDrive("CenterB342Stage.7"),
-                        followChoreoPathAndPreWarm("CenterB342Stage.7"),
-                        aimAndShoot())
+                        efficientlyPreWarmShootAndDrive("CenterB342Stage.3", "CenterB342Stage.4", AutoNote.M4),
+                        efficientlyPreWarmShootAndDrive("CenterB342Stage.5", "CenterB342Stage.6", AutoNote.M2),
+                        driveBackPreWarmAndShoot("CenterB342Stage.7"))
                 .withName("Center B342 Stage Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
@@ -446,17 +451,9 @@ public class AutonomousCommands {
                         driveToPoseWhileShooting(
                                 getFirstPose("Source543Stage.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
                         followChoreoPathAndSeekNote("Source543Stage.2"),
-                        pauseDrive("Source543Stage.3"),
-                        followChoreoPathAndPreWarm("Source543Stage.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("Source543Stage.4"),
-                        pauseDrive("Source543Stage.5"),
-                        followChoreoPathAndPreWarm("Source543Stage.5"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("Source543Stage.6"),
-                        pauseDrive("Source543Stage.6"),
-                        followChoreoPathAndPreWarm("Source543Stage.7"),
-                        aimAndShoot())
+                        efficientlyPreWarmShootAndDrive("Source543Stage.3", "Source543Stage.4", AutoNote.M4),
+                        efficientlyPreWarmShootAndDrive("Source543Stage.5", "Source543Stage.6", AutoNote.M3),
+                        driveBackPreWarmAndShoot("Source543Stage.7"))
                 .withName("Source453stageAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
@@ -468,17 +465,9 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("CenterB231Center.1", false, false),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("CenterB231Center.2"),
-                        pauseDrive("CenterB231Center.3"),
-                        followChoreoPathAndPreWarm("CenterB231Center.3"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterB231Center.4"),
-                        pauseDrive("CenterB231Center.5"),
-                        followChoreoPathAndPreWarm("CenterB231Center.5"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterB231Center.6"),
-                        pauseDrive("CenterB231Center.7"),
-                        followChoreoPathAndPreWarm("CenterB231Center.7"),
-                        aimAndShoot())
+                        efficientlyPreWarmShootAndDrive("CenterB231Center.3", "CenterB231Center.4", AutoNote.M3),
+                        efficientlyPreWarmShootAndDrive("CenterB231Center.5", "CenterB231Center.6", AutoNote.M1),
+                        driveBackPreWarmAndShoot("CenterB231Center.7"))
                 .withName("Center B231 Stage Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
@@ -493,14 +482,8 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("CenterBA123Amp.3"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("CenterBA123Amp.4"),
-                        pauseDrive("CenterBA123Amp.5"),
-                        followChoreoPathAndPreWarm("CenterBA123Amp.5"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterBA123Amp.6"),
-                        pauseDrive("CenterBA123Amp.7"),
-                        followChoreoPathAndPreWarm("CenterBA123Amp.7"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterBA123Amp.8"))
+                        efficientlyPreWarmShootAndDrive("CenterBA123Amp.5", "CenterBA123Amp.6", AutoNote.M2),
+                        efficientlyPreWarmShootAndDrive("CenterBA123Amp.7", "CenterBA123Amp.8", AutoNote.M3))
                 .withName("Center BA123 Amp Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
@@ -515,13 +498,8 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("CenterBC123Center.3"),
                         aimAndShoot(),
                         followChoreoPathAndSeekNote("CenterBC123Center.4"),
-                        followChoreoPathAndPreWarm("CenterBC123Center.5"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterBC123Center.6"),
-                        pauseDrive("CenterBC123Center.7"),
-                        followChoreoPathAndPreWarm("CenterBC123Center.7"),
-                        aimAndShoot(),
-                        followChoreoPathAndSeekNote("CenterBC123Center.8"))
+                        efficientlyPreWarmShootAndDrive("CenterBC123Center.5", "CenterBC123Center.6", AutoNote.M2),
+                        efficientlyPreWarmShootAndDrive("CenterBC123Center.7", "CenterBC123Center.8", AutoNote.M3))
                 .withName("CenterBC123CenterAuto");
 
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
