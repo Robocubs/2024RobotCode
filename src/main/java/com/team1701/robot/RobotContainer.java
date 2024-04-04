@@ -148,8 +148,8 @@ public class RobotContainer {
                             new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, false)));
                     intake = Optional.of(new Intake(
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
-                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, false),
-                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, false)));
+                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
+                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
                     climb = Optional.of(new Climb(
                             SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                                     Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
