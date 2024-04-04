@@ -385,7 +385,7 @@ public final class Constants {
         public static final Rotation2d kShooterUpperLimit = Rotation2d.fromDegrees(58);
         public static final Rotation2d kShooterLowerLimit = Rotation2d.fromDegrees(12.5);
 
-        public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.1);
+        public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.05);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
         public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-2);
