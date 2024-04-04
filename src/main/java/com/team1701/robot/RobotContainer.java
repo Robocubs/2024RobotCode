@@ -325,6 +325,8 @@ public class RobotContainer {
                 .and(() -> DriverStation.isFMSAttached() && Timer.getMatchTime() < 30.5)
                 .onTrue(rumbleController.rumblePulses(3).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
 
+        teleopEnabled.and(mIntake::hasNote).whileTrue(rumbleController.rumblePulses(2));
+
         mDriverController
                 .y()
                 .and(() -> !mRobotState.getDetectedNoteForPickup().isPresent() || mRobotState.hasNote())
