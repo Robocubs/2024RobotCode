@@ -2,6 +2,7 @@ export * from './alerts';
 export * from './commands';
 export * from './diagnostic-view';
 export * from './field-view';
+export * from './incrementable-number';
 export * from './leds';
 export * from './match-timer';
 export * from './operator-button';
