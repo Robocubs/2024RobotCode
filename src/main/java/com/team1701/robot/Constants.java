@@ -441,7 +441,7 @@ public final class Constants {
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
-        public static final ShooterSetpoint kLowPassSetpoint = new ShooterSetpoint(300, kShooterLowerLimit);
+        public static final ShooterSetpoint kLowPassSetpoint = new ShooterSetpoint(250, kShooterLowerLimit);
 
         public static final InterpolatingDoubleTreeMap kShooterAngleInterpolator =
                 new InterpolatingDoubleTreeMap(); // Radians
