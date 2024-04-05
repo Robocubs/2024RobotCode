@@ -493,6 +493,22 @@ public class RobotContainer {
                         mClimb)
                 .withName("StreamDeckRetractWinchCommand");
         var stopShooterCommand = ShootCommands.stop(mShooter).withName("StreamDeckStopShootCommand");
+        var shooterUpCommand = run(
+                        () -> {
+                            mShooter.setShooterUp();
+                        },
+                        mShooter)
+                .withName("StreamDeckShooterUpCommand");
+
+        var shooterDownCommand = startEnd(
+                        () -> {
+                            mShooter.setShooterDown();
+                        },
+                        () -> {
+                            mShooter.stopRotation();
+                        },
+                        mShooter)
+                .withName("StreamDeckShooterDownCommand");
 
         mStreamDeck.configureButton(config -> config.add(
                         StreamDeckButton.kSpeakerModeButton, () -> mRobotState.getScoringMode() == ScoringMode.SPEAKER)
@@ -504,8 +520,8 @@ public class RobotContainer {
                 .add(StreamDeckButton.kLeftClimbButton, leftClimbCommand::isScheduled)
                 .add(StreamDeckButton.kRightClimbButton, rightClimbCommand::isScheduled)
                 .add(StreamDeckButton.kCenterClimbButton, centerClimbCommand::isScheduled)
-                .add(StreamDeckButton.kUseHighButton, () -> false)
-                .add(StreamDeckButton.kUseLowButton, () -> false)
+                .add(StreamDeckButton.kRaiseShooterButton, shooterUpCommand::isScheduled)
+                .add(StreamDeckButton.kLowerShooterButton, shooterDownCommand::isScheduled)
                 .add(StreamDeckButton.kShootButton, manualShootCommand::isScheduled)
                 .add(StreamDeckButton.kExtendWinchButton, extendWinchCommand::isScheduled)
                 .add(StreamDeckButton.kRetractWinchButton, retractWinchCommand::isScheduled)
@@ -529,6 +545,15 @@ public class RobotContainer {
         mStreamDeck.button(StreamDeckButton.kSpeakerModeButton).onTrue(setSpeakerModeCommand);
         mStreamDeck.button(StreamDeckButton.kAmpModeButton).onTrue(setAmpModeCommand);
         mStreamDeck.button(StreamDeckButton.kClimbModeButton).onTrue(setClimbModeCommand);
+
+        mStreamDeck
+                .button(StreamDeckButton.kRaiseShooterButton)
+                .whileTrue(shooterUpCommand)
+                .onFalse(stopShooterCommand);
+        mStreamDeck
+                .button(StreamDeckButton.kLowerShooterButton)
+                .whileTrue(shooterDownCommand)
+                .onFalse(stopShooterCommand);
 
         mStreamDeck
                 .button(StreamDeckButton.kExtendWinchButton)
