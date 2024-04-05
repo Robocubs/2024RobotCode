@@ -249,7 +249,7 @@ public class AutonomousCommands {
     private Command efficientlyPreWarmShootAndDrive(String pathName, String returnPath, AutoNote nextNote) {
         return race(
                         driveBackPreWarmAndShoot(pathName).andThen(followChoreoPathAndSeekNote(returnPath)),
-                        waitSeconds(.7)
+                        waitSeconds(.5)
                                 .andThen(either(
                                         idle(),
                                         runOnce(() -> mRobotState.setUseAutonFallback(true)),
