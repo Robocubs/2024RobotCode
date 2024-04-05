@@ -498,7 +498,7 @@ public final class Constants {
             {66, 13},
             {73, 9},
             {89, 2},
-            {100, 2}
+            {100, 1}
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {

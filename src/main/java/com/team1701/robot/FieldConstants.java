@@ -49,7 +49,7 @@ public final class FieldConstants {
             Rotation2d.fromDegrees(90));
 
     public static final Pose2d kRedAmpDrivePose = new Pose2d(
-            Units.inchesToMeters(578.77),
+            Units.inchesToMeters(582.77),
             Units.inchesToMeters(328.0) - Constants.Robot.kRobotFrontToCenterWithBumpers,
             Rotation2d.fromDegrees(90));
 

@@ -89,7 +89,7 @@ public class ShootCommands {
                             shooter.setSetpoint(setpoint);
                             var atSpeed = setpoint.speeds().allMatch(shooter.getRollerSpeedsRadiansPerSecond(), 50.0);
                             var atAngle = GeometryUtil.isNear(
-                                    shooter.getAngle(), setpoint.angle(), Rotation2d.fromRadians(.01));
+                                    shooter.getAngle(), setpoint.angle(), Rotation2d.fromRadians(.02));
                             var atHeading = GeometryUtil.isNear(
                                     robotState.getPassingHeading(),
                                     robotState.getHeading(),
