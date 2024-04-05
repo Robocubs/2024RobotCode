@@ -608,10 +608,10 @@ public final class Constants {
         public static final int kLeftWinchId = 40;
         public static final int kRightWinchId = 41;
 
-        public static final Rotation2d kMaxSetpoint = Rotation2d.fromRadians(32);
-        public static final Rotation2d kMiddleSetpoint = Rotation2d.fromRadians(28);
+        public static final Rotation2d kMaxSetpoint = Rotation2d.fromRadians(35);
+        public static final Rotation2d kMiddleSetpoint = Rotation2d.fromRadians(31);
 
-        public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
+        public static final double upperLimitRotations = Units.radiansToRotations(35) / kWinchReduction;
         public static final double lowerLimitRotations = Units.radiansToRotations(-2) / kWinchReduction;
 
         public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Climb/Winch/Kp");
