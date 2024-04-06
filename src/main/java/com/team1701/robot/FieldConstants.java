@@ -56,5 +56,5 @@ public final class FieldConstants {
     public static final Pose2d kBluePassingTarget =
             new Pose2d(new Translation2d(1.5, 6.5), GeometryUtil.kRotationIdentity);
     public static final Pose2d kRedPassingTarget =
-            new Pose2d(new Translation2d(kFieldLongLengthMeters - 1.5, 6.0), GeometryUtil.kRotationIdentity);
+            new Pose2d(new Translation2d(kFieldLongLengthMeters - 1.5, 5.8), GeometryUtil.kRotationIdentity);
 }

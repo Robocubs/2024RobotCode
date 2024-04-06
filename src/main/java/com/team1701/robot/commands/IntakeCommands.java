@@ -79,7 +79,7 @@ public class IntakeCommands {
     }
 
     public static Command idleIndexer(Indexer indexer) {
-        var recentlyUnloaded = new TimeLockedBoolean(0.05, Timer.getFPGATimestamp(), false, false);
+        var recentlyUnloaded = new TimeLockedBoolean(0.06, Timer.getFPGATimestamp(), false, false);
         return Commands.run(
                         () -> {
                             var hasNoteAtExit = indexer.hasNoteAtExit();
