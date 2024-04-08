@@ -148,8 +148,8 @@ public class RobotContainer {
                             new DigitalIOSensor(Constants.Indexer.kIndexerExitSensorId, false)));
                     intake = Optional.of(new Intake(
                             SparkMotorFactory.createIntakeMotorIOSparkFlex(Constants.Intake.kIntakeMotorId),
-                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, false),
-                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, false)));
+                            new DigitalIOSensor(Constants.Intake.kIntakeEntranceSensorId, true),
+                            new DigitalIOSensor(Constants.Intake.kIntakeExitSensorId, true)));
                     climb = Optional.of(new Climb(
                             SparkMotorFactory.createArmClimbMotorIOSparkFlex(
                                     Constants.Climb.kLeftWinchId, MotorUsage.WINCH, true),
@@ -330,6 +330,12 @@ public class RobotContainer {
                 .and(() -> DriverStation.isFMSAttached() && Timer.getMatchTime() < 30.5)
                 .onTrue(rumbleController.rumblePulses(3).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
 
+        teleopEnabled
+                .and(() -> DriverStation.isFMSAttached() && Timer.getMatchTime() < 20)
+                .whileTrue(rumbleController.rumblePulses(4));
+
+        teleopEnabled.and(mIntake::hasNote).whileTrue(rumbleController.rumblePulses(2));
+
         mDriverController
                 .y()
                 .and(() -> !mRobotState.getDetectedNoteForPickup().isPresent() || mRobotState.hasNote())
@@ -491,6 +497,22 @@ public class RobotContainer {
                         mClimb)
                 .withName("StreamDeckRetractWinchCommand");
         var stopShooterCommand = ShootCommands.stop(mShooter).withName("StreamDeckStopShootCommand");
+        var shooterUpCommand = run(
+                        () -> {
+                            mShooter.setShooterUp();
+                        },
+                        mShooter)
+                .withName("StreamDeckShooterUpCommand");
+
+        var shooterDownCommand = startEnd(
+                        () -> {
+                            mShooter.setShooterDown();
+                        },
+                        () -> {
+                            mShooter.stopRotation();
+                        },
+                        mShooter)
+                .withName("StreamDeckShooterDownCommand");
 
         mStreamDeck.configureButton(config -> config.add(
                         StreamDeckButton.kSpeakerModeButton, () -> mRobotState.getScoringMode() == ScoringMode.SPEAKER)
@@ -502,8 +524,8 @@ public class RobotContainer {
                 .add(StreamDeckButton.kLeftClimbButton, leftClimbCommand::isScheduled)
                 .add(StreamDeckButton.kRightClimbButton, rightClimbCommand::isScheduled)
                 .add(StreamDeckButton.kCenterClimbButton, centerClimbCommand::isScheduled)
-                .add(StreamDeckButton.kUseHighButton, () -> false)
-                .add(StreamDeckButton.kUseLowButton, () -> false)
+                .add(StreamDeckButton.kRaiseShooterButton, shooterUpCommand::isScheduled)
+                .add(StreamDeckButton.kLowerShooterButton, shooterDownCommand::isScheduled)
                 .add(StreamDeckButton.kShootButton, manualShootCommand::isScheduled)
                 .add(StreamDeckButton.kExtendWinchButton, extendWinchCommand::isScheduled)
                 .add(StreamDeckButton.kRetractWinchButton, retractWinchCommand::isScheduled)
@@ -527,6 +549,15 @@ public class RobotContainer {
         mStreamDeck.button(StreamDeckButton.kSpeakerModeButton).onTrue(setSpeakerModeCommand);
         mStreamDeck.button(StreamDeckButton.kAmpModeButton).onTrue(setAmpModeCommand);
         mStreamDeck.button(StreamDeckButton.kClimbModeButton).onTrue(setClimbModeCommand);
+
+        mStreamDeck
+                .button(StreamDeckButton.kRaiseShooterButton)
+                .whileTrue(shooterUpCommand)
+                .onFalse(stopShooterCommand);
+        mStreamDeck
+                .button(StreamDeckButton.kLowerShooterButton)
+                .whileTrue(shooterDownCommand)
+                .onFalse(stopShooterCommand);
 
         mStreamDeck
                 .button(StreamDeckButton.kExtendWinchButton)
@@ -567,6 +598,7 @@ public class RobotContainer {
         var centerB231Center = commands.centerB231Center();
         var centerBA123Amp = commands.centerBA123Amp();
         var centerBC123center = commands.centerBC123center();
+        var source543source = commands.source543Source();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Greedy Middle Auto", greedyMiddleCommand.path());
@@ -579,6 +611,7 @@ public class RobotContainer {
         mAutonomousPaths.put("Center B231 Center", centerB231Center.path());
         mAutonomousPaths.put("Center BA123 Amp", centerBA123Amp.path());
         mAutonomousPaths.put("Center BC123 Center", centerBC123center.path());
+        mAutonomousPaths.put("Source 543 Source", source543source.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Greedy Middle Auto", greedyMiddleCommand.command());
@@ -591,6 +624,7 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Center B231 Center", centerB231Center.command());
         autonomousModeChooser.addOption("Center BA123 Amp", centerBA123Amp.command());
         autonomousModeChooser.addOption("Center BC123 Center", centerBC123center.command());
+        autonomousModeChooser.addOption("Source 543 Source", source543source.command());
 
         // autonomousModeChooser.addOption(
         //         "Drive Characterization",

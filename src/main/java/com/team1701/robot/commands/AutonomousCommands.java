@@ -249,7 +249,7 @@ public class AutonomousCommands {
     private Command efficientlyPreWarmShootAndDrive(String pathName, String returnPath, AutoNote nextNote) {
         return race(
                         driveBackPreWarmAndShoot(pathName).andThen(followChoreoPathAndSeekNote(returnPath)),
-                        waitSeconds(.7)
+                        waitSeconds(.5)
                                 .andThen(either(
                                         idle(),
                                         runOnce(() -> mRobotState.setUseAutonFallback(true)),
@@ -502,6 +502,19 @@ public class AutonomousCommands {
                         efficientlyPreWarmShootAndDrive("CenterBC123Center.7", "CenterBC123Center.8", AutoNote.M3))
                 .withName("CenterBC123CenterAuto");
 
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand source543Source() {
+        var command = loggedSequence(
+                        print("Started source 543 source auto"),
+                        driveToPoseWhileShooting(
+                                getFirstPose("Source543Source.2"), FinishedState.END_AFTER_SHOOTING_AND_MOVING),
+                        followChoreoPathAndSeekNote("Source543Source.2"),
+                        efficientlyPreWarmShootAndDrive("Source543Source.3", "Source543Source.4", AutoNote.M4),
+                        efficientlyPreWarmShootAndDrive("Source543Source.5", "Source543Source.6", AutoNote.M3),
+                        driveBackPreWarmAndShoot("Source543Source.7"))
+                .withName("Source453sourceAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }

@@ -385,7 +385,7 @@ public final class Constants {
         public static final Rotation2d kShooterUpperLimit = Rotation2d.fromDegrees(58);
         public static final Rotation2d kShooterLowerLimit = Rotation2d.fromDegrees(12.5);
 
-        public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.1);
+        public static final Rotation2d kPassingHeadingTolerance = Rotation2d.fromRadians(0.05);
 
         public static final double kShooterAxisHeight = Units.inchesToMeters(7.52);
         public static final Rotation2d kShooterReleaseAngle = Rotation2d.fromDegrees(-2);
@@ -441,7 +441,7 @@ public final class Constants {
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
 
-        public static final ShooterSetpoint kLowPassSetpoint = new ShooterSetpoint(300, kShooterLowerLimit);
+        public static final ShooterSetpoint kLowPassSetpoint = new ShooterSetpoint(250, kShooterLowerLimit);
 
         public static final InterpolatingDoubleTreeMap kShooterAngleInterpolator =
                 new InterpolatingDoubleTreeMap(); // Radians
@@ -498,7 +498,7 @@ public final class Constants {
             {66, 13},
             {73, 9},
             {89, 2},
-            {100, 2}
+            {100, 1}
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {
@@ -608,10 +608,10 @@ public final class Constants {
         public static final int kLeftWinchId = 40;
         public static final int kRightWinchId = 41;
 
-        public static final Rotation2d kMaxSetpoint = Rotation2d.fromRadians(32);
-        public static final Rotation2d kMiddleSetpoint = Rotation2d.fromRadians(25);
+        public static final Rotation2d kMaxSetpoint = Rotation2d.fromRadians(35);
+        public static final Rotation2d kMiddleSetpoint = Rotation2d.fromRadians(31);
 
-        public static final double upperLimitRotations = Units.radiansToRotations(32) / kWinchReduction;
+        public static final double upperLimitRotations = Units.radiansToRotations(35) / kWinchReduction;
         public static final double lowerLimitRotations = Units.radiansToRotations(-2) / kWinchReduction;
 
         public static final LoggedTunableNumber kWinchKp = new LoggedTunableNumber("Climb/Winch/Kp");
@@ -689,7 +689,7 @@ public final class Constants {
         public static final double kIndexerLoadPercent = 0.8;
         public static final double kIndexerSlowPercent = 0.5;
         public static final double kIndexerReversePercent = -1;
-        public static final double kIndexerReverseBumpPercent = -0.2;
+        public static final double kIndexerReverseBumpPercent = -0.4;
     }
 
     public class Intake {

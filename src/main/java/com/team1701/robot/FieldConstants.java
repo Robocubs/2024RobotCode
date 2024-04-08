@@ -45,16 +45,16 @@ public final class FieldConstants {
 
     public static final Pose2d kBlueAmpDrivePose = new Pose2d(
             Units.inchesToMeters(72.5),
-            Units.inchesToMeters(325.0) - Constants.Robot.kRobotFrontToCenterWithBumpers,
+            Units.inchesToMeters(328.0) - Constants.Robot.kRobotFrontToCenterWithBumpers,
             Rotation2d.fromDegrees(90));
 
     public static final Pose2d kRedAmpDrivePose = new Pose2d(
-            Units.inchesToMeters(578.77),
-            Units.inchesToMeters(325.0) - Constants.Robot.kRobotFrontToCenterWithBumpers,
+            Units.inchesToMeters(582.77),
+            Units.inchesToMeters(328.0) - Constants.Robot.kRobotFrontToCenterWithBumpers,
             Rotation2d.fromDegrees(90));
 
     public static final Pose2d kBluePassingTarget =
             new Pose2d(new Translation2d(1.5, 6.5), GeometryUtil.kRotationIdentity);
     public static final Pose2d kRedPassingTarget =
-            new Pose2d(new Translation2d(kFieldLongLengthMeters - 1.5, 6.5), GeometryUtil.kRotationIdentity);
+            new Pose2d(new Translation2d(kFieldLongLengthMeters - 1.5, 5.8), GeometryUtil.kRotationIdentity);
 }
