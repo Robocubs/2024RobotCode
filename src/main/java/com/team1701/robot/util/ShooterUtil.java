@@ -87,7 +87,7 @@ public final class ShooterUtil {
                 double speed;
                 var distance = robotState.getDistanceToSpeaker();
 
-                if (!robotState.inNearHalf()) {
+                if (robotState.inOpponentWing()) {
                     speed = 0;
                 } else if (robotState.hasNote()) {
                     speed = calculateSpeakerSpeed(distance);
