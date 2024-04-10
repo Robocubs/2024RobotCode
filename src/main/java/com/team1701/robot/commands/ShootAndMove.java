@@ -50,9 +50,9 @@ public class ShootAndMove extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 25.0);
     private Rotation2d headingTolerance;
 
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 8.0);
+    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 11.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
-    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.75);
+    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 1.25);
 
     private final Drive mDrive;
     private final Shooter mShooter;
@@ -67,6 +67,10 @@ public class ShootAndMove extends Command {
 
     private TimeLockedBoolean mLockedReadyToShoot;
     private boolean mShooting;
+
+    private ShooterSetpoint mLastSetpoint =
+            new ShooterSetpoint(Double.POSITIVE_INFINITY, GeometryUtil.kRotationIdentity);
+    private Rotation2d mLastTargetHeading = GeometryUtil.kRotationIdentity;
 
     ShootAndMove(
             Drive drive,
@@ -86,7 +90,7 @@ public class ShootAndMove extends Command {
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
-        mLockedReadyToShoot = new TimeLockedBoolean(.2, Timer.getFPGATimestamp());
+        mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp());
 
         addRequirements(mDrive, mShooter, mIndexer);
     }
@@ -104,6 +108,8 @@ public class ShootAndMove extends Command {
                 MathUtil.angleModulus(headingError.getRadians()), fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
 
         mLockedReadyToShoot.update(false, Timer.getFPGATimestamp());
+        mLastSetpoint = new ShooterSetpoint(Double.POSITIVE_INFINITY, GeometryUtil.kRotationIdentity);
+        mLastTargetHeading = GeometryUtil.kRotationIdentity;
 
         LoggedTunableValue.ifChanged(
                 hashCode(),
@@ -140,7 +146,7 @@ public class ShootAndMove extends Command {
                 ? new ShooterSetpoint(
                         Constants.Shooter.kTunableShooterSpeedRadiansPerSecond.get(),
                         Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get()))
-                : ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(endTranslation));
+                : ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(endTranslation));
 
         mShooter.setSetpoint(shooterSetpoint);
 
@@ -174,15 +180,18 @@ public class ShootAndMove extends Command {
                 fieldRelativeSpeeds.getX(), fieldRelativeSpeeds.getY(), rotationalVelocity, currentPose.getRotation()));
 
         var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(), shooterSetpoint.angle(), Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(), mLastSetpoint.angle(), Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        var atHeading = GeometryUtil.isNear(targetHeading, mRobotState.getHeading(), headingTolerance);
+        var atHeading = GeometryUtil.isNear(mLastTargetHeading, mRobotState.getHeading(), headingTolerance);
 
-        var atSpeed = shooterSetpoint
+        var atSpeed = mLastSetpoint
                 .speeds()
                 .allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
-        if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
+        var atAcceptableRobotSpeed = mRobotState.getHorizontalToSpeaker() < 3 || mDrive.getSpeedMetersPerSecond() < 0.5;
+
+        if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())
+                && atAcceptableRobotSpeed) {
             mIndexer.setForwardShoot();
             mShooting = true;
         }
@@ -195,11 +204,16 @@ public class ShootAndMove extends Command {
             }
         }
 
+        mLastSetpoint = shooterSetpoint;
+        mLastTargetHeading = targetHeading;
+
         mRobotState.setShootingState(new ShootingState(shooterSetpoint, true, atAngle, atSpeed, atHeading, mShooting));
 
         Logger.recordOutput(kLoggingPrefix + "Setpoint", new Pose2d(endTranslation, setpoint));
         Logger.recordOutput(kLoggingPrefix + "TimeInAir", timeInAir);
         Logger.recordOutput(kLoggingPrefix + "VelocityTowardsSpeaker", robotVelocityTowardsSpeaker);
+        Logger.recordOutput(kLoggingPrefix + "TargetHeading", targetHeading);
+        Logger.recordOutput(kLoggingPrefix + "AtRobotSpeed", atAcceptableRobotSpeed);
     }
 
     @Override

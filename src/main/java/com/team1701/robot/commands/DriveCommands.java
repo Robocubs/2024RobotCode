@@ -229,4 +229,26 @@ public class DriveCommands {
                 .finallyDo(() -> drive.stop())
                 .withName("DriveWithVelocity");
     }
+
+    public static Command passANote(
+            Drive drive,
+            Shooter shooter,
+            Indexer indexer,
+            RobotState robotState,
+            DoubleSupplier throttleSupplier,
+            DoubleSupplier strafeSupplier) {
+        return new PassANote(
+                        drive,
+                        shooter,
+                        indexer,
+                        robotState,
+                        () -> calculateDriveWithJoysticksVelocities(
+                                        throttleSupplier.getAsDouble(),
+                                        strafeSupplier.getAsDouble(),
+                                        drive.getFieldRelativeHeading(),
+                                        Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity())
+                                .rotateBy(robotState.getHeading()),
+                        () -> new Rotation2d(.03))
+                .withName("PassANote");
+    }
 }

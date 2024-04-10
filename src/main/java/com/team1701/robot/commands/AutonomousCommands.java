@@ -141,7 +141,7 @@ public class AutonomousCommands {
             return stopRoutine();
         }
 
-        var setpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(pose.getTranslation()));
+        var setpoint = ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(pose.getTranslation()));
         mPathBuilder.addPose(pose);
         return DriveCommands.driveToPose(
                         mDrive,
@@ -254,7 +254,7 @@ public class AutonomousCommands {
                                         idle(),
                                         runOnce(() -> mRobotState.setUseAutonFallback(true)),
                                         mRobotState::hasNote)))
-                .andThen(either(driveToNextPiece(nextNote), none(), mRobotState::getUseAutonFallback));
+                .andThen(either(driveToNextPiece(nextNote).withTimeout(3), none(), mRobotState::getUseAutonFallback));
     }
 
     private Command followChoreoPathAndSeekNote(String pathName) {
@@ -289,7 +289,8 @@ public class AutonomousCommands {
 
         mPathBuilder.addPath(trajectory.getPoses());
 
-        var shooterSetpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
+        var shooterSetpoint =
+                ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
         var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
         return new DriveChoreoTrajectory(
                         mDrive, mRobotState, trajectory, eventMarkers, shooterSetpoint::applyReleaseAngle, resetPose)
@@ -305,7 +306,8 @@ public class AutonomousCommands {
 
         mPathBuilder.addPath(trajectory.getPoses());
 
-        var shooterSetpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
+        var shooterSetpoint =
+                ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
         var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
         return new DriveChoreoTrajectory(
                         mDrive, mRobotState, trajectory, eventMarkers, shooterSetpoint::applyReleaseAngle, resetPose)

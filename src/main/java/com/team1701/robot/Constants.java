@@ -433,10 +433,10 @@ public final class Constants {
                 new LoggedTunableNumber("Shooter/Rotation/TunableAngleRadians", 1.0);
 
         public static final LoggedTunableNumber kLowerAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 70);
+                new LoggedTunableNumber("Shooter/Roller/Amp/LowerRollerSpeed", 75);
 
         public static final LoggedTunableNumber kUpperAmpSpeed =
-                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 70);
+                new LoggedTunableNumber("Shooter/Roller/Amp/UpperRollerSpeed", 75);
 
         public static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber("Shooter/Motor/Rotation/Kp");
         public static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber("Shooter/Motor/Rotation/Kd");
@@ -495,10 +495,11 @@ public final class Constants {
         };
 
         public static final double[][] kShooterForwardVelocityToHeadingOffset = {
-            {66, 13},
-            {73, 9},
-            {89, 2},
-            {100, 1}
+            {315 * Math.cos(.975), 9},
+            {370 * Math.cos(.689), 6},
+            {437.2 * Math.cos(.483), 4},
+            {493 * Math.cos(.4), 2},
+            {560 * Math.cos(.306), 0}
         };
 
         public static final double[][] kPassingDistanceToAngleValues = {

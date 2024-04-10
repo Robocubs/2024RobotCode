@@ -20,13 +20,17 @@ public final class ShooterUtil {
                 : Constants.Shooter.kShooterSpeedInterpolator.get(distanceToSpeaker);
     }
 
+    public static double calculatePassingSpeed(double distanceToTarget) {
+        return Constants.Shooter.kPassingSpeedInterpolator.get(distanceToTarget);
+    }
+
     public static double calculateSpeakerAngle(double distanceToSpeaker) {
         return Constants.Shooter.kUseNewCurves
                 ? Constants.Shooter.kAngleRegression.predict(calculateTheoreticalAngle(distanceToSpeaker))
                 : Constants.Shooter.kShooterAngleInterpolator.get(distanceToSpeaker);
     }
 
-    public static ShooterSetpoint calculateSetpoint(double distanceToSpeaker) {
+    public static ShooterSetpoint calculateShooterSetpoint(double distanceToSpeaker) {
         return new ShooterSetpoint(
                 new ShooterSpeeds(calculateSpeakerSpeed(distanceToSpeaker)),
                 GeometryUtil.clampRotation(
@@ -40,11 +44,13 @@ public final class ShooterUtil {
                 calculateStationaryRollerSpeeds(robotState), calculateStationaryDesiredAngle(robotState));
     }
 
-    public static ShooterSetpoint calculatePassingSetpoint(RobotState robotState) {
+    public static ShooterSetpoint calculatePassingSetpoint(double distanceToTarget) {
         return new ShooterSetpoint(
-                Constants.Shooter.kPassingSpeedInterpolator.get(robotState.getPassingDistance()),
-                Rotation2d.fromRadians(
-                        Constants.Shooter.kPassingAngleInterpolator.get(robotState.getPassingDistance())));
+                calculatePassingSpeed(distanceToTarget),
+                GeometryUtil.clampRotation(
+                        Rotation2d.fromRadians(Constants.Shooter.kPassingAngleInterpolator.get(distanceToTarget)),
+                        Constants.Shooter.kShooterLowerLimit,
+                        Constants.Shooter.kShooterUpperLimit));
     }
 
     public static ShooterSetpoint calculateIdleSetpoint(RobotState robotState) {

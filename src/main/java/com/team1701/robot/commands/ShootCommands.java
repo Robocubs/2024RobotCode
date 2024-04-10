@@ -51,23 +51,6 @@ public class ShootCommands {
         return new Shoot(shooter, indexer, robotState, false);
     }
 
-    public static Command passANote(
-            Drive drive,
-            Shooter shooter,
-            Indexer indexer,
-            RobotState robotState,
-            DoubleSupplier throttleSupplier,
-            DoubleSupplier strafeSupplier) {
-        return new PassANote(shooter, indexer, robotState)
-                .deadlineWith(DriveCommands.rotateToPassTarget(
-                        drive,
-                        throttleSupplier,
-                        strafeSupplier,
-                        robotState,
-                        Constants.Drive.kFastTrapezoidalKinematicLimits))
-                .withName("PassANote");
-    }
-
     public static Command passLow(
             Drive drive,
             Shooter shooter,
