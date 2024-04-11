@@ -268,16 +268,6 @@ public class RobotState {
         return FieldUtil.getHeadingToSpeaker(getPose2d().getTranslation());
     }
 
-    public Rotation2d getMovingSpeakerHeading() {
-        var fieldRelativeSpeeds = getFieldRelativeSpeeds();
-        var projectedTranslation = getPose2d()
-                .getTranslation()
-                .plus(new Translation2d(
-                        fieldRelativeSpeeds.vxMetersPerSecond * Constants.kLoopPeriodSeconds,
-                        fieldRelativeSpeeds.vyMetersPerSecond * Constants.kLoopPeriodSeconds));
-        return FieldUtil.getHeadingToSpeaker(projectedTranslation);
-    }
-
     public Rotation2d getToleranceSpeakerHeading() {
         return getToleranceSpeakerHeading(getPose2d().getTranslation());
     }

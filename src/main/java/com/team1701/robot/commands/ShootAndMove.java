@@ -50,9 +50,19 @@ public class ShootAndMove extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 25.0);
     private Rotation2d headingTolerance;
 
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 11.0);
-    private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
-    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 1.25);
+    private static final LoggedTunableNumber kStationaryRotationKp =
+            new LoggedTunableNumber(kLoggingPrefix + "StationaryRotationKp", 11.0);
+    private static final LoggedTunableNumber kStationaryRotationKi =
+            new LoggedTunableNumber(kLoggingPrefix + "StationaryRotationKi", 0.0);
+    private static final LoggedTunableNumber kStationaryRotationKd =
+            new LoggedTunableNumber(kLoggingPrefix + "StationaryRotationKd", 1.0);
+
+    private static final LoggedTunableNumber kMovingRotationKp =
+            new LoggedTunableNumber(kLoggingPrefix + "MovingRotationKp", 8.0);
+    private static final LoggedTunableNumber kMovingRotationKi =
+            new LoggedTunableNumber(kLoggingPrefix + "MovingRotationKi", 0.0);
+    private static final LoggedTunableNumber kMovingRotationKd =
+            new LoggedTunableNumber(kLoggingPrefix + "MovingRotationKd", 0.5);
 
     private final Drive mDrive;
     private final Shooter mShooter;
@@ -85,8 +95,17 @@ public class ShootAndMove extends Command {
         mRobotState = robotState;
         mFieldRelativeSpeeds = fieldRelativeSpeeds;
         mEndAfterShooting = endAfterShooting;
-        mRotationController = new PIDController(
-                kRotationKp.get(), kRotationKi.get(), kRotationKd.get(), Constants.kLoopPeriodSeconds);
+        mRotationController = Util.epsilonEquals(mDrive.getSpeedMetersPerSecond(), 0)
+                ? new PIDController(
+                        kStationaryRotationKp.get(),
+                        kStationaryRotationKi.get(),
+                        kStationaryRotationKd.get(),
+                        Constants.kLoopPeriodSeconds)
+                : new PIDController(
+                        kMovingRotationKp.get(),
+                        kMovingRotationKi.get(),
+                        kMovingRotationKd.get(),
+                        Constants.kLoopPeriodSeconds);
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
@@ -119,19 +138,31 @@ public class ShootAndMove extends Command {
                             Math.min(
                                     kMaxAngularAcceleration.get(),
                                     kKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
-                    mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
+                    if (Util.epsilonEquals(mDrive.getSpeedMetersPerSecond(), 0.0)) {
+                        mRotationController.setPID(
+                                kStationaryRotationKp.get(), kStationaryRotationKi.get(), kStationaryRotationKd.get());
+                    } else {
+                        mRotationController.setPID(
+                                kMovingRotationKp.get(), kMovingRotationKi.get(), kMovingRotationKd.get());
+                    }
                 },
                 kMaxAngularVelocity,
                 kMaxAngularAcceleration,
-                kRotationKp,
-                kRotationKi,
-                kRotationKd);
+                kStationaryRotationKp,
+                kStationaryRotationKi,
+                kStationaryRotationKd);
     }
 
     @Override
     public void execute() {
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
+        if (Util.epsilonEquals(mFieldRelativeSpeeds.get().getNorm(), 0.0)) {
+            mRotationController.setPID(
+                    kStationaryRotationKp.get(), kStationaryRotationKi.get(), kStationaryRotationKd.get());
+        } else {
+            mRotationController.setPID(kMovingRotationKp.get(), kMovingRotationKi.get(), kMovingRotationKd.get());
+        }
         var droppedVelocity = ShooterUtil.calculateSpeakerSpeed(mRobotState.getDistanceToSpeaker())
                 * Constants.Shooter.kRollerSpeedToNoteSpeed;
         var robotVelocityTowardsSpeaker = fieldRelativeSpeeds
@@ -182,7 +213,10 @@ public class ShootAndMove extends Command {
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), mLastSetpoint.angle(), Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        var atHeading = GeometryUtil.isNear(mLastTargetHeading, mRobotState.getHeading(), headingTolerance);
+        var stationaryTargetHeading = FieldUtil.getHeadingToSpeaker(currentPose);
+
+        var atHeading = GeometryUtil.isNear(mLastTargetHeading, mRobotState.getHeading(), headingTolerance)
+                || GeometryUtil.isNear(stationaryTargetHeading, mRobotState.getHeading(), headingTolerance);
 
         var atSpeed = mLastSetpoint
                 .speeds()
