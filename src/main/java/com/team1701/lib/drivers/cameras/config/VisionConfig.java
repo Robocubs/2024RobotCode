@@ -7,11 +7,18 @@ public class VisionConfig {
     public final Transform3d robotToCamera;
     public final int cameraID;
     public final VisionCameraConfig remoteConfig;
+    public final double weight;
 
-    public VisionConfig(String cameraName, Transform3d robotToCamera, int cameraID, VisionCameraConfig remoteConfig) {
+    public VisionConfig(
+            String cameraName,
+            Transform3d robotToCamera,
+            int cameraID,
+            VisionCameraConfig remoteConfig,
+            double weight) {
         this.cameraName = cameraName;
         this.robotToCamera = robotToCamera;
         this.cameraID = cameraID;
         this.remoteConfig = remoteConfig;
+        this.weight = weight;
     }
 }
