@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public final class Configuration {
-    private static final RobotType kRobot = RobotType.SIMULATION_BOT;
+    private static final RobotType kRobot = RobotType.SIMULATION_VISION;
 
     private static boolean mInvalidRobotAlerted = false;
 

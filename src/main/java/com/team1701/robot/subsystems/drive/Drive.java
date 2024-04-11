@@ -271,6 +271,10 @@ public class Drive extends SubsystemBase {
                 .getAsDouble();
     }
 
+    public SwerveModulePosition[] getMeasuredModulePositions() {
+        return mMeasuredModulePositions;
+    }
+
     public ChassisSpeeds getVelocitySetpoint() {
         return Constants.Drive.kKinematics.toChassisSpeeds(mPreviousSetpoint.moduleStates);
     }
@@ -309,6 +313,11 @@ public class Drive extends SubsystemBase {
         mDriveControlState = DriveControlState.CHARACTERIZATION;
         mDesiredChassisSpeeds = new ChassisSpeeds();
         mCharacterizationInput = volts;
+    }
+
+    public void runWheelCharacterization(double velocityRadiansPerSecond) {
+        mDriveControlState = DriveControlState.VELOCITY_CONTROL;
+        mDesiredChassisSpeeds = new ChassisSpeeds(0, 0, velocityRadiansPerSecond);
     }
 
     public void zeroGyroscope() {

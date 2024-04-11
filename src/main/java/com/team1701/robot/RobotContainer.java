@@ -30,6 +30,7 @@ import com.team1701.lib.drivers.motors.MotorIOSim;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
+import com.team1701.robot.commands.CharacterizationCommands;
 import com.team1701.robot.commands.DriveCommands;
 import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.commands.ShootCommands;
@@ -636,6 +637,11 @@ public class RobotContainer {
         //         CharacterizationCommands.runShooterCharacterization(mShooter)
         //                 .deadlineWith(Commands.idle(mDrive, mIndexer, mIntake))
         //                 .withName("ShooterCharacterization"));
+        autonomousModeChooser.addOption(
+                "Drive Wheel Characterization",
+                CharacterizationCommands.runWheelRadiusCharacterization(mDrive)
+                        .deadlineWith(Commands.idle(mShooter, mIndexer, mIntake))
+                        .withName("DriveWheelCharacterization"));
 
         if (Configuration.getMode() == Mode.SIMULATION) {
             mAutonomousPaths.put("Demo", demoCommand.path());
