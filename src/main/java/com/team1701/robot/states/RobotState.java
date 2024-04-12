@@ -22,7 +22,6 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.util.FieldUtil;
-import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -228,10 +227,12 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d getPassingHeading() {
-        var difference = getPassingTarget().minus(getPose2d().getTranslation());
-        return ShooterUtil.calculatePassingSetpoint(this)
-                .applyReleaseAngle(new Pose2d(difference, difference.getAngle()))
-                .getRotation();
+        return FieldUtil.getHeadingToPassTarget(getPose2d().getTranslation());
+    }
+
+    @AutoLogOutput
+    public Rotation2d getPassingHeading(Translation2d translation) {
+        return FieldUtil.getHeadingToPassTarget(translation);
     }
 
     @AutoLogOutput
@@ -257,18 +258,14 @@ public class RobotState {
     }
 
     @AutoLogOutput
-    public Rotation2d getSpeakerHeading() {
-        return FieldUtil.getHeadingToSpeaker(getPose2d().getTranslation());
+    public double getHorizontalToSpeaker() {
+        return Math.abs(
+                getSpeakerPose().toTranslation2d().getDistance(getPose2d().getTranslation()));
     }
 
-    public Rotation2d getMovingSpeakerHeading() {
-        var fieldRelativeSpeeds = getFieldRelativeSpeeds();
-        var projectedTranslation = getPose2d()
-                .getTranslation()
-                .plus(new Translation2d(
-                        fieldRelativeSpeeds.vxMetersPerSecond * Constants.kLoopPeriodSeconds,
-                        fieldRelativeSpeeds.vyMetersPerSecond * Constants.kLoopPeriodSeconds));
-        return FieldUtil.getHeadingToSpeaker(projectedTranslation);
+    @AutoLogOutput
+    public Rotation2d getSpeakerHeading() {
+        return FieldUtil.getHeadingToSpeaker(getPose2d().getTranslation());
     }
 
     public Rotation2d getToleranceSpeakerHeading() {
@@ -282,8 +279,8 @@ public class RobotState {
                 .minus(translation)
                 .getAngle();
 
-        var toleranceRadians = Math.abs(
-                MathUtil.angleModulus(heading.getRadians() - getSpeakerHeading().getRadians()));
+        var toleranceRadians = Math.abs(MathUtil.angleModulus(heading.getRadians()
+                - FieldUtil.getHeadingToSpeaker(translation).getRadians()));
 
         return Rotation2d.fromRadians(Math.max(0.017, toleranceRadians / 2));
     }

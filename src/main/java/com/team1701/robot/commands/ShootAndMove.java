@@ -50,9 +50,19 @@ public class ShootAndMove extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "SpeedToleranceRadiansPerSecond", 25.0);
     private Rotation2d headingTolerance;
 
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 8.0);
-    private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
-    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.75);
+    private static final LoggedTunableNumber kStationaryRotationKp =
+            new LoggedTunableNumber(kLoggingPrefix + "StationaryRotationKp", 11.0);
+    private static final LoggedTunableNumber kStationaryRotationKi =
+            new LoggedTunableNumber(kLoggingPrefix + "StationaryRotationKi", 0.0);
+    private static final LoggedTunableNumber kStationaryRotationKd =
+            new LoggedTunableNumber(kLoggingPrefix + "StationaryRotationKd", 1.0);
+
+    private static final LoggedTunableNumber kMovingRotationKp =
+            new LoggedTunableNumber(kLoggingPrefix + "MovingRotationKp", 8.0);
+    private static final LoggedTunableNumber kMovingRotationKi =
+            new LoggedTunableNumber(kLoggingPrefix + "MovingRotationKi", 0.0);
+    private static final LoggedTunableNumber kMovingRotationKd =
+            new LoggedTunableNumber(kLoggingPrefix + "MovingRotationKd", 0.5);
 
     private final Drive mDrive;
     private final Shooter mShooter;
@@ -60,13 +70,18 @@ public class ShootAndMove extends Command {
     private final RobotState mRobotState;
     private final Supplier<Translation2d> mFieldRelativeSpeeds;
     private final boolean mEndAfterShooting;
-    private final PIDController mRotationController;
+    private final PIDController mStationaryRotationController;
+    private final PIDController mMovingRotationController;
 
     private TrapezoidProfile mRotationProfile;
     private TrapezoidProfile.State mRotationState = kZeroState;
 
     private TimeLockedBoolean mLockedReadyToShoot;
     private boolean mShooting;
+
+    private ShooterSetpoint mLastSetpoint =
+            new ShooterSetpoint(Double.POSITIVE_INFINITY, GeometryUtil.kRotationIdentity);
+    private Rotation2d mLastTargetHeading = GeometryUtil.kRotationIdentity;
 
     ShootAndMove(
             Drive drive,
@@ -81,12 +96,22 @@ public class ShootAndMove extends Command {
         mRobotState = robotState;
         mFieldRelativeSpeeds = fieldRelativeSpeeds;
         mEndAfterShooting = endAfterShooting;
-        mRotationController = new PIDController(
-                kRotationKp.get(), kRotationKi.get(), kRotationKd.get(), Constants.kLoopPeriodSeconds);
-        mRotationController.enableContinuousInput(-Math.PI, Math.PI);
+        mStationaryRotationController = new PIDController(
+                kStationaryRotationKp.get(),
+                kStationaryRotationKi.get(),
+                kStationaryRotationKd.get(),
+                Constants.kLoopPeriodSeconds);
+
+        mMovingRotationController = new PIDController(
+                kMovingRotationKp.get(),
+                kMovingRotationKi.get(),
+                kMovingRotationKd.get(),
+                Constants.kLoopPeriodSeconds);
+        mStationaryRotationController.enableContinuousInput(-Math.PI, Math.PI);
+        mMovingRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
-        mLockedReadyToShoot = new TimeLockedBoolean(.2, Timer.getFPGATimestamp());
+        mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp());
 
         addRequirements(mDrive, mShooter, mIndexer);
     }
@@ -95,8 +120,10 @@ public class ShootAndMove extends Command {
     public void initialize() {
         mDrive.setKinematicLimits(kKinematicLimits);
 
-        mRotationController.reset();
-        mRotationController.enableContinuousInput(-Math.PI, Math.PI);
+        mStationaryRotationController.reset();
+        mMovingRotationController.reset();
+        mStationaryRotationController.enableContinuousInput(-Math.PI, Math.PI);
+        mMovingRotationController.enableContinuousInput(-Math.PI, Math.PI);
 
         var fieldRelativeChassisSpeeds = mDrive.getFieldRelativeVelocity();
         var headingError = mRobotState.getHeading().minus(mRobotState.getSpeakerHeading());
@@ -104,6 +131,8 @@ public class ShootAndMove extends Command {
                 MathUtil.angleModulus(headingError.getRadians()), fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
 
         mLockedReadyToShoot.update(false, Timer.getFPGATimestamp());
+        mLastSetpoint = new ShooterSetpoint(Double.POSITIVE_INFINITY, GeometryUtil.kRotationIdentity);
+        mLastTargetHeading = GeometryUtil.kRotationIdentity;
 
         LoggedTunableValue.ifChanged(
                 hashCode(),
@@ -113,13 +142,19 @@ public class ShootAndMove extends Command {
                             Math.min(
                                     kMaxAngularAcceleration.get(),
                                     kKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
-                    mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
+                    if (Util.epsilonEquals(mDrive.getSpeedMetersPerSecond(), 0.0)) {
+                        mStationaryRotationController.setPID(
+                                kStationaryRotationKp.get(), kStationaryRotationKi.get(), kStationaryRotationKd.get());
+                    } else {
+                        mMovingRotationController.setPID(
+                                kMovingRotationKp.get(), kMovingRotationKi.get(), kMovingRotationKd.get());
+                    }
                 },
                 kMaxAngularVelocity,
                 kMaxAngularAcceleration,
-                kRotationKp,
-                kRotationKi,
-                kRotationKd);
+                kStationaryRotationKp,
+                kStationaryRotationKi,
+                kStationaryRotationKd);
     }
 
     @Override
@@ -140,7 +175,7 @@ public class ShootAndMove extends Command {
                 ? new ShooterSetpoint(
                         Constants.Shooter.kTunableShooterSpeedRadiansPerSecond.get(),
                         Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get()))
-                : ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(endTranslation));
+                : ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(endTranslation));
 
         mShooter.setSetpoint(shooterSetpoint);
 
@@ -164,7 +199,7 @@ public class ShootAndMove extends Command {
             mRotationState = kZeroState;
             setpoint = targetHeading;
         } else {
-            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), 0);
+            var rotationPidOutput = getPIDController().calculate(headingError.getRadians(), 0);
             mRotationState = mRotationProfile.calculate(Constants.kLoopPeriodSeconds, mRotationState, kZeroState);
             rotationalVelocity = mRotationState.velocity + rotationPidOutput;
             setpoint = Rotation2d.fromRadians(targetHeading.getRadians() + mRotationState.position);
@@ -174,15 +209,22 @@ public class ShootAndMove extends Command {
                 fieldRelativeSpeeds.getX(), fieldRelativeSpeeds.getY(), rotationalVelocity, currentPose.getRotation()));
 
         var atAngle = GeometryUtil.isNear(
-                mShooter.getAngle(), shooterSetpoint.angle(), Rotation2d.fromRadians(kAngleToleranceRadians.get()));
+                mShooter.getAngle(), mLastSetpoint.angle(), Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        var atHeading = GeometryUtil.isNear(targetHeading, mRobotState.getHeading(), headingTolerance);
+        var stationaryTargetHeading = FieldUtil.getHeadingToSpeaker(currentPose);
 
-        var atSpeed = shooterSetpoint
+        var atHeading = GeometryUtil.isNear(mLastTargetHeading, mRobotState.getHeading(), headingTolerance)
+                || GeometryUtil.isNear(stationaryTargetHeading, mRobotState.getHeading(), headingTolerance);
+
+        var atSpeed = mLastSetpoint
                 .speeds()
                 .allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
-        if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())) {
+        var atAcceptableRobotSpeed = mRobotState.getHorizontalToSpeaker() < Constants.Drive.kShootWhileMoveDistanceCap
+                || mDrive.getSpeedMetersPerSecond() < Constants.Drive.kShootWhileMoveSpeedCap;
+
+        if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())
+                && atAcceptableRobotSpeed) {
             mIndexer.setForwardShoot();
             mShooting = true;
         }
@@ -195,11 +237,16 @@ public class ShootAndMove extends Command {
             }
         }
 
+        mLastSetpoint = shooterSetpoint;
+        mLastTargetHeading = targetHeading;
+
         mRobotState.setShootingState(new ShootingState(shooterSetpoint, true, atAngle, atSpeed, atHeading, mShooting));
 
         Logger.recordOutput(kLoggingPrefix + "Setpoint", new Pose2d(endTranslation, setpoint));
         Logger.recordOutput(kLoggingPrefix + "TimeInAir", timeInAir);
         Logger.recordOutput(kLoggingPrefix + "VelocityTowardsSpeaker", robotVelocityTowardsSpeaker);
+        Logger.recordOutput(kLoggingPrefix + "TargetHeading", targetHeading);
+        Logger.recordOutput(kLoggingPrefix + "AtRobotSpeed", atAcceptableRobotSpeed);
     }
 
     @Override
@@ -215,5 +262,11 @@ public class ShootAndMove extends Command {
     @Override
     public boolean isFinished() {
         return mEndAfterShooting && mShooting && !mRobotState.hasNote();
+    }
+
+    public PIDController getPIDController() {
+        return Util.epsilonEquals(mFieldRelativeSpeeds.get().getNorm(), 0.0)
+                ? mStationaryRotationController
+                : mMovingRotationController;
     }
 }
