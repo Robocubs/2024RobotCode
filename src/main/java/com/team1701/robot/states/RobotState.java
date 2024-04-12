@@ -51,6 +51,7 @@ public class RobotState {
     private final Field2d mField;
 
     private final PoseCachedValue<Double> mDistanceToSpeaker;
+    private final PoseCachedValue<Double> mHorizontalToSpeaker;
     private final PoseCachedValue<Rotation2d> mSpeakerHeading;
 
     private Optional<Drive> mDrive = Optional.empty();
@@ -75,6 +76,8 @@ public class RobotState {
                         Configuration.isBlueAlliance()
                                 ? FieldConstants.kBlueSpeakerOpeningCenter
                                 : FieldConstants.kRedSpeakerOpeningCenter));
+        mHorizontalToSpeaker = new PoseCachedValue<>(
+                () -> getSpeakerPose().toTranslation2d().getDistance(getPose2d().getTranslation()));
         mSpeakerHeading = new PoseCachedValue<>(
                 () -> FieldUtil.getHeadingToSpeaker(getPose2d().getTranslation()));
     }
@@ -141,7 +144,7 @@ public class RobotState {
 
     @AutoLogOutput
     public double getDistanceToSpeaker() {
-        return mDistanceToSpeaker.mValue;
+        return mDistanceToSpeaker.get();
     }
 
     public Rotation2d getHeading() {
@@ -266,8 +269,7 @@ public class RobotState {
 
     @AutoLogOutput
     public double getHorizontalToSpeaker() {
-        return Math.abs(
-                getSpeakerPose().toTranslation2d().getDistance(getPose2d().getTranslation()));
+        return mHorizontalToSpeaker.get();
     }
 
     @AutoLogOutput
