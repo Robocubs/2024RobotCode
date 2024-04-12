@@ -70,12 +70,8 @@ public class RobotState {
 
         ShootingState.kDefault.log("RobotState/ShootingState");
 
-        mDistanceToSpeaker = new PoseCachedValue<>(() -> getPose3d()
-                .getTranslation()
-                .getDistance(
-                        Configuration.isBlueAlliance()
-                                ? FieldConstants.kBlueSpeakerOpeningCenter
-                                : FieldConstants.kRedSpeakerOpeningCenter));
+        mDistanceToSpeaker =
+                new PoseCachedValue<>(() -> getPose3d().getTranslation().getDistance(getSpeakerPose()));
         mHorizontalToSpeaker = new PoseCachedValue<>(
                 () -> getSpeakerPose().toTranslation2d().getDistance(getPose2d().getTranslation()));
         mSpeakerHeading = new PoseCachedValue<>(
@@ -422,7 +418,9 @@ public class RobotState {
             return mValue;
         }
 
-        private void clear() {}
+        private void clear() {
+            mValid = false;
+        }
 
         public static void clearAll() {
             values.forEach(value -> value.clear());
