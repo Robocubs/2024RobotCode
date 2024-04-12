@@ -100,7 +100,7 @@ public class Shoot extends Command {
                         .getAngle()
                         .minus(setpoint.releaseAngle())
                 : mRobotState.getStationaryTargetHeading();
-        headingTolerance = mRobotState.getToleranceSpeakerHeading();
+        headingTolerance = mRobotState.getSpeakerHeadingTolerance();
 
         var atAngle = !mWaitForAngle
                 || GeometryUtil.isNear(

@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO.AprilTagInputs;
+import com.team1701.lib.util.LoggingUtil;
 import com.team1701.robot.Constants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Vector;
@@ -25,6 +26,7 @@ import org.photonvision.simulation.VisionSystemSim;
 public class AprilTagCamera {
     private final AprilTagCameraIO mCameraIO;
     private final AprilTagInputs mCameraInputs;
+    private final String mCameraName;
     private final String mLoggingPrefix;
     private final Transform3d mRobotToCamera;
     private final Transform3d mCameraToRobot;
@@ -46,6 +48,7 @@ public class AprilTagCamera {
         var config = cameraIO.getVisionConfig();
         mCameraIO = cameraIO;
         mCameraInputs = new AprilTagInputs();
+        mCameraName = config.cameraName;
         mLoggingPrefix = "Camera/" + config.cameraName + "/";
         mRobotToCamera = config.robotToCamera;
         mCameraToRobot = config.robotToCamera.inverse();
@@ -57,7 +60,8 @@ public class AprilTagCamera {
 
     public void periodic() {
         mCameraIO.updateInputs(mCameraInputs);
-        Logger.processInputs(mLoggingPrefix, mCameraInputs);
+        LoggingUtil.logPerformance(
+                "Process" + mCameraName + "Inputs", () -> Logger.processInputs(mLoggingPrefix, mCameraInputs));
 
         for (var pipelineResult : mCameraInputs.pipelineResults) {
             var filteredPipelineResult = filterTargets(pipelineResult);

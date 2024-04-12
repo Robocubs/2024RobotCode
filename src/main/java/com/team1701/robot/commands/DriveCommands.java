@@ -82,7 +82,7 @@ public class DriveCommands {
                 () -> state.getSpeakerHeading()
                         .minus(state.getShootingState().setpoint.releaseAngle()),
                 state::getHeading,
-                state::getToleranceSpeakerHeading,
+                state::getSpeakerHeadingTolerance,
                 kinematicLimits,
                 finishAtRotation);
     }

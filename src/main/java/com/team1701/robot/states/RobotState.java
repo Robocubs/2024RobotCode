@@ -3,6 +3,7 @@ package com.team1701.robot.states;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import com.team1701.lib.drivers.cameras.neural.DetectorCamera.DetectedObjectState;
 import com.team1701.lib.estimation.PoseEstimator;
@@ -10,6 +11,7 @@ import com.team1701.lib.estimation.PoseEstimator.DriveMeasurement;
 import com.team1701.lib.estimation.PoseEstimator.VisionMeasurement;
 import com.team1701.lib.estimation.TwistPoseEstimator;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.LoggingUtil;
 import com.team1701.lib.util.TimeLockedBoolean;
 import com.team1701.lib.util.Util;
 import com.team1701.lib.util.tuning.LoggedTunableBoolean;
@@ -23,7 +25,6 @@ import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.util.FieldUtil;
 import com.team1701.robot.util.ShooterUtil;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -38,7 +39,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
     private static final double kDetectedNoteTimeout = 1.0;
@@ -50,6 +50,9 @@ public class RobotState {
     private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
     private final TimeLockedBoolean mOutOfAmpRange = new TimeLockedBoolean(0.25, Timer.getFPGATimestamp(), true, true);
     private final Field2d mField;
+
+    private final PoseCachedValue<Double> mDistanceToSpeaker;
+    private final PoseCachedValue<Rotation2d> mSpeakerHeading;
 
     private Optional<Drive> mDrive = Optional.empty();
     private Optional<Indexer> mIndexer = Optional.empty();
@@ -66,6 +69,15 @@ public class RobotState {
         SmartDashboard.putBoolean("IsSimulation", Robot.isSimulation());
 
         ShootingState.kDefault.log("RobotState/ShootingState");
+
+        mDistanceToSpeaker = new PoseCachedValue<>(() -> getPose3d()
+                .getTranslation()
+                .getDistance(
+                        Configuration.isBlueAlliance()
+                                ? FieldConstants.kBlueSpeakerOpeningCenter
+                                : FieldConstants.kRedSpeakerOpeningCenter));
+        mSpeakerHeading = new PoseCachedValue<>(
+                () -> FieldUtil.getHeadingToSpeaker(getPose2d().getTranslation()));
     }
 
     @AutoLogOutput
@@ -102,7 +114,6 @@ public class RobotState {
                         robotTranslation.getDistance(GeometryUtil.getTranslation2d(note1.pose())),
                         robotTranslation.getDistance(GeometryUtil.getTranslation2d(note2.pose()))));
 
-        mOutOfAmpRange.update(getDistanceToAmp() > 1, Timer.getFPGATimestamp());
         mField.setRobotPose(robotPose);
     }
 
@@ -131,12 +142,7 @@ public class RobotState {
 
     @AutoLogOutput
     public double getDistanceToSpeaker() {
-        return getPose3d()
-                .getTranslation()
-                .getDistance(
-                        Configuration.isBlueAlliance()
-                                ? FieldConstants.kBlueSpeakerOpeningCenter
-                                : FieldConstants.kRedSpeakerOpeningCenter);
+        return mDistanceToSpeaker.mValue;
     }
 
     public Rotation2d getHeading() {
@@ -161,17 +167,20 @@ public class RobotState {
 
     public void addDriveMeasurements(DriveMeasurement... driveMeasurements) {
         mPoseEstimator.addDriveMeasurements(driveMeasurements);
+        PoseCachedValue.clearAll();
     }
 
     public void addVisionMeasurements(VisionMeasurement... visionMeasurements) {
         if (mEnableCameraPoseEstimation.get()) {
-            Logger.recordOutput("RobotState/LastVisionMeasurement", Timer.getFPGATimestamp());
-            mPoseEstimator.addVisionMeasurements(visionMeasurements);
+            LoggingUtil.logPerformance(
+                    "AddVisionMeasurements", () -> mPoseEstimator.addVisionMeasurements(visionMeasurements));
+            PoseCachedValue.clearAll();
         }
     }
 
     public void resetPose(Pose2d pose) {
         mPoseEstimator.resetPose(pose);
+        PoseCachedValue.clearAll();
     }
 
     @AutoLogOutput
@@ -194,7 +203,7 @@ public class RobotState {
 
     @AutoLogOutput
     public boolean inNearHalf() {
-        var poseX = getPose2d().getTranslation().getX();
+        var poseX = getPose2d().getX();
         return Configuration.isBlueAlliance()
                 ? poseX < FieldConstants.kFieldLongLengthMeters / 2.0
                 : poseX > FieldConstants.kFieldLongLengthMeters / 2.0;
@@ -234,9 +243,8 @@ public class RobotState {
                 .getRotation();
     }
 
-    @AutoLogOutput
     public boolean outOfAmpRange() {
-        return mOutOfAmpRange.getValue();
+        return mOutOfAmpRange.update(getDistanceToAmp() > 1, Timer.getFPGATimestamp());
     }
 
     public Translation3d getSpeakerPose() {
@@ -245,7 +253,6 @@ public class RobotState {
                 : FieldConstants.kRedSpeakerOpeningCenter;
     }
 
-    @AutoLogOutput
     public Pose3d getTolerancePose() {
         return Configuration.isBlueAlliance()
                 ? new Pose3d(FieldConstants.kBlueSpeakerToleranceTranslation, GeometryUtil.kRotation3dIdentity)
@@ -258,34 +265,11 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d getSpeakerHeading() {
-        return FieldUtil.getHeadingToSpeaker(getPose2d().getTranslation());
+        return mSpeakerHeading.get();
     }
 
-    public Rotation2d getMovingSpeakerHeading() {
-        var fieldRelativeSpeeds = getFieldRelativeSpeeds();
-        var projectedTranslation = getPose2d()
-                .getTranslation()
-                .plus(new Translation2d(
-                        fieldRelativeSpeeds.vxMetersPerSecond * Constants.kLoopPeriodSeconds,
-                        fieldRelativeSpeeds.vyMetersPerSecond * Constants.kLoopPeriodSeconds));
-        return FieldUtil.getHeadingToSpeaker(projectedTranslation);
-    }
-
-    public Rotation2d getToleranceSpeakerHeading() {
-        return getToleranceSpeakerHeading(getPose2d().getTranslation());
-    }
-
-    public Rotation2d getToleranceSpeakerHeading(Translation2d translation) {
-        var heading = getTolerancePose()
-                .getTranslation()
-                .toTranslation2d()
-                .minus(translation)
-                .getAngle();
-
-        var toleranceRadians = Math.abs(
-                MathUtil.angleModulus(heading.getRadians() - getSpeakerHeading().getRadians()));
-
-        return Rotation2d.fromRadians(Math.max(0.017, toleranceRadians / 2));
+    public Rotation2d getSpeakerHeadingTolerance() {
+        return FieldUtil.getSpeakerHeadingTolerance(getPose2d().getTranslation());
     }
 
     public Rotation2d getAmpHeading() {
@@ -404,5 +388,35 @@ public class RobotState {
         SPEAKER,
         AMP,
         CLIMB
+    }
+
+    public class PoseCachedValue<T> implements Supplier<T> {
+        @SuppressWarnings("rawtypes")
+        private static final List<PoseCachedValue> values = new ArrayList<>();
+
+        private final Supplier<T> mSupplier;
+        private T mValue = null;
+        private boolean mValid = false;
+
+        public PoseCachedValue(Supplier<T> supplier) {
+            mSupplier = supplier;
+            values.add(this);
+        }
+
+        @Override
+        public T get() {
+            if (!mValid) {
+                mValue = mSupplier.get();
+                mValid = true;
+            }
+
+            return mValue;
+        }
+
+        private void clear() {}
+
+        public static void clearAll() {
+            values.forEach(value -> value.clear());
+        }
     }
 }

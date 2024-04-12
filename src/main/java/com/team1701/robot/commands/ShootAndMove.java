@@ -126,12 +126,13 @@ public class ShootAndMove extends Command {
     public void execute() {
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
-        var droppedVelocity = ShooterUtil.calculateSpeakerSpeed(mRobotState.getDistanceToSpeaker())
-                * Constants.Shooter.kRollerSpeedToNoteSpeed;
+        var distanceToSpeaker = mRobotState.getDistanceToSpeaker();
+        var droppedVelocity =
+                ShooterUtil.calculateSpeakerSpeed(distanceToSpeaker) * Constants.Shooter.kRollerSpeedToNoteSpeed;
         var robotVelocityTowardsSpeaker = fieldRelativeSpeeds
                 .rotateBy(mRobotState.getSpeakerHeading().unaryMinus())
                 .getX();
-        var timeInAir = mRobotState.getDistanceToSpeaker() / (robotVelocityTowardsSpeaker + droppedVelocity);
+        var timeInAir = distanceToSpeaker / (robotVelocityTowardsSpeaker + droppedVelocity);
         var endTranslation = new Translation2d(
                 currentPose.getX() + fieldRelativeSpeeds.getX() * timeInAir,
                 currentPose.getY() + fieldRelativeSpeeds.getY() * timeInAir);
@@ -153,7 +154,7 @@ public class ShootAndMove extends Command {
         var headingError = currentPose.getRotation().minus(targetHeading);
 
         // headingTolerance = Rotation2d.fromDegrees(0.75);
-        headingTolerance = mRobotState.getToleranceSpeakerHeading();
+        headingTolerance = mRobotState.getSpeakerHeadingTolerance();
 
         Rotation2d setpoint;
         double rotationalVelocity;

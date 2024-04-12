@@ -3,6 +3,7 @@ package com.team1701.robot.util;
 import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.FieldConstants;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -38,5 +39,19 @@ public class FieldUtil {
 
     public static Rotation2d getHeadingToSpeaker(Pose2d pose) {
         return getHeadingToSpeaker(pose.getTranslation());
+    }
+
+    public static Rotation2d getSpeakerHeadingTolerance(Translation2d translation) {
+        var tolerancePose = Configuration.isBlueAlliance()
+                ? new Pose3d(FieldConstants.kBlueSpeakerToleranceTranslation, GeometryUtil.kRotation3dIdentity)
+                : new Pose3d(FieldConstants.kRedSpeakerToleranceTranslation, GeometryUtil.kRotation3dIdentity);
+        var heading = tolerancePose
+                .getTranslation()
+                .toTranslation2d()
+                .minus(translation)
+                .getAngle();
+        var toleranceRadians = Math.abs(MathUtil.angleModulus(
+                heading.getRadians() - getHeadingToSpeaker(translation).getRadians()));
+        return Rotation2d.fromRadians(Math.max(0.017, toleranceRadians / 2));
     }
 }

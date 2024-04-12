@@ -10,6 +10,7 @@ import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.config.VisionConfig;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO.DetectorCameraInputs;
 import com.team1701.lib.util.GeometryUtil;
+import com.team1701.lib.util.LoggingUtil;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.robot.FieldConstants;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -69,7 +70,9 @@ public class DetectorCamera {
 
     public void periodic() {
         mDetectorCameraIO.updateInputs(mDetectorCameraInputs);
-        Logger.processInputs(mLoggingPrefix, mDetectorCameraInputs);
+        LoggingUtil.logPerformance(
+                "Process" + mConfig.cameraName + "Inputs",
+                () -> Logger.processInputs(mLoggingPrefix, mDetectorCameraInputs));
 
         mDisconnectedAlert.setEnabled(!mDetectorCameraInputs.isConnected);
         if (!mDetectorCameraInputs.isConnected || mDetectorCameraInputs.pipelineResult.detectedObjects.length == 0) {

@@ -34,7 +34,7 @@ public class PauseDrive extends Command {
                 drive,
                 targetRobotHeadingSupplier::get,
                 mRobotState::getHeading,
-                mRobotState::getToleranceSpeakerHeading,
+                mRobotState::getSpeakerHeadingTolerance,
                 Constants.Drive.kFastTrapezoidalKinematicLimits,
                 false);
 
