@@ -211,7 +211,7 @@ public class AutonomousCommands {
         Pose2d notePose;
 
         public NextNote() {
-            notePose = new Pose2d();
+            notePose = GeometryUtil.kPoseIdentity;
         }
     }
 

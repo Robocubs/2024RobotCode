@@ -70,7 +70,8 @@ public class ShootAndMove extends Command {
     private final RobotState mRobotState;
     private final Supplier<Translation2d> mFieldRelativeSpeeds;
     private final boolean mEndAfterShooting;
-    private final PIDController mRotationController;
+    private final PIDController mStationaryRotationController;
+    private final PIDController mMovingRotationController;
 
     private TrapezoidProfile mRotationProfile;
     private TrapezoidProfile.State mRotationState = kZeroState;
@@ -95,18 +96,19 @@ public class ShootAndMove extends Command {
         mRobotState = robotState;
         mFieldRelativeSpeeds = fieldRelativeSpeeds;
         mEndAfterShooting = endAfterShooting;
-        mRotationController = Util.epsilonEquals(mDrive.getSpeedMetersPerSecond(), 0)
-                ? new PIDController(
-                        kStationaryRotationKp.get(),
-                        kStationaryRotationKi.get(),
-                        kStationaryRotationKd.get(),
-                        Constants.kLoopPeriodSeconds)
-                : new PIDController(
-                        kMovingRotationKp.get(),
-                        kMovingRotationKi.get(),
-                        kMovingRotationKd.get(),
-                        Constants.kLoopPeriodSeconds);
-        mRotationController.enableContinuousInput(-Math.PI, Math.PI);
+        mStationaryRotationController = new PIDController(
+                kStationaryRotationKp.get(),
+                kStationaryRotationKi.get(),
+                kStationaryRotationKd.get(),
+                Constants.kLoopPeriodSeconds);
+
+        mMovingRotationController = new PIDController(
+                kMovingRotationKp.get(),
+                kMovingRotationKi.get(),
+                kMovingRotationKd.get(),
+                Constants.kLoopPeriodSeconds);
+        mStationaryRotationController.enableContinuousInput(-Math.PI, Math.PI);
+        mMovingRotationController.enableContinuousInput(-Math.PI, Math.PI);
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
         mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp());
@@ -118,8 +120,10 @@ public class ShootAndMove extends Command {
     public void initialize() {
         mDrive.setKinematicLimits(kKinematicLimits);
 
-        mRotationController.reset();
-        mRotationController.enableContinuousInput(-Math.PI, Math.PI);
+        mStationaryRotationController.reset();
+        mMovingRotationController.reset();
+        mStationaryRotationController.enableContinuousInput(-Math.PI, Math.PI);
+        mMovingRotationController.enableContinuousInput(-Math.PI, Math.PI);
 
         var fieldRelativeChassisSpeeds = mDrive.getFieldRelativeVelocity();
         var headingError = mRobotState.getHeading().minus(mRobotState.getSpeakerHeading());
@@ -139,10 +143,10 @@ public class ShootAndMove extends Command {
                                     kMaxAngularAcceleration.get(),
                                     kKinematicLimits.maxDriveAcceleration() / kModuleRadius)));
                     if (Util.epsilonEquals(mDrive.getSpeedMetersPerSecond(), 0.0)) {
-                        mRotationController.setPID(
+                        mStationaryRotationController.setPID(
                                 kStationaryRotationKp.get(), kStationaryRotationKi.get(), kStationaryRotationKd.get());
                     } else {
-                        mRotationController.setPID(
+                        mMovingRotationController.setPID(
                                 kMovingRotationKp.get(), kMovingRotationKi.get(), kMovingRotationKd.get());
                     }
                 },
@@ -157,12 +161,6 @@ public class ShootAndMove extends Command {
     public void execute() {
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
-        if (Util.epsilonEquals(mFieldRelativeSpeeds.get().getNorm(), 0.0)) {
-            mRotationController.setPID(
-                    kStationaryRotationKp.get(), kStationaryRotationKi.get(), kStationaryRotationKd.get());
-        } else {
-            mRotationController.setPID(kMovingRotationKp.get(), kMovingRotationKi.get(), kMovingRotationKd.get());
-        }
         var droppedVelocity = ShooterUtil.calculateSpeakerSpeed(mRobotState.getDistanceToSpeaker())
                 * Constants.Shooter.kRollerSpeedToNoteSpeed;
         var robotVelocityTowardsSpeaker = fieldRelativeSpeeds
@@ -201,7 +199,7 @@ public class ShootAndMove extends Command {
             mRotationState = kZeroState;
             setpoint = targetHeading;
         } else {
-            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), 0);
+            var rotationPidOutput = getPIDController().calculate(headingError.getRadians(), 0);
             mRotationState = mRotationProfile.calculate(Constants.kLoopPeriodSeconds, mRotationState, kZeroState);
             rotationalVelocity = mRotationState.velocity + rotationPidOutput;
             setpoint = Rotation2d.fromRadians(targetHeading.getRadians() + mRotationState.position);
@@ -222,8 +220,8 @@ public class ShootAndMove extends Command {
                 .speeds()
                 .allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
-        var atAcceptableRobotSpeed =
-                mRobotState.getHorizontalToSpeaker() < 3.5 || mDrive.getSpeedMetersPerSecond() < 0.5;
+        var atAcceptableRobotSpeed = mRobotState.getHorizontalToSpeaker() < Constants.Drive.kShootWhileMoveDistanceCap
+                || mDrive.getSpeedMetersPerSecond() < Constants.Drive.kShootWhileMoveSpeedCap;
 
         if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())
                 && atAcceptableRobotSpeed) {
@@ -264,5 +262,11 @@ public class ShootAndMove extends Command {
     @Override
     public boolean isFinished() {
         return mEndAfterShooting && mShooting && !mRobotState.hasNote();
+    }
+
+    public PIDController getPIDController() {
+        return Util.epsilonEquals(mFieldRelativeSpeeds.get().getNorm(), 0.0)
+                ? mStationaryRotationController
+                : mMovingRotationController;
     }
 }

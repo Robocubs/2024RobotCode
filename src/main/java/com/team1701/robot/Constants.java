@@ -234,6 +234,9 @@ public final class Constants {
         public static final KinematicLimits kShootMoveKinematicLimits;
         public static final KinematicLimits kMediumTrapezoidalKinematicLimits;
 
+        public static final double kShootWhileMoveSpeedCap = 0.5;
+        public static final double kShootWhileMoveDistanceCap = 3.5;
+
         public static final LoggedTunableNumber kDriveKs = new LoggedTunableNumber("Drive/Module/DriveKs");
         public static final LoggedTunableNumber kDriveKv = new LoggedTunableNumber("Drive/Module/DriveKv");
         public static final LoggedTunableNumber kDriveKa = new LoggedTunableNumber("Drive/Module/DriveKa");
