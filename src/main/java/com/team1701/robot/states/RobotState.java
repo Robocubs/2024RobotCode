@@ -24,7 +24,6 @@ import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.util.FieldUtil;
-import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -237,10 +236,12 @@ public class RobotState {
 
     @AutoLogOutput
     public Rotation2d getPassingHeading() {
-        var difference = getPassingTarget().minus(getPose2d().getTranslation());
-        return ShooterUtil.calculatePassingSetpoint(this)
-                .applyReleaseAngle(new Pose2d(difference, difference.getAngle()))
-                .getRotation();
+        return FieldUtil.getHeadingToPassTarget(getPose2d().getTranslation());
+    }
+
+    @AutoLogOutput
+    public Rotation2d getPassingHeading(Translation2d translation) {
+        return FieldUtil.getHeadingToPassTarget(translation);
     }
 
     public boolean outOfAmpRange() {
@@ -261,6 +262,12 @@ public class RobotState {
 
     public Translation3d getAmpPose() {
         return Configuration.isBlueAlliance() ? FieldConstants.kBlueAmpPosition : FieldConstants.kRedAmpPosition;
+    }
+
+    @AutoLogOutput
+    public double getHorizontalToSpeaker() {
+        return Math.abs(
+                getSpeakerPose().toTranslation2d().getDistance(getPose2d().getTranslation()));
     }
 
     @AutoLogOutput

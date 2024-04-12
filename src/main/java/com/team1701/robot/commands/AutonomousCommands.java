@@ -120,6 +120,10 @@ public class AutonomousCommands {
                 .withName("SetNoteToSeek");
     }
 
+    private Command clearNoteToSeek() {
+        return runOnce(() -> mAutoNoteSeeker.clear()).ignoringDisable(true).withName("ClearNoteToSeek");
+    }
+
     private Command timedDriveWithVelocity(ChassisSpeeds speeds, double seconds) {
         return DriveCommands.driveWithVelocity(() -> speeds, mDrive)
                 .withTimeout(seconds)
@@ -141,7 +145,7 @@ public class AutonomousCommands {
             return stopRoutine();
         }
 
-        var setpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(pose.getTranslation()));
+        var setpoint = ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(pose.getTranslation()));
         mPathBuilder.addPose(pose);
         return DriveCommands.driveToPose(
                         mDrive,
@@ -203,26 +207,39 @@ public class AutonomousCommands {
                 runOnce(() -> mRobotState.setUseAutonFallback(false)));
     }
 
-    private Command driveToNextPiece(AutoNote nextNote) {
-        return new DriveAndSeekNote(
-                mDrive,
-                mRobotState,
-                new DriveToPose(
-                        mDrive,
-                        mRobotState,
-                        () -> new Pose2d(
-                                nextNote.pose().getTranslation(),
+    private class NextNote {
+        Pose2d notePose;
+
+        public NextNote() {
+            notePose = GeometryUtil.kPoseIdentity;
+        }
+    }
+
+    private Command driveToNextPiece(AutoNote note) {
+        NextNote nextNote = new NextNote();
+        return loggedSequence(
+                setNoteToSeek(note),
+                runOnce(() -> nextNote.notePose = new Pose2d(
+                                note.pose().getTranslation(),
                                 mRobotState
                                         .getPose2d()
                                         .getTranslation()
-                                        .minus(nextNote.pose().getTranslation())
-                                        .getAngle()),
-                        mRobotState::getPose2d,
-                        kAutoTrapezoidalKinematicLimits,
-                        true,
-                        true),
-                mAutoNoteSeeker::getDetectedNoteToSeek,
-                kAutoTrapezoidalKinematicLimits);
+                                        .minus(note.pose().getTranslation())
+                                        .getAngle())
+                        .transformBy(Constants.Robot.kIntakeToRobot)),
+                new DriveAndSeekNote(
+                        mDrive,
+                        mRobotState,
+                        new DriveToPose(
+                                mDrive,
+                                mRobotState,
+                                () -> nextNote.notePose,
+                                mRobotState::getPose2d,
+                                kAutoTrapezoidalKinematicLimits,
+                                true,
+                                true),
+                        mAutoNoteSeeker::getDetectedNoteToSeek,
+                        kAutoTrapezoidalKinematicLimits));
     }
 
     private Pose2d getFirstPose(String pathName) {
@@ -266,12 +283,13 @@ public class AutonomousCommands {
         mPathBuilder.addPath(trajectory.getPoses());
 
         var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
-        return new DriveAndSeekNote(
+        return clearNoteToSeek()
+                .andThen(new DriveAndSeekNote(
                         mDrive,
                         mRobotState,
                         new DriveChoreoTrajectory(mDrive, mRobotState, trajectory, eventMarkers, false),
                         mAutoNoteSeeker::getDetectedNoteToSeek,
-                        kAutoTrapezoidalKinematicLimits)
+                        kAutoTrapezoidalKinematicLimits))
                 .deadlineWith(index(), idleShooter())
                 .finallyDo(mAutoNoteSeeker::clear)
                 .withName("FollowChoreoAndSeekNote");
@@ -289,7 +307,8 @@ public class AutonomousCommands {
 
         mPathBuilder.addPath(trajectory.getPoses());
 
-        var shooterSetpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
+        var shooterSetpoint =
+                ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
         var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
         return new DriveChoreoTrajectory(
                         mDrive, mRobotState, trajectory, eventMarkers, shooterSetpoint::applyReleaseAngle, resetPose)
@@ -305,7 +324,8 @@ public class AutonomousCommands {
 
         mPathBuilder.addPath(trajectory.getPoses());
 
-        var shooterSetpoint = ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
+        var shooterSetpoint =
+                ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
         var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
         return new DriveChoreoTrajectory(
                         mDrive, mRobotState, trajectory, eventMarkers, shooterSetpoint::applyReleaseAngle, resetPose)

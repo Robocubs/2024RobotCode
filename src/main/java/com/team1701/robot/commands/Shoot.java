@@ -87,7 +87,7 @@ public class Shoot extends Command {
                 currentPose.getY() + fieldRelativeSpeeds.vyMetersPerSecond * timeInAir);
 
         var setpoint = mRobotState.isSpeakerMode()
-                ? ShooterUtil.calculateSetpoint(FieldUtil.getDistanceToSpeaker(endTranslation))
+                ? ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(endTranslation))
                 : ShooterUtil.calculateStationarySetpoint(mRobotState);
 
         mShooter.setSetpoint(setpoint);

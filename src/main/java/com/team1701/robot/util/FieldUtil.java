@@ -30,6 +30,20 @@ public class FieldUtil {
         return getDistanceToSpeaker(pose.getTranslation());
     }
 
+    public static double getDistanceToPassTarget(Translation2d translation) {
+        return translation.getDistance(
+                Configuration.isBlueAlliance()
+                        ? FieldConstants.kBluePassingTarget.getTranslation()
+                        : FieldConstants.kRedPassingTarget.getTranslation());
+    }
+
+    public static Rotation2d getHeadingToPassTarget(Translation2d translation) {
+        var target = Configuration.isBlueAlliance()
+                ? FieldConstants.kBluePassingTarget.getTranslation()
+                : FieldConstants.kRedPassingTarget.getTranslation();
+        return target.minus(translation).getAngle();
+    }
+
     public static Rotation2d getHeadingToSpeaker(Translation2d translation) {
         var speakerTranslation = Configuration.isBlueAlliance()
                 ? FieldConstants.kBlueSpeakerOpeningCenter

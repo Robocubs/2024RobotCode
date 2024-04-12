@@ -52,7 +52,7 @@ export class IncrementableNumber extends LitElement {
         <div class="text-center">${this.label}</div>
         <div class="flex flex-row gap-2 items-center justify-between">
           <button class="p-1 w-6 bg-white rounded text-black font-medium font" @click=${this.decrement}>-</button>
-          <div>${this.value.toFixed(2)}</div>
+          <div>${this.value.toFixed(3)}</div>
           <button class="p-1 w-6 bg-white rounded text-black font-medium" @click=${this.increment}>+</button>
         </div>
       </div>

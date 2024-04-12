@@ -19,9 +19,10 @@ import static edu.wpi.first.wpilibj2.command.Commands.runEnd;
 public class ShootCommands {
     public static Command idleShooterCommand(Shooter shooter, RobotState robotState) {
         return Commands.runEnd(
-                () -> shooter.setSetpoint(ShooterUtil.calculateIdleSetpoint(robotState)),
-                shooter::stopRotation,
-                shooter);
+                        () -> shooter.setSetpoint(ShooterUtil.calculateIdleSetpoint(robotState)),
+                        shooter::stopRotation,
+                        shooter)
+                .withName("IdleShooterCommand");
     }
 
     public static Command stop(Shooter shooter) {
@@ -49,23 +50,6 @@ public class ShootCommands {
 
     public static Command scoreInAmp(Shooter shooter, Indexer indexer, RobotState robotState) {
         return new Shoot(shooter, indexer, robotState, false);
-    }
-
-    public static Command passANote(
-            Drive drive,
-            Shooter shooter,
-            Indexer indexer,
-            RobotState robotState,
-            DoubleSupplier throttleSupplier,
-            DoubleSupplier strafeSupplier) {
-        return new PassANote(shooter, indexer, robotState)
-                .deadlineWith(DriveCommands.rotateToPassTarget(
-                        drive,
-                        throttleSupplier,
-                        strafeSupplier,
-                        robotState,
-                        Constants.Drive.kFastTrapezoidalKinematicLimits))
-                .withName("PassANote");
     }
 
     public static Command passLow(

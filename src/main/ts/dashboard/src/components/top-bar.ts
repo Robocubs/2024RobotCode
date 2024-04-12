@@ -42,7 +42,7 @@ export class TopBar extends LitElement {
           <team1701-incrementable-number
             source-key="/SmartDashboard/ShooterSpeakerRotationOffsetRadians"
             label="Speaker Offset"
-            step="0.01"
+            step="0.005"
           ></team1701-incrementable-number>
         </div>
         <ul class="flex flex-wrap gap-2 cursor-pointer select-none text-md font-medium text-center text-white border-b-2 border-primary h-full">
