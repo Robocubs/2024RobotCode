@@ -222,7 +222,8 @@ public class ShootAndMove extends Command {
                 .speeds()
                 .allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), kSpeedToleranceRadiansPerSecond.get());
 
-        var atAcceptableRobotSpeed = mRobotState.getHorizontalToSpeaker() < 3 || mDrive.getSpeedMetersPerSecond() < 0.5;
+        var atAcceptableRobotSpeed =
+                mRobotState.getHorizontalToSpeaker() < 3.5 || mDrive.getSpeedMetersPerSecond() < 0.5;
 
         if (mLockedReadyToShoot.update(atAngle && atHeading && atSpeed, Timer.getFPGATimestamp())
                 && atAcceptableRobotSpeed) {
