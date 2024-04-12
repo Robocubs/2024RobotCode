@@ -19,9 +19,10 @@ import static edu.wpi.first.wpilibj2.command.Commands.runEnd;
 public class ShootCommands {
     public static Command idleShooterCommand(Shooter shooter, RobotState robotState) {
         return Commands.runEnd(
-                () -> shooter.setSetpoint(ShooterUtil.calculateIdleSetpoint(robotState)),
-                shooter::stopRotation,
-                shooter);
+                        () -> shooter.setSetpoint(ShooterUtil.calculateIdleSetpoint(robotState)),
+                        shooter::stopRotation,
+                        shooter)
+                .withName("IdleShooterCommand");
     }
 
     public static Command stop(Shooter shooter) {

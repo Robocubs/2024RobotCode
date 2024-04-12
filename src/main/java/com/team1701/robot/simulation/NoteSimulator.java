@@ -55,8 +55,8 @@ public class NoteSimulator extends SubsystemBase {
                     AutoNote.A.redPose(),
                     AutoNote.B.redPose(),
                     AutoNote.C.redPose(),
-                    AutoNote.M1.pose(),
-                    AutoNote.M2.pose(),
+                    // AutoNote.M1.pose(),
+                    // AutoNote.M2.pose(),
                     AutoNote.M3.pose(),
                     AutoNote.M4.pose(),
                     AutoNote.M5.pose())
