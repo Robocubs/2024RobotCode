@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCamera;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCamera.EstimatedRobotPose;
+import com.team1701.lib.drivers.cameras.apriltag.AprilTagCamera.StdDevArguments;
 import com.team1701.lib.drivers.cameras.apriltag.AprilTagCameraIO;
 import com.team1701.lib.drivers.cameras.neural.DetectorCamera;
 import com.team1701.lib.drivers.cameras.neural.DetectorCameraIO;
@@ -32,12 +33,10 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 
 public class Vision extends SubsystemBase {
-    private static final Vector<N3> kDefaultStdDevs = VecBuilder.fill(0.05, 0.05, 0.05);
-
     private final RobotState mRobotState;
-    private AprilTagFieldLayout mAprilTagFieldLayout = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
+    private final AprilTagFieldLayout mAprilTagFieldLayout = AprilTagFields.kDefaultField.loadAprilTagLayoutField();
     private final List<AprilTagCamera> mAprilTagCameras = new ArrayList<>();
-    private List<DetectorCamera> mDetectorCameras = new ArrayList<>();
+    private final List<DetectorCamera> mDetectorCameras = new ArrayList<>();
     private final List<EstimatedRobotPose> mEstimatedRobotPoses = new ArrayList<>();
     private Optional<VisionSystemSim> mVisionSim = Optional.empty();
 
@@ -52,7 +51,7 @@ public class Vision extends SubsystemBase {
         try {
             CubVisionConfigTable.getStringTopic("tag_layout")
                     .publish()
-                    .set(new ObjectMapper().writeValueAsString(fieldLayoutSupplier.get()));
+                    .set(new ObjectMapper().writeValueAsString(mAprilTagFieldLayout));
         } catch (JsonProcessingException e) {
             Alert.error("Failed to load AprilTag layout for Vision").enable();
         }
@@ -62,7 +61,11 @@ public class Vision extends SubsystemBase {
 
         for (AprilTagCameraIO cameraIO : cameraIOs) {
             mAprilTagCameras.add(new AprilTagCamera(
-                    cameraIO, fieldLayoutSupplier, mRobotState::getPose3d, this::interpolateStdDevForDistance));
+                    cameraIO,
+                    fieldLayoutSupplier,
+                    mRobotState::getPose3d,
+                    this::getStdDevForDistance,
+                    Constants.Vision.kSingleTargetMode));
         }
 
         if (Robot.isSimulation()) {
@@ -98,18 +101,44 @@ public class Vision extends SubsystemBase {
     private boolean poseIsInField(Pose3d pose) {
         var y = pose.getY();
         var x = pose.getX();
+        var z = pose.getZ();
 
-        return (y >= 0 && y <= FieldConstants.kFieldShortLengthMeters)
-                && (x >= 0 && x <= FieldConstants.kFieldLongLengthMeters);
+        return y >= 0
+                && y <= FieldConstants.kFieldShortLengthMeters
+                && x >= 0
+                && x <= FieldConstants.kFieldLongLengthMeters
+                && z >= -1.0
+                && z < 1.0;
     }
 
-    private Vector<N3> interpolateStdDevForDistance(double distance) {
-        return Constants.Vision.kUseInterpolatedVisionStdDevValues
-                ? VecBuilder.fill(
-                        Constants.Vision.kVisionXStdDevInterpolater.get(distance),
-                        Constants.Vision.kVisionYStdDevInterpolater.get(distance),
-                        Constants.Vision.kVisionThetaStdDevInterpolater.get(distance))
-                : kDefaultStdDevs;
+    private Vector<N3> getStdDevForDistance(StdDevArguments args) {
+        var distance = args.avgDistance();
+        var numTargets = args.numTargets();
+        var scalar = args.scalar();
+        if (!Constants.Vision.kUseInterpolatedVisionStdDevValues) {
+
+            var xy = Constants.Vision.kXYStdDevCoefficient * distance * distance * scalar / numTargets;
+            var rotation = numTargets > 1
+                    ? Constants.Vision.kRotationStdDevCoefficient * distance * distance * scalar / numTargets
+                    : Double.POSITIVE_INFINITY;
+            return VecBuilder.fill(xy, xy, rotation);
+        }
+
+        if (numTargets > 1) {
+            return VecBuilder.fill(
+                    Constants.Vision.kVisionXStdDevInterpolater.get(distance) * scalar,
+                    Constants.Vision.kVisionYStdDevInterpolater.get(distance) * scalar,
+                    Constants.Vision.kVisionThetaStdDevInterpolater.get(distance) * scalar);
+        }
+
+        return VecBuilder.fill(
+                Constants.Vision.kVisionXStdDevInterpolater.get(distance)
+                        * scalar
+                        * Constants.Vision.kSingleTargetStdDevScalar,
+                Constants.Vision.kVisionYStdDevInterpolater.get(distance)
+                        * scalar
+                        * Constants.Vision.kSingleTargetStdDevScalar,
+                Double.POSITIVE_INFINITY);
     }
 
     @Override
