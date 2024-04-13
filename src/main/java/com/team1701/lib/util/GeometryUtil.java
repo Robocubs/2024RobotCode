@@ -57,6 +57,13 @@ public final class GeometryUtil {
                 MathUtil.inputModulus(rotation.getRadians(), minimumInput.getRadians(), maximumInput.getRadians()));
     }
 
+    public static boolean isBetween(Rotation2d actual, Rotation2d expected1, Rotation2d expected2) {
+        var maxDiff = Math.abs(MathUtil.angleModulus(expected1.getRadians() - expected2.getRadians()));
+        var diff1 = Math.abs(MathUtil.angleModulus(actual.getRadians() - expected1.getRadians()));
+        var diff2 = Math.abs(MathUtil.angleModulus(actual.getRadians() - expected2.getRadians()));
+        return diff1 < maxDiff && diff2 < maxDiff;
+    }
+
     public static boolean isNear(Rotation2d expected, Rotation2d actual, Rotation2d tolerance) {
         var difference = MathUtil.angleModulus(expected.minus(actual).getRadians());
         return MathUtil.isNear(difference, 0.0, tolerance.getRadians());
