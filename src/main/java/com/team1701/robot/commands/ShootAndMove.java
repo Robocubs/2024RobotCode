@@ -212,10 +212,9 @@ public class ShootAndMove extends Command {
         var atAngle = GeometryUtil.isNear(
                 mShooter.getAngle(), mLastSetpoint.angle(), Rotation2d.fromRadians(kAngleToleranceRadians.get()));
 
-        var stationaryTargetHeading = FieldUtil.getHeadingToSpeaker(currentPose);
-
+        var stationaryTargetHeading = FieldUtil.getHeadingToSpeaker(currentPose).minus(shooterSetpoint.releaseAngle());
         var atHeading = GeometryUtil.isNear(mLastTargetHeading, mRobotState.getHeading(), headingTolerance)
-                || GeometryUtil.isNear(stationaryTargetHeading, mRobotState.getHeading(), headingTolerance);
+                || GeometryUtil.isBetween(mRobotState.getHeading(), mLastTargetHeading, stationaryTargetHeading);
 
         var atSpeed = mLastSetpoint
                 .speeds()
