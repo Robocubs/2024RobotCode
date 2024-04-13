@@ -126,7 +126,7 @@ public class Shoot extends Command {
             }
         }
 
-        mRobotState.setShootingState(new ShootingState(setpoint, true, atAngle, atSpeed, atHeading, mShooting));
+        mRobotState.setShootingState(new ShootingState(setpoint, true, atAngle, atSpeed, atHeading, false, mShooting));
     }
 
     @Override

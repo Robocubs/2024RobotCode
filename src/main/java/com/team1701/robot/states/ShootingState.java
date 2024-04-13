@@ -5,13 +5,14 @@ import org.littletonrobotics.junction.Logger;
 
 public class ShootingState {
     public static final ShootingState kDefault =
-            new ShootingState(ShooterSetpoint.kDefault, false, false, false, false, false);
+            new ShootingState(ShooterSetpoint.kDefault, false, false, false, false, false, false);
 
     public final ShooterSetpoint setpoint;
     public final boolean isActive;
     public final boolean atHeading;
     public final boolean atAngle;
     public final boolean atSpeed;
+    public final boolean canShootWhileMove;
     public final boolean isShooting;
 
     public ShootingState(
@@ -20,12 +21,14 @@ public class ShootingState {
             boolean atAngle,
             boolean atSpeed,
             boolean atHeading,
+            boolean canShootWhileMove,
             boolean isShooting) {
         this.setpoint = setpoint;
         this.isActive = isActive;
         this.atHeading = atHeading;
         this.atAngle = atAngle;
         this.atSpeed = atSpeed;
+        this.canShootWhileMove = canShootWhileMove;
         this.isShooting = isShooting;
     }
 

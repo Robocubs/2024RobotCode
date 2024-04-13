@@ -90,7 +90,7 @@ public class ShootCommands {
                                 }
                             }
                             robotState.setShootingState(
-                                    new ShootingState(setpoint, true, atAngle, atSpeed, atHeading, shooting));
+                                    new ShootingState(setpoint, true, atAngle, atSpeed, atHeading, false, shooting));
                         },
                         () -> {
                             shooter.stop();
