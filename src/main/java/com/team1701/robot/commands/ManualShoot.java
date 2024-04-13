@@ -52,7 +52,7 @@ public class ManualShoot extends Command {
             }
         }
 
-        mRobotState.setShootingState(new ShootingState(setpoint, true, true, atSpeed, true, mShooting));
+        mRobotState.setShootingState(new ShootingState(setpoint, true, true, atSpeed, true, false, mShooting));
     }
 
     @Override

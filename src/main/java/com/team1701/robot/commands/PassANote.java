@@ -184,7 +184,8 @@ public class PassANote extends Command {
             }
         }
 
-        mRobotState.setShootingState(new ShootingState(shooterSetpoint, true, atAngle, atSpeed, atHeading, mShooting));
+        mRobotState.setShootingState(
+                new ShootingState(shooterSetpoint, true, atAngle, atSpeed, atHeading, atPose, mShooting));
         Logger.recordOutput(kLoggingPrefix + "AtPose", atPose);
         Logger.recordOutput(kLoggingPrefix + "HeadingSetpoint", headingSetpoint);
     }

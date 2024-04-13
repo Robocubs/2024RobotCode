@@ -89,9 +89,11 @@ public class LED extends SubsystemBase {
             return;
         }
 
-        var atAngleState = state.atAngle ? LEDColors.kShootingValid : LEDColors.kShootingInvalid;
-        var atSpeedState = state.atSpeed ? LEDColors.kShootingValid : LEDColors.kShootingInvalid;
-        var atHeadingState = state.atHeading ? LEDColors.kShootingValid : LEDColors.kShootingInvalid;
+        var tick = (int) (Timer.getFPGATimestamp() * kStrobeFrequency * 2);
+        var validColor = state.canShootWhileMove && tick % 2 == 1 ? Color.kWhite : LEDColors.kShootingValid;
+        var atAngleState = state.atAngle ? validColor : LEDColors.kShootingInvalid;
+        var atSpeedState = state.atSpeed ? validColor : LEDColors.kShootingInvalid;
+        var atHeadingState = state.atHeading ? validColor : LEDColors.kShootingInvalid;
 
         var ledsPerSegment = kTopLEDsPerRow / 3;
         for (var row = 0; row < kTopLEDsRowCount; row++) {

@@ -240,7 +240,8 @@ public class ShootAndMove extends Command {
         mLastSetpoint = shooterSetpoint;
         mLastTargetHeading = targetHeading;
 
-        mRobotState.setShootingState(new ShootingState(shooterSetpoint, true, atAngle, atSpeed, atHeading, mShooting));
+        mRobotState.setShootingState(new ShootingState(
+                shooterSetpoint, true, atAngle, atSpeed, atHeading, atAcceptableRobotSpeed, mShooting));
 
         Logger.recordOutput(kLoggingPrefix + "Setpoint", new Pose2d(endTranslation, setpoint));
         Logger.recordOutput(kLoggingPrefix + "TimeInAir", timeInAir);
