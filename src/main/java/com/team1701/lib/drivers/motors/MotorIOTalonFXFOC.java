@@ -5,6 +5,7 @@ import java.util.Queue;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
@@ -30,6 +31,7 @@ public class MotorIOTalonFXFOC implements MotorIO {
     private final StatusSignal<Double> mTorqueCurrentSignal;
     private final Slot0Configs mSlot0Configs;
 
+    private NeutralModeValue mNeutralMode;
     private Optional<Queue<Double>> mPositionSamples = Optional.empty();
     private Optional<Queue<Double>> mVelocitySamples = Optional.empty();
 
@@ -46,6 +48,10 @@ public class MotorIOTalonFXFOC implements MotorIO {
         mTorqueCurrentSignal = mMotor.getTorqueCurrent();
         mSlot0Configs = new Slot0Configs();
         mMotor.getConfigurator().refresh(mSlot0Configs);
+
+        var motorOutputConfigs = new MotorOutputConfigs();
+        mMotor.getConfigurator().refresh(motorOutputConfigs);
+        mNeutralMode = motorOutputConfigs.NeutralMode;
 
         BaseStatusSignal.setUpdateFrequencyForAll(
                 100, mPositionSignal, mVelocitySignal, mMotorVoltageSignal, mTorqueCurrentSignal);
@@ -113,7 +119,11 @@ public class MotorIOTalonFXFOC implements MotorIO {
 
     @Override
     public void setBrakeMode(boolean enable) {
-        mMotor.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+        var mode = (enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+        if (mode != mNeutralMode) {
+            mMotor.setNeutralMode(mode);
+            mNeutralMode = mode;
+        }
     }
 
     @Override
