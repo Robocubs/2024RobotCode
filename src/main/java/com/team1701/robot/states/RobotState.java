@@ -193,10 +193,9 @@ public class RobotState {
     public boolean inOpponentWing() {
         var translationX = getPose2d().getX();
         return Configuration.isBlueAlliance()
-                ? translationX + Constants.Robot.kLongDistanceFromDriveCenterToCorner + .15
+                ? translationX + Constants.Robot.kLongDistanceFromDriveCenterToCorner
                         > FieldConstants.kFieldLongLengthMeters - FieldConstants.kWingLength
-                : translationX - Constants.Robot.kLongDistanceFromDriveCenterToCorner - .15
-                        < FieldConstants.kWingLength;
+                : translationX - Constants.Robot.kLongDistanceFromDriveCenterToCorner < FieldConstants.kWingLength;
     }
 
     @AutoLogOutput
