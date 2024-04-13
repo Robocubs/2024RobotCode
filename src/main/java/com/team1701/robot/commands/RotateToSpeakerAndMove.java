@@ -100,7 +100,7 @@ public class RotateToSpeakerAndMove extends Command {
                 currentPose.getY() + fieldRelativeSpeeds.getY() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
         var targetHeading = FieldUtil.getHeadingToSpeaker(endTranslation);
         var headingError = currentPose.getRotation().minus(targetHeading);
-        var headingTolerance = mRobotState.getToleranceSpeakerHeading(endTranslation);
+        var headingTolerance = FieldUtil.getSpeakerHeadingTolerance(endTranslation);
 
         Rotation2d setpoint;
         double rotationalVelocity;
