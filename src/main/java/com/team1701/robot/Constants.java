@@ -701,7 +701,7 @@ public final class Constants {
 
         public static final double kIndexerShootPercent = 1;
         public static final double kIndexerLoadPercent = 0.8;
-        public static final double kIndexerSlowPercent = 0.5;
+        public static final double kIndexerSlowPercent = 0.4;
         public static final double kIndexerReversePercent = -1;
         public static final double kIndexerReverseBumpPercent = -0.4;
     }
