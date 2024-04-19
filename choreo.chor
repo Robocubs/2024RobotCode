@@ -7008,7 +7008,7 @@
                     "name": "Seek 3",
                     "target": 7,
                     "targetTimestamp": 7.27597575401809,
-                    "offset": 0.6,
+                    "offset": 0.95,
                     "command": {
                         "type": "named",
                         "data": {

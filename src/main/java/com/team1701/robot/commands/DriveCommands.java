@@ -186,7 +186,7 @@ public class DriveCommands {
                                 .orElseGet(robotState::getPose2d),
                         robotState::getPose2d,
                         kinematicLimits,
-                        0.01,
+                        0.1,
                         true,
                         finishIfHasPiece)
                 .withName("DriveToNote");

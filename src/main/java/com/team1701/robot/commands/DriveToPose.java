@@ -43,7 +43,6 @@ public class DriveToPose extends Command {
     private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
     private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.5);
-    private static DoubleSupplier kTranslationToleranceMeters;
     private static final LoggedTunableNumber kRotationToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "RotationToleranceRadians", 0.01);
 
@@ -55,6 +54,7 @@ public class DriveToPose extends Command {
     private final boolean mFinishAtPose;
     private final PIDController mTranslationController;
     private final PIDController mRotationController;
+    private final DoubleSupplier kTranslationToleranceMeters;
 
     private TrapezoidProfile mTranslationProfile;
     private TrapezoidProfile mRotationProfile;

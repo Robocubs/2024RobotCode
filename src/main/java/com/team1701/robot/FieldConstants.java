@@ -44,7 +44,7 @@ public final class FieldConstants {
             new Translation3d(Units.inchesToMeters(578.77), 7.89, Units.inchesToMeters(53.38));
 
     public static final Pose2d kBlueAmpDrivePose = new Pose2d(
-            Units.inchesToMeters(75),
+            Units.inchesToMeters(80),
             Units.inchesToMeters(328.0) - Constants.Robot.kRobotFrontToCenterWithBumpers,
             Rotation2d.fromDegrees(90));
 

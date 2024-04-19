@@ -237,7 +237,7 @@ public class AutonomousCommands {
                                 () -> nextNote.notePose,
                                 mRobotState::getPose2d,
                                 kAutoTrapezoidalKinematicLimits,
-                                0.01,
+                                0.1,
                                 true,
                                 true),
                         mAutoNoteSeeker::getDetectedNoteToSeek,
