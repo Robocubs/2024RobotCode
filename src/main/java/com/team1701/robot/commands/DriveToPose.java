@@ -1,5 +1,6 @@
 package com.team1701.robot.commands;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
@@ -42,8 +43,7 @@ public class DriveToPose extends Command {
     private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 6.0);
     private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
     private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.5);
-    private static final LoggedTunableNumber kTranslationToleranceMeters =
-            new LoggedTunableNumber(kLoggingPrefix + "TranslationToleranceMeters", 0.01);
+    private static DoubleSupplier kTranslationToleranceMeters;
     private static final LoggedTunableNumber kRotationToleranceRadians =
             new LoggedTunableNumber(kLoggingPrefix + "RotationToleranceRadians", 0.01);
 
@@ -69,8 +69,17 @@ public class DriveToPose extends Command {
             Supplier<Pose2d> poseSupplier,
             Supplier<Pose2d> robotPoseSupplier,
             KinematicLimits kinematicLimits,
+            double translationTolerance,
             boolean finishAtPose) {
-        this(drive, robotState, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose, false);
+        this(
+                drive,
+                robotState,
+                poseSupplier,
+                robotPoseSupplier,
+                kinematicLimits,
+                translationTolerance,
+                finishAtPose,
+                false);
     }
 
     DriveToPose(
@@ -79,6 +88,7 @@ public class DriveToPose extends Command {
             Supplier<Pose2d> poseSupplier,
             Supplier<Pose2d> robotPoseSupplier,
             KinematicLimits kinematicLimits,
+            double translationTolerance,
             boolean finishAtPose,
             boolean endIfHasPiece) {
         mDrive = drive;
@@ -89,6 +99,7 @@ public class DriveToPose extends Command {
         mFinishAtPose = finishAtPose;
         mEndIfHasPiece = endIfHasPiece;
 
+        kTranslationToleranceMeters = () -> translationTolerance;
         mTranslationController = new PIDController(
                 kTranslationKp.get(), kTranslationKi.get(), kTranslationKd.get(), Constants.kLoopPeriodSeconds);
         mTranslationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
@@ -164,7 +175,7 @@ public class DriveToPose extends Command {
         mAtTargetPose = GeometryUtil.isNear(
                 targetPose,
                 currentPose,
-                kTranslationToleranceMeters.get(),
+                kTranslationToleranceMeters.getAsDouble(),
                 Rotation2d.fromRadians(kRotationToleranceRadians.get()));
         if (mAtTargetPose) {
             mDrive.stop();
@@ -207,6 +218,19 @@ public class DriveToPose extends Command {
                 kLoggingPrefix + "RotationError", Rotation2d.fromRadians(mRotationController.getPositionError()));
         Logger.recordOutput(kLoggingPrefix + "Setpoint", setpoint);
         Logger.recordOutput(kLoggingPrefix + "TargetPose", targetPose);
+        Logger.recordOutput(
+                kLoggingPrefix + "AtTranslation",
+                GeometryUtil.isNear(
+                        targetPose.getTranslation(),
+                        currentPose.getTranslation(),
+                        kTranslationToleranceMeters.getAsDouble()));
+        Logger.recordOutput(
+                kLoggingPrefix + "AtRotation",
+                MathUtil.isNear(
+                        targetPose.getRotation().getRadians(),
+                        currentPose.getRotation().getRadians(),
+                        kRotationToleranceRadians.get()));
+        Logger.recordOutput(kLoggingPrefix + "translationTolerance", kTranslationToleranceMeters.getAsDouble());
     }
 
     @Override

@@ -153,6 +153,7 @@ public class AutonomousCommands {
                         () -> setpoint.applyReleaseAngle(autoFlipPose(pose)),
                         mRobotState::getPose2d,
                         kAutoTrapezoidalKinematicLimits,
+                        0.01,
                         true)
                 .deadlineWith(index(), warmShooter(setpoint))
                 .withName("DriveToPoseAndPreWarm");
@@ -236,6 +237,7 @@ public class AutonomousCommands {
                                 () -> nextNote.notePose,
                                 mRobotState::getPose2d,
                                 kAutoTrapezoidalKinematicLimits,
+                                0.01,
                                 true,
                                 true),
                         mAutoNoteSeeker::getDetectedNoteToSeek,
@@ -535,6 +537,24 @@ public class AutonomousCommands {
                         efficientlyPreWarmShootAndDrive("Source543Source.5", "Source543Source.6", AutoNote.M3),
                         driveBackPreWarmAndShoot("Source543Source.7"))
                 .withName("Source453sourceAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand inverseGreedy() {
+        var command = loggedSequence(
+                        print("Started inverse greedy auto"),
+                        aimAndShoot(),
+                        followChoreoPathAndSeekNote("InverseGreedy.1"),
+                        efficientlyPreWarmShootAndDrive("InverseGreedy.2", "InverseGreedy.3", AutoNote.M1),
+                        followChoreoPathAndPreWarm("InverseGreedy.4"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("InverseGreedy.5"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("InverseGreedy.6"),
+                        aimAndShoot(),
+                        followChoreoPathAndPreWarm("InverseGreedy.7"),
+                        aimAndShoot())
+                .withName("InverseGreedyAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }

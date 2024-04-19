@@ -71,8 +71,16 @@ public class DriveCommands {
             Supplier<Pose2d> poseSupplier,
             Supplier<Pose2d> robotPoseSupplier,
             KinematicLimits kinematicLimits,
+            double translationTolerance,
             boolean finishAtPose) {
-        return new DriveToPose(drive, robotState, poseSupplier, robotPoseSupplier, kinematicLimits, finishAtPose);
+        return new DriveToPose(
+                drive,
+                robotState,
+                poseSupplier,
+                robotPoseSupplier,
+                kinematicLimits,
+                translationTolerance,
+                finishAtPose);
     }
 
     public static Command rotateToSpeaker(
@@ -146,6 +154,7 @@ public class DriveCommands {
                                 : FieldConstants.kRedAmpDrivePose,
                         poseSupplier,
                         kinematicLimits,
+                        0.01,
                         true)
                 .withName("DriveToAmp");
     }
@@ -177,6 +186,7 @@ public class DriveCommands {
                                 .orElseGet(robotState::getPose2d),
                         robotState::getPose2d,
                         kinematicLimits,
+                        0.01,
                         true,
                         finishIfHasPiece)
                 .withName("DriveToNote");
