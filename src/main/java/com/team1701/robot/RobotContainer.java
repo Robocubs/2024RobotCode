@@ -447,6 +447,9 @@ public class RobotContainer {
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mRobotState));
 
+        // SpitNote
+        mDriverController.a().whileTrue(ShootCommands.spitNote(mShooter, mIndexer, mRobotState));
+
         /* STREAMDECK BUTTONS */
 
         var stopIntakingCommand = IntakeCommands.stopIntake(mIntake, mIndexer)

@@ -41,6 +41,10 @@ public class ShootCommands {
         return new ManualShoot(shooter, indexer, robotState).withName("ManualShoot");
     }
 
+    public static Command spitNote(Shooter shooter, Indexer indexer, RobotState robotState) {
+        return new SpitNote(shooter, indexer, robotState).withName("SpitNote");
+    }
+
     public static Command aimAndShootInSpeaker(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {
         return shoot(shooter, indexer, robotState)
                 .deadlineWith(DriveCommands.rotateToSpeaker(
