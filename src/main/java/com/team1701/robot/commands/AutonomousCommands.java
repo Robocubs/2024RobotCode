@@ -265,6 +265,14 @@ public class AutonomousCommands {
         return trajectory == null ? GeometryUtil.kPoseIdentity : trajectory.getFinalPose();
     }
 
+    private boolean shouldSpitFirstNote() {
+        return mRobotState.shouldSpitFirstAutoNote();
+    }
+
+    // private Command driveAndDynamicallyShoot(SequentialCommandGroup) {
+
+    // }
+
     private Command efficientlyPreWarmShootAndDrive(String pathName, String returnPath, AutoNote nextNote) {
         return race(
                         driveBackPreWarmAndShoot(pathName).andThen(followChoreoPathAndSeekNote(returnPath)),

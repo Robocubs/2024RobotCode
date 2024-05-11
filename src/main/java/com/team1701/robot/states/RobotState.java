@@ -45,6 +45,7 @@ public class RobotState {
 
     private static final LoggedTunableBoolean mEnableCameraPoseEstimation =
             new LoggedTunableBoolean("EnableCameraPoseEstimation", true);
+    private static final LoggedTunableBoolean mSpitFirstAutoNote = new LoggedTunableBoolean("SpitFirstAutoNote", false);
 
     private final TimeLockedBoolean mHasNote = new TimeLockedBoolean(0.1, Timer.getFPGATimestamp(), true, false);
     private final TimeLockedBoolean mOutOfAmpRange = new TimeLockedBoolean(0.25, Timer.getFPGATimestamp(), true, true);
@@ -386,6 +387,10 @@ public class RobotState {
     public boolean setUseAutonFallback(boolean use) {
         mUseAutonFallback = use;
         return mUseAutonFallback;
+    }
+
+    public boolean shouldSpitFirstAutoNote() {
+        return mSpitFirstAutoNote.get();
     }
 
     public enum ScoringMode {
