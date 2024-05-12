@@ -289,7 +289,7 @@ public final class Constants {
                     kSteerKp.initDefault(4000); // 16.0
                     kSteerKd.initDefault(50);
                     kFrontLeftModuleEncoderOffset = Rotation2d.fromRadians(-2.262);
-                    kFrontRightModuleEncoderOffset = Rotation2d.fromRadians(-3.069);
+                    kFrontRightModuleEncoderOffset = Rotation2d.fromRadians(0.672);
                     kBackLeftModuleEncoderOffset = Rotation2d.fromRadians(-1.291);
                     kBackRightModuleEncoderOffset = Rotation2d.fromRadians(-5.639);
                     break;
@@ -701,7 +701,7 @@ public final class Constants {
 
         public static final double kIndexerShootPercent = 1;
         public static final double kIndexerLoadPercent = 0.8;
-        public static final double kIndexerSlowPercent = 0.5;
+        public static final double kIndexerSlowPercent = 0.4;
         public static final double kIndexerReversePercent = -1;
         public static final double kIndexerReverseBumpPercent = -0.4;
     }

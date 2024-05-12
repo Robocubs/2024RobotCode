@@ -44,7 +44,7 @@ public final class FieldConstants {
             new Translation3d(Units.inchesToMeters(578.77), 7.89, Units.inchesToMeters(53.38));
 
     public static final Pose2d kBlueAmpDrivePose = new Pose2d(
-            Units.inchesToMeters(72.5),
+            Units.inchesToMeters(80),
             Units.inchesToMeters(328.0) - Constants.Robot.kRobotFrontToCenterWithBumpers,
             Rotation2d.fromDegrees(90));
 
@@ -54,7 +54,7 @@ public final class FieldConstants {
             Rotation2d.fromDegrees(90));
 
     public static final Pose2d kBluePassingTarget =
-            new Pose2d(new Translation2d(1.5, 6.5), GeometryUtil.kRotationIdentity);
+            new Pose2d(new Translation2d(2.0, 6.3), GeometryUtil.kRotationIdentity);
     public static final Pose2d kRedPassingTarget =
-            new Pose2d(new Translation2d(kFieldLongLengthMeters - 1.5, 6.5), GeometryUtil.kRotationIdentity);
+            new Pose2d(new Translation2d(kFieldLongLengthMeters - 1.5, 5.8), GeometryUtil.kRotationIdentity);
 }
