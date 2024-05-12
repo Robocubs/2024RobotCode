@@ -31,6 +31,7 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
+import com.team1701.robot.commands.DriveWithAimAssist;
 import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.RumbleController;
@@ -105,7 +106,7 @@ public class RobotContainer {
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(12),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(13),
                                         new EncoderIOAnalog(1),
-                                        Rotation2d.fromRadians(-3.069)),
+                                        Rotation2d.fromRadians(-3.869)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(14),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(15),
@@ -343,15 +344,25 @@ public class RobotContainer {
 
         /* DEFAULT COMMANDS */
 
-        mDrive.setDefaultCommand(driveWithJoysticks(
+        mDrive.setDefaultCommand(new DriveWithAimAssist(
                 mDrive,
-                mDrive::getFieldRelativeHeading,
+                mRobotState,
                 () -> -mDriverController.getLeftY(),
                 () -> -mDriverController.getLeftX(),
                 () -> -mDriverController.getRightX(),
                 () -> mDriverController.getHID().getRightBumper()
                         ? Constants.Drive.kSlowKinematicLimits
                         : Constants.Drive.kFastKinematicLimits));
+
+        // mDrive.setDefaultCommand(driveWithJoysticks(
+        //         mDrive,
+        //         mDrive::getFieldRelativeHeading,
+        //         () -> -mDriverController.getLeftY(),
+        //         () -> -mDriverController.getLeftX(),
+        //         () -> -mDriverController.getRightX(),
+        //         () -> mDriverController.getHID().getRightBumper()
+        //                 ? Constants.Drive.kSlowKinematicLimits
+        //                 : Constants.Drive.kFastKinematicLimits));
 
         mIndexer.setDefaultCommand(IntakeCommands.idleIndexer(mIndexer));
 

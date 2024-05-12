@@ -55,7 +55,7 @@ public class DriveCommands {
                 .withName("DriveWithJoysticks");
     }
 
-    private static Translation2d calculateDriveWithJoysticksVelocities(
+    public static Translation2d calculateDriveWithJoysticksVelocities(
             double throttle, double strafe, Rotation2d heading, double maxVelocity) {
         var translationSign = Configuration.isBlueAlliance() ? 1.0 : -1.0;
         var magnitude = Math.hypot(throttle, strafe);
