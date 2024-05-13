@@ -105,7 +105,7 @@ public class RobotContainer {
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(12),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(13),
                                         new EncoderIOAnalog(1),
-                                        Rotation2d.fromRadians(-3.069)),
+                                        Rotation2d.fromRadians(-3.869)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(14),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(15),
