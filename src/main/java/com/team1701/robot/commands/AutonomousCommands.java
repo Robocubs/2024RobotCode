@@ -27,6 +27,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 import static com.team1701.lib.commands.LoggedCommands.*;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
@@ -343,6 +344,29 @@ public class AutonomousCommands {
                         .withTimeout(timeout)
                         .andThen(forceShoot(), index()))
                 .withName("FollowChoreoAndShootWithTimeout");
+    }
+
+    private Command followChoreoPathAndShootNoTimeout(String pathName, boolean resetPose) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        if (trajectory == null) {
+            return stopRoutine();
+        }
+
+        mPathBuilder.addPath(trajectory.getPoses());
+
+        var shooterSetpoint =
+                ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
+        var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
+        return Commands.deadline(
+                        new DriveChoreoTrajectory(
+                                mDrive,
+                                mRobotState,
+                                trajectory,
+                                eventMarkers,
+                                shooterSetpoint::applyReleaseAngle,
+                                resetPose),
+                        ShootCommands.shootForMoving(mShooter, mIndexer, mRobotState))
+                .withName("FollowChoreoAndShootNoTimeout");
     }
 
     private Command forceShoot() {

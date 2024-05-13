@@ -10,8 +10,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class SpitNote extends Command {
     private static final String kLoggingPrefix = "Command/SpitNote/";
-    private static final LoggedTunableNumber kRollerSpeed =
-            new LoggedTunableNumber(kLoggingPrefix + "RollerSpeed", 200);
+    private static final LoggedTunableNumber kRollerSpeed = new LoggedTunableNumber(kLoggingPrefix + "RollerSpeed", 50);
 
     private final Shooter mShooter;
     private final Indexer mIndexer;
@@ -33,9 +32,15 @@ public class SpitNote extends Command {
 
     @Override
     public void execute() {
-        mShooter.setRollerSpeeds(new ShooterSpeeds(kRollerSpeed.get()));
-        mIndexer.setForwardLoad();
-        Logger.recordOutput(kLoggingPrefix + "Spitting", true);
+        var targetSpeeds = new ShooterSpeeds(kRollerSpeed.get());
+        mShooter.setRollerSpeeds(targetSpeeds);
+
+        var atSpeed = targetSpeeds.allMatch(mShooter.getRollerSpeedsRadiansPerSecond(), 25);
+
+        if (atSpeed) {
+            mIndexer.setForwardLoad();
+            Logger.recordOutput(kLoggingPrefix + "Spitting", true);
+        }
     }
 
     @Override
