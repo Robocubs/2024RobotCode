@@ -54,6 +54,8 @@ public class Drive extends SubsystemBase {
     private TimeLockedBoolean mWasMovingRecently = new TimeLockedBoolean(1.0, 0.0, false, false);
     private DriveControlState mDriveControlState = DriveControlState.VELOCITY_CONTROL;
 
+    private boolean mUseDriveAssist;
+
     @AutoLogOutput(key = "Drive/MeasuredStates")
     private SwerveModuleState[] mMeasuredModuleStates;
 
@@ -108,6 +110,8 @@ public class Drive extends SubsystemBase {
                 .onTrue(Commands.runOnce(() -> setDriveBrakeMode(false))
                         .ignoringDisable(true)
                         .withName("DriveEnabledStart"));
+
+        mUseDriveAssist = false;
     }
 
     @Override
@@ -347,6 +351,19 @@ public class Drive extends SubsystemBase {
 
     public KinematicLimits getKinematicLimits() {
         return mKinematicLimits;
+    }
+
+    public boolean useDriveAssist() {
+        return mUseDriveAssist;
+    }
+
+    public void setUseDriveAssist(boolean enable) {
+        mUseDriveAssist = enable;
+    }
+
+    public boolean toggleDriveAssist() {
+        setUseDriveAssist(!mUseDriveAssist);
+        return mUseDriveAssist;
     }
 
     public enum DriveControlState {

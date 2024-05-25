@@ -21,7 +21,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import org.littletonrobotics.junction.Logger;
 
-public class DriveWithAimAssist extends Command {
+public class DriveWithAssist extends Command {
     private static final String kLoggingPrefix = "Command/DriveWithAimAssist/";
     private static final double kModuleRadius = Constants.Drive.kModuleRadius;
     private static final TrapezoidProfile.State kZeroState = new TrapezoidProfile.State(0.0, 0.0);
@@ -50,7 +50,7 @@ public class DriveWithAimAssist extends Command {
     private TrapezoidProfile mRotationProfile;
     private TrapezoidProfile.State mRotationState = kZeroState;
 
-    public DriveWithAimAssist(
+    public DriveWithAssist(
             Drive drive,
             RobotState robotState,
             DoubleSupplier throttleSupplier,
