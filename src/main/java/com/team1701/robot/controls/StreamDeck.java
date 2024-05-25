@@ -77,7 +77,7 @@ public class StreamDeck extends SubsystemBase {
         kStopShootButton(1, 3, "Controls/StopShootButton", "StopShooterIcon", "Stop"),
         kSpeakerModeButton(0, 4, "Controls/SpeakerModeButton", "SpeakerModeIcon", "Speaker"),
         kAmpModeButton(1, 4, "Controls/AmpModeButton", "AmpModeIcon", "Amp"),
-        kDriveAssistButton(2, 4, "Controls/DriveAssistButton", "ClimbModeIcon", "Assist"),
+        kDriveAssistButton(2, 4, "Controls/DriveAssistButton", "Circle", "Assist"),
         kExtendWinchButton(0, 2, "Controls/ExtendWinchButton", "ExtendWinchIcon", "Extend"),
         kRetractWinchButton(2, 2, "Controls/RetractWinchButton", "RetractWinchIcon", "Retract");
 
