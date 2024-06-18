@@ -101,7 +101,7 @@ public class RobotContainer {
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(10),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(11),
                                         new EncoderIOAnalog(0),
-                                        Rotation2d.fromRadians(-2.262)),
+                                        Rotation2d.fromRadians(-2.237)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(12),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(13),
@@ -501,7 +501,9 @@ public class RobotContainer {
         var setAmpModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.AMP))
                 .ignoringDisable(true)
                 .withName("SetAmpScoringMode");
-        var setDriveAssist = runOnce(() -> mDrive.toggleDriveAssist(), mDrive);
+        var setDriveAssist = runOnce(() -> mDrive.toggleDriveAssist(), mDrive)
+                .ignoringDisable(true)
+                .withName("SetDriveAssist");
         var setClimbModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB))
                 .ignoringDisable(true)
                 .withName("SetClimbScoringMode");
