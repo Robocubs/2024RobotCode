@@ -501,7 +501,9 @@ public class RobotContainer {
         var setAmpModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.AMP))
                 .ignoringDisable(true)
                 .withName("SetAmpScoringMode");
-        var setDriveAssist = runOnce(() -> mDrive.toggleDriveAssist(), mDrive);
+        var setDriveAssist = runOnce(() -> mDrive.toggleDriveAssist(), mDrive)
+                .ignoringDisable(true)
+                .withName("SetDriveAssist");
         var setClimbModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB))
                 .ignoringDisable(true)
                 .withName("SetClimbScoringMode");
