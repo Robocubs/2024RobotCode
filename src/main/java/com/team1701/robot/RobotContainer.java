@@ -31,6 +31,7 @@ import com.team1701.lib.util.GeometryUtil;
 import com.team1701.robot.Configuration.Mode;
 import com.team1701.robot.commands.AutonomousCommands;
 import com.team1701.robot.commands.DriveCommands;
+import com.team1701.robot.commands.DriveWithAssist;
 import com.team1701.robot.commands.IntakeCommands;
 import com.team1701.robot.commands.ShootCommands;
 import com.team1701.robot.controls.RumbleController;
@@ -100,12 +101,12 @@ public class RobotContainer {
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(10),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(11),
                                         new EncoderIOAnalog(0),
-                                        Rotation2d.fromRadians(-2.262)),
+                                        Rotation2d.fromRadians(-2.237)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(12),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(13),
                                         new EncoderIOAnalog(1),
-                                        Rotation2d.fromRadians(-3.069)),
+                                        Rotation2d.fromRadians(-3.869)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(14),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(15),
@@ -343,15 +344,36 @@ public class RobotContainer {
 
         /* DEFAULT COMMANDS */
 
-        mDrive.setDefaultCommand(driveWithJoysticks(
-                mDrive,
-                mDrive::getFieldRelativeHeading,
-                () -> -mDriverController.getLeftY(),
-                () -> -mDriverController.getLeftX(),
-                () -> -mDriverController.getRightX(),
-                () -> mDriverController.getHID().getRightBumper()
-                        ? Constants.Drive.kSlowKinematicLimits
-                        : Constants.Drive.kFastKinematicLimits));
+        mDrive.setDefaultCommand(Commands.either(
+                new DriveWithAssist(
+                        mDrive,
+                        mRobotState,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX(),
+                        () -> -mDriverController.getRightX(),
+                        () -> mDriverController.getHID().getRightBumper()
+                                ? Constants.Drive.kSlowKinematicLimits
+                                : Constants.Drive.kFastKinematicLimits),
+                DriveCommands.driveWithJoysticks(
+                        mDrive,
+                        mDrive::getFieldRelativeHeading,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX(),
+                        () -> -mDriverController.getRightX(),
+                        () -> mDriverController.getHID().getRightBumper()
+                                ? Constants.Drive.kSlowKinematicLimits
+                                : Constants.Drive.kFastKinematicLimits),
+                mDrive::useDriveAssist));
+
+        // mDrive.setDefaultCommand(driveWithJoysticks(
+        //         mDrive,
+        //         mDrive::getFieldRelativeHeading,
+        //         () -> -mDriverController.getLeftY(),
+        //         () -> -mDriverController.getLeftX(),
+        //         () -> -mDriverController.getRightX(),
+        //         () -> mDriverController.getHID().getRightBumper()
+        //                 ? Constants.Drive.kSlowKinematicLimits
+        //                 : Constants.Drive.kFastKinematicLimits));
 
         mIndexer.setDefaultCommand(IntakeCommands.idleIndexer(mIndexer));
 
@@ -482,6 +504,9 @@ public class RobotContainer {
         var setAmpModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.AMP))
                 .ignoringDisable(true)
                 .withName("SetAmpScoringMode");
+        var setDriveAssist = runOnce(() -> mDrive.toggleDriveAssist(), mDrive)
+                .ignoringDisable(true)
+                .withName("SetDriveAssist");
         var setClimbModeCommand = runOnce(() -> mRobotState.setScoringMode(ScoringMode.CLIMB))
                 .ignoringDisable(true)
                 .withName("SetClimbScoringMode");
@@ -520,7 +545,7 @@ public class RobotContainer {
         mStreamDeck.configureButton(config -> config.add(
                         StreamDeckButton.kSpeakerModeButton, () -> mRobotState.getScoringMode() == ScoringMode.SPEAKER)
                 .add(StreamDeckButton.kAmpModeButton, () -> mRobotState.getScoringMode() == ScoringMode.AMP)
-                .add(StreamDeckButton.kClimbModeButton, () -> mRobotState.getScoringMode() == ScoringMode.CLIMB)
+                .add(StreamDeckButton.kDriveAssistButton, mDrive::useDriveAssist)
                 .add(StreamDeckButton.kStopIntakeButton, stopIntakingCommand::isScheduled)
                 .add(StreamDeckButton.kRejectButton, rejectCommand::isScheduled)
                 .add(StreamDeckButton.kForwardButton, forwardCommand::isScheduled)
@@ -551,7 +576,7 @@ public class RobotContainer {
 
         mStreamDeck.button(StreamDeckButton.kSpeakerModeButton).onTrue(setSpeakerModeCommand);
         mStreamDeck.button(StreamDeckButton.kAmpModeButton).onTrue(setAmpModeCommand);
-        mStreamDeck.button(StreamDeckButton.kClimbModeButton).onTrue(setClimbModeCommand);
+        mStreamDeck.button(StreamDeckButton.kDriveAssistButton).onTrue(setDriveAssist);
 
         mStreamDeck
                 .button(StreamDeckButton.kRaiseShooterButton)
