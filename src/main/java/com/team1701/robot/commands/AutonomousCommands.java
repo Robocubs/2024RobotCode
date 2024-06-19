@@ -605,4 +605,16 @@ public class AutonomousCommands {
                 .withName("SourceDrop543SourceAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
+
+    public AutonomousCommand ampDrop123Amp() {
+        var command = loggedSequence(
+                        print("Started Amp Drop 123 Amp"),
+                        followChoreoPathSeekNoteAndSpit("AmpDrop123Amp.1"),
+                        efficientlyPreWarmShootAndDrive("AmpDrop123Amp.2", "AmpDrop123Amp.3", AutoNote.M2),
+                        efficientlyPreWarmShootAndDrive("AmpDrop123Amp.4", "AmpDrop123Amp.5", AutoNote.M3),
+                        driveBackPreWarmAndShoot("AmpDrop123Amp.6"),
+                        driveToNote(() -> Configuration.isRedAlliance() ? AutoNote.AR : AutoNote.AB))
+                .withName("Amp Drop 123 Amp Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
 }

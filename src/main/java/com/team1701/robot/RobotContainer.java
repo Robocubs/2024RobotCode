@@ -629,6 +629,7 @@ public class RobotContainer {
         var source543source = commands.source543Source();
         var inverseGreedy = commands.inverseGreedy();
         var sourceDrop543source = commands.sourceDrop543source();
+        var ampDrop123Amp = commands.ampDrop123Amp();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Greedy Middle Auto", greedyMiddleCommand.path());
@@ -644,6 +645,7 @@ public class RobotContainer {
         mAutonomousPaths.put("Source 543 Source", source543source.path());
         mAutonomousPaths.put("Inverse Greedy Auto", inverseGreedy.path());
         mAutonomousPaths.put("Source Drop 543 Source", sourceDrop543source.path());
+        mAutonomousPaths.put("Amp Drop 123 Amp", ampDrop123Amp.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Greedy Middle Auto", greedyMiddleCommand.command());
@@ -659,6 +661,7 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Source 543 Source", source543source.command());
         autonomousModeChooser.addOption("Inverse Greedy Auto", inverseGreedy.command());
         autonomousModeChooser.addOption("Source Drop 543 Source", sourceDrop543source.command());
+        autonomousModeChooser.addOption("Amp Drop 123 Amp", ampDrop123Amp.command());
 
         // autonomousModeChooser.addOption(
         //         "Drive Characterization",

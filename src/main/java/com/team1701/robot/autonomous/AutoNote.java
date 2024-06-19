@@ -34,6 +34,13 @@ public class AutoNote {
             FieldConstants.kDroppedSourceNoteRedTranslation.getX(),
             FieldConstants.kDroppedSourceNoteRedTranslation.getY());
 
+    public static final AutoNote AB = new AutoNote(
+            FieldConstants.kDroppedSourceNoteBlueTranslation.getX(),
+            FieldConstants.kDroppedSourceNoteBlueTranslation.getY());
+    public static final AutoNote AR = new AutoNote(
+            FieldConstants.kDroppedSourceNoteRedTranslation.getX(),
+            FieldConstants.kDroppedSourceNoteRedTranslation.getY());
+
     public static final AutoNote X = new AutoNote(0, 0);
 
     private final Pose2d mBluePose;
