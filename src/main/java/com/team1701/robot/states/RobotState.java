@@ -3,6 +3,7 @@ package com.team1701.robot.states;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.function.Supplier;
 
 import com.team1701.lib.drivers.cameras.neural.DetectorCamera.DetectedObjectState;
@@ -318,6 +319,27 @@ public class RobotState {
 
     public Optional<DetectedObjectState> getDetectedNoteForPickup() {
         return mDetectedNoteForPickup;
+    }
+
+    public Optional<Rotation2d> getHeadingToDetectedNoteForPickup() {
+        return getDetectedNoteForPickup().map(detectedNote -> detectedNote
+                .pose()
+                .toPose2d()
+                .getTranslation()
+                .minus(getPose2d().getTranslation())
+                .getAngle());
+    }
+
+    public OptionalDouble getDistanceToDetectedNoteForPickup() {
+        if (getDetectedNoteForPickup().isPresent()) {
+            return OptionalDouble.of(getDetectedNoteForPickup()
+                    .get()
+                    .pose()
+                    .toPose2d()
+                    .getTranslation()
+                    .getDistance(getPose2d().getTranslation()));
+        }
+        return OptionalDouble.empty();
     }
 
     public void addDetectedNotes(List<DetectedObjectState> notes) {
