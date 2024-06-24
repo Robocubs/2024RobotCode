@@ -58,6 +58,9 @@ public final class FieldConstants {
     public static final Pose2d kRedPassingTarget =
             new Pose2d(new Translation2d(kFieldLongLengthMeters - 1.5, 5.8), GeometryUtil.kRotationIdentity);
 
-    public static final Translation2d kDroppedSourceNoteBlueTranslation = new Translation2d(0, 0);
-    public static final Translation2d kDroppedSourceNoteRedTranslation = new Translation2d(0, 0);
+    public static final Translation2d kDroppedSourceNoteBlueTranslation = new Translation2d(1, 1);
+    public static final Translation2d kDroppedSourceNoteRedTranslation = new Translation2d(kFieldLongLengthMeters - 1, kFieldShortLengthMeters - 1);
+
+    public static final Translation2d kDroppedAmpNoteBlueTranslation = new Translation2d(1, 1);
+    public static final Translation2d kDroppedAmpNoteRedTranslation = new Translation2d(kFieldLongLengthMeters - 1, kFieldShortLengthMeters - 1);
 }
