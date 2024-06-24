@@ -299,7 +299,7 @@ public class RobotContainer {
 
         mLED = new LED(mRobotState);
 
-        mRobotState.addSubsystems(this.mDrive, this.mShooter, this.mIndexer, this.mIntake);
+        mRobotState.addSubsystems(this.mDrive, this.mShooter, this.mIndexer, this.mIntake, this.mVision);
 
         SmartDashboard.putData(mDrive);
         SmartDashboard.putData(mShooter);

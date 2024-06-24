@@ -1,5 +1,7 @@
 package com.team1701.robot.subsystems.leds;
 
+import java.util.Optional;
+
 import com.team1701.lib.drivers.leds.LEDController;
 import com.team1701.robot.Configuration;
 import com.team1701.robot.states.RobotState;
@@ -17,9 +19,10 @@ public class LED extends SubsystemBase {
     private static final int kTopLEDsPerRow = kTopLEDCount / kTopLEDsRowCount;
     private static final int kCylonFrequency = 16;
     private static final int kStrobeFrequency = 10;
+    private Optional<Boolean> detectorCamConnected;
 
     private final LEDController mLEDController;
-    private final RobotState mRobotState;
+    public final RobotState mRobotState;
 
     public LED(RobotState robotState) {
         mLEDController = new LEDController(0, kTopLEDCount);
@@ -28,23 +31,24 @@ public class LED extends SubsystemBase {
 
     @Override
     public void periodic() {
+        detectorCamConnected = mRobotState.detectorCameraIsConnected(0);
         if (DriverStation.isDisabled()) {
             setDisabledLEDStates();
         } else if (mRobotState.hasNote()) {
             if (mRobotState.getShootingState().isActive) {
                 setScoringLEDStates();
             } else if (!mRobotState.hasLoadedNote()) {
-                setStrobe(LEDColors.kIdleHasNote);
+                setStrobe(LEDColors.kShooterProgressBar);
             } else if (mRobotState.isSpeakerMode() && !mRobotState.inOpponentWing()) {
                 setSpeakerRangeLEDStates();
             } else {
-                mLEDController.setAll(LEDColors.kIdleHasNote);
+                mLEDController.setAll(LEDColors.kIdleHasNote, detectorCamConnected);
             }
         } else {
             if (mRobotState.getDetectedNoteForPickup().isPresent()) {
-                mLEDController.setAll(LEDColors.kSeesNote);
+                mLEDController.setAll(LEDColors.kSeesNote, detectorCamConnected);
             } else {
-                mLEDController.setAll(LEDColors.kIdleNoNote);
+                mLEDController.setAll(LEDColors.kIdleNoNote, detectorCamConnected);
             }
         }
         mLEDController.update();
@@ -67,17 +71,17 @@ public class LED extends SubsystemBase {
             cylonColumn = (kTopLEDsPerRow - 1) * 2 - cylonColumn;
         }
 
-        mLEDController.setAll(Color.kBlack);
+        mLEDController.setAll(Color.kBlack, detectorCamConnected);
         for (var row = 0; row < kTopLEDsRowCount; row++) {
             var rowStart = row * kTopLEDsPerRow;
             var rowEnd = rowStart + kTopLEDsPerRow - 1;
             var column = row % 2 == 0 ? rowStart + cylonColumn : rowEnd - cylonColumn;
-            mLEDController.set(column, color);
+            mLEDController.set(column, color, detectorCamConnected);
             if (column > rowStart) {
-                mLEDController.set(column - 1, color, 0.25);
+                mLEDController.set(column - 1, color, 0.25, detectorCamConnected);
             }
             if (column < rowEnd) {
-                mLEDController.set(column + 1, color, 0.25);
+                mLEDController.set(column + 1, color, 0.25, detectorCamConnected);
             }
         }
     }
@@ -113,7 +117,7 @@ public class LED extends SubsystemBase {
         mLEDController.setRange(0, kTopLEDCount, LEDColors.kIdleHasNoteSpeakerFar);
         for (var row = 0; row < kTopLEDsRowCount; row++) {
             var start = unlitLEDsPerSide + row * kTopLEDsPerRow;
-            mLEDController.setRange(start, start + litLEDs, LEDColors.kIdleHasNote);
+            mLEDController.setRange(start, start + litLEDs, LEDColors.kShooterProgressBar);
         }
     }
 }

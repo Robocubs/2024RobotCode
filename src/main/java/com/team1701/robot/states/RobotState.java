@@ -23,6 +23,7 @@ import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.intake.Intake;
 import com.team1701.robot.subsystems.shooter.Shooter;
+import com.team1701.robot.subsystems.vision.Vision;
 import com.team1701.robot.util.FieldUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -58,6 +59,7 @@ public class RobotState {
     private Optional<Indexer> mIndexer = Optional.empty();
     private Optional<Intake> mIntake = Optional.empty();
     private Optional<Shooter> mShooter = Optional.empty();
+    private Optional<Vision> mVision = Optional.empty();
 
     private ShootingState mShootingState = ShootingState.kDefault;
 
@@ -86,11 +88,12 @@ public class RobotState {
     private List<DetectedObjectState> mDetectedNotes = new ArrayList<>();
     private Optional<DetectedObjectState> mDetectedNoteForPickup = Optional.empty();
 
-    public void addSubsystems(Drive drive, Shooter shooter, Indexer indexer, Intake intake) {
+    public void addSubsystems(Drive drive, Shooter shooter, Indexer indexer, Intake intake, Vision vision) {
         mDrive = Optional.of(drive);
         mShooter = Optional.of(shooter);
         mIndexer = Optional.of(indexer);
         mIntake = Optional.of(intake);
+        mVision = Optional.of(vision);
     }
 
     public void periodic() {
@@ -352,6 +355,13 @@ public class RobotState {
 
     public ShootingState getShootingState() {
         return mShootingState;
+    }
+
+    public Optional<Boolean> detectorCameraIsConnected(int index) {
+        if (mVision.isEmpty()) {
+            return Optional.of(false);
+        }
+        return mVision.get().detectorCameraIsConnected(index);
     }
 
     public void setScoringMode(ScoringMode scoringMode) {

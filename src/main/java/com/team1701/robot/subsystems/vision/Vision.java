@@ -163,4 +163,11 @@ public class Vision extends SubsystemBase {
         mVisionSim.get().update(mRobotState.getPose2d());
         Logger.recordOutput("Vision/SimPose", mVisionSim.get().getDebugField().getRobotPose());
     }
+
+    public Optional<Boolean> detectorCameraIsConnected(int index) {
+        if (mDetectorCameras.size() >= index + 1) {
+            return Optional.of(mDetectorCameras.get(index).isConnected());
+        }
+        return Optional.empty();
+    }
 }

@@ -104,4 +104,8 @@ public class DetectorCamera {
     public void addPoseFilter(Predicate<Pose3d> filter) {
         mPoseFilters.add(filter);
     }
+
+    public boolean isConnected() {
+        return mDetectorCameraInputs.isConnected;
+    }
 }
