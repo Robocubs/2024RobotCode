@@ -42,7 +42,7 @@ public class Drive extends SubsystemBase {
     private final SwerveSetpointGenerator mSetpointGenerator = new SwerveSetpointGenerator(Constants.Drive.kKinematics);
     private final SignalSamplingThread mOdometryThread;
 
-    private KinematicLimits mKinematicLimits = Constants.Drive.kFastKinematicLimits;
+    private KinematicLimits mKinematicLimits = Constants.Drive.kSlowKinematicLimits;
     private ChassisSpeeds mDesiredChassisSpeeds = new ChassisSpeeds();
     private Rotation2d[] mDesiredModuleOrientations;
     private double mCharacterizationInput = 0.0;
