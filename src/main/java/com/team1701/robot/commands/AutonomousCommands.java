@@ -66,6 +66,10 @@ public class AutonomousCommands {
         NamedCommands.registerCommand("seek3", setNoteToSeek(AutoNote.M3));
         NamedCommands.registerCommand("seek4", setNoteToSeek(AutoNote.M4));
         NamedCommands.registerCommand("seek5", setNoteToSeek(AutoNote.M5));
+        NamedCommands.registerCommand("seekSB", setNoteToSeek(AutoNote.SB));
+        NamedCommands.registerCommand("seekAB", setNoteToSeek(AutoNote.AB));
+        NamedCommands.registerCommand("seekSR", setNoteToSeek(AutoNote.SR));
+        NamedCommands.registerCommand("seekAR", setNoteToSeek(AutoNote.AR));
     }
 
     private Pose2d autoFlipPose(Pose2d pose) {
@@ -306,6 +310,16 @@ public class AutonomousCommands {
         mPathBuilder.addPath(trajectory.getPoses());
 
         var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
+
+        for (ChoreoEventMarker i : eventMarkers) {
+            var c = i.command();
+            if (c.getName() == "seekAB" || c.getName() == "seekSB") {
+                var newName = c.getName();
+                newName = newName.substring(0, newName.length() - 1) + "R";
+                c.setName(newName);
+            }
+        }
+
         return clearNoteToSeek()
                 .andThen(new DriveAndSeekNote(
                         mDrive,
@@ -640,20 +654,22 @@ public class AutonomousCommands {
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.4", "SourceDrop543Source.5", AutoNote.M3),
                         driveBackPreWarmAndShoot("SourceDrop543Source.6"),
-                        rotateToHeading(
-                                () -> mRobotState
-                                        .getPose2d()
-                                        .getTranslation()
-                                        .minus(
-                                                Configuration.isRedAlliance()
-                                                        ? AutoNote.SR.pose().getTranslation()
-                                                        : AutoNote.SB.pose().getTranslation())
-                                        .getAngle()
-                                        .plus(GeometryUtil.kRotationPi),
-                                () -> Configuration.isRedAlliance()
-                                        ? Optional.of(AutoNote.SR.pose())
-                                        : Optional.of(AutoNote.SB.pose())),
-                        driveToNote(() -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB))
+                        // rotateToHeading(
+                        //         () -> mRobotState
+                        //                 .getPose2d()
+                        //                 .getTranslation()
+                        //                 .minus(
+                        //                         Configuration.isRedAlliance()
+                        //                                 ? AutoNote.SR.pose().getTranslation()
+                        //                                 : AutoNote.SB.pose().getTranslation())
+                        //                 .getAngle()
+                        //                 .plus(GeometryUtil.kRotationPi),
+                        //         () -> Configuration.isRedAlliance()
+                        //                 ? Optional.of(AutoNote.SR.pose())
+                        //                 : Optional.of(AutoNote.SB.pose())),
+                        // driveToNote(() -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB)
+                        followChoreoPathAndSeekNote("SourceDrop543Source.7"),
+                        aimAndShoot())
                 .withName("SourceDrop543SourceAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
@@ -665,7 +681,8 @@ public class AutonomousCommands {
                         efficientlyPreWarmShootAndDrive("AmpDrop123Amp.2", "AmpDrop123Amp.3", AutoNote.M2),
                         efficientlyPreWarmShootAndDrive("AmpDrop123Amp.4", "AmpDrop123Amp.5", AutoNote.M3),
                         driveBackPreWarmAndShoot("AmpDrop123Amp.6"),
-                        driveToNote(() -> Configuration.isRedAlliance() ? AutoNote.AR : AutoNote.AB))
+                        followChoreoPathAndSeekNote("AmpDrop123Amp.7"),
+                        aimAndShoot())
                 .withName("Amp Drop 123 Amp Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
