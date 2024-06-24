@@ -132,6 +132,21 @@ public class AutonomousCommands {
                 .withName("TimedDriveWithVelocity");
     }
 
+    private Command rotateToHeading(Supplier<Rotation2d> heading, Supplier<Optional<Pose2d>> pose) {
+        return new DriveAndSeekNote(
+                mDrive,
+                mRobotState,
+                DriveCommands.rotateToFieldHeading(
+                        mDrive,
+                        heading,
+                        mRobotState::getHeading,
+                        () -> Rotation2d.fromDegrees(7),
+                        kAutoTrapezoidalKinematicLimits,
+                        true),
+                pose,
+                kAutoTrapezoidalKinematicLimits);
+    }
+
     private Command driveToPoseWhileShooting(Pose2d pose, FinishedState finishedState) {
         if (pose == null || pose.equals(GeometryUtil.kPoseIdentity)) {
             return stopRoutine();
@@ -316,12 +331,13 @@ public class AutonomousCommands {
                 .andThen(new DriveAndSeekNote(
                         mDrive,
                         mRobotState,
-                        new DriveChoreoTrajectory(mDrive, mRobotState, trajectory, eventMarkers, false),
+                        new DriveChoreoTrajectory(mDrive, mRobotState, trajectory, eventMarkers, true),
                         mAutoNoteSeeker::getDetectedNoteToSeek,
                         kAutoTrapezoidalKinematicLimits))
                 .finallyDo(mAutoNoteSeeker::clear);
 
-        return Commands.parallel(spitNote(), command).withName("followChoreoPathSeekNoteAndSpit");
+        return Commands.parallel(waitSeconds(0.2).andThen(spitNote()), command)
+                .withName("followChoreoPathSeekNoteAndSpit");
     }
 
     private Command followChoreoPathAndPreWarm(String pathName) {
@@ -624,6 +640,19 @@ public class AutonomousCommands {
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.4", "SourceDrop543Source.5", AutoNote.M3),
                         driveBackPreWarmAndShoot("SourceDrop543Source.6"),
+                        rotateToHeading(
+                                () -> mRobotState
+                                        .getPose2d()
+                                        .getTranslation()
+                                        .minus(
+                                                Configuration.isRedAlliance()
+                                                        ? AutoNote.SR.pose().getTranslation()
+                                                        : AutoNote.SB.pose().getTranslation())
+                                        .getAngle()
+                                        .plus(GeometryUtil.kRotationPi),
+                                () -> Configuration.isRedAlliance()
+                                        ? Optional.of(AutoNote.SR.pose())
+                                        : Optional.of(AutoNote.SB.pose())),
                         driveToNote(() -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB))
                 .withName("SourceDrop543SourceAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
