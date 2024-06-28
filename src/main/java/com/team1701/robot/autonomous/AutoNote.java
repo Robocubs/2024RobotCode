@@ -35,11 +35,9 @@ public class AutoNote {
             FieldConstants.kDroppedSourceNoteRedTranslation.getY());
 
     public static final AutoNote AB = new AutoNote(
-            FieldConstants.kDroppedSourceNoteBlueTranslation.getX(),
-            FieldConstants.kDroppedSourceNoteBlueTranslation.getY());
+            FieldConstants.kDroppedAmpNoteBlueTranslation.getX(), FieldConstants.kDroppedAmpNoteBlueTranslation.getY());
     public static final AutoNote AR = new AutoNote(
-            FieldConstants.kDroppedSourceNoteRedTranslation.getX(),
-            FieldConstants.kDroppedSourceNoteRedTranslation.getY());
+            FieldConstants.kDroppedAmpNoteRedTranslation.getX(), FieldConstants.kDroppedAmpNoteRedTranslation.getY());
 
     public static final AutoNote X = new AutoNote(0, 0);
 
