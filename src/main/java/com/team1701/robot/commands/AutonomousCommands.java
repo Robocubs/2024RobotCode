@@ -654,20 +654,6 @@ public class AutonomousCommands {
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.4", "SourceDrop543Source.5", AutoNote.M3),
                         driveBackPreWarmAndShoot("SourceDrop543Source.6"),
-                        // rotateToHeading(
-                        //         () -> mRobotState
-                        //                 .getPose2d()
-                        //                 .getTranslation()
-                        //                 .minus(
-                        //                         Configuration.isRedAlliance()
-                        //                                 ? AutoNote.SR.pose().getTranslation()
-                        //                                 : AutoNote.SB.pose().getTranslation())
-                        //                 .getAngle()
-                        //                 .plus(GeometryUtil.kRotationPi),
-                        //         () -> Configuration.isRedAlliance()
-                        //                 ? Optional.of(AutoNote.SR.pose())
-                        //                 : Optional.of(AutoNote.SB.pose())),
-                        // driveToNote(() -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB)
                         followChoreoPathAndSeekNote("SourceDrop543Source.7"),
                         aimAndShoot())
                 .withName("SourceDrop543SourceAuto");

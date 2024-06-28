@@ -70660,6 +70660,19 @@
                             "name": "seek4"
                         }
                     }
+                },
+                {
+                    "name": "Seek 5",
+                    "target": 1,
+                    "trajTargetIndex": 1,
+                    "targetTimestamp": 1.909194294199118,
+                    "offset": -0.9,
+                    "command": {
+                        "type": "named",
+                        "data": {
+                            "name": "seek5"
+                        }
+                    }
                 }
             ],
             "isTrajectoryStale": false
