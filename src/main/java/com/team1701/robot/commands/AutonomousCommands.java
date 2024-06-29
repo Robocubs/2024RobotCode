@@ -22,6 +22,7 @@ import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.shooter.Shooter.ShooterSetpoint;
+import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
 import com.team1701.robot.util.FieldUtil;
 import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -290,6 +291,13 @@ public class AutonomousCommands {
 
     // }
 
+    private Command preSpit() {
+        return Commands.run(() -> {
+            mShooter.setRollerSpeeds(new ShooterSpeeds(50));
+            mShooter.setRotationAngle(Constants.Shooter.kShooterLowerLimit);
+        });
+    }
+
     private Command efficientlyPreWarmShootAndDrive(String pathName, String returnPath, AutoNote nextNote) {
         return race(
                         driveBackPreWarmAndShoot(pathName).andThen(followChoreoPathAndSeekNote(returnPath)),
@@ -332,7 +340,7 @@ public class AutonomousCommands {
                 .withName("FollowChoreoAndSeekNote");
     }
 
-    private Command followChoreoPathSeekNoteAndSpit(String pathName) {
+    private Command followChoreoPathSeekNoteAndSpit(String pathName, double dropTime) {
         var trajectory = Choreo.getTrajectory(pathName);
         if (trajectory == null) {
             return stopRoutine();
@@ -350,7 +358,7 @@ public class AutonomousCommands {
                         kAutoTrapezoidalKinematicLimits))
                 .finallyDo(mAutoNoteSeeker::clear);
 
-        return Commands.parallel(waitSeconds(0.2).andThen(spitNote()), command)
+        return Commands.parallel(preSpit().withTimeout(dropTime).andThen(spitNote()), command)
                 .withName("followChoreoPathSeekNoteAndSpit");
     }
 
@@ -650,7 +658,7 @@ public class AutonomousCommands {
     public AutonomousCommand sourceDrop543source() {
         var command = loggedSequence(
                         print("Started source drop 543 source auto"),
-                        followChoreoPathSeekNoteAndSpit("SourceDrop543Source.1"),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop543Source.1", 0.2),
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.4", "SourceDrop543Source.5", AutoNote.M3),
                         driveBackPreWarmAndShoot("SourceDrop543Source.6"),
@@ -663,7 +671,7 @@ public class AutonomousCommands {
     public AutonomousCommand ampDrop123Amp() {
         var command = loggedSequence(
                         print("Started Amp Drop 123 Amp"),
-                        followChoreoPathSeekNoteAndSpit("AmpDrop123Amp.1"),
+                        followChoreoPathSeekNoteAndSpit("AmpDrop123Amp.1", 1.0),
                         efficientlyPreWarmShootAndDrive("AmpDrop123Amp.2", "AmpDrop123Amp.3", AutoNote.M2),
                         efficientlyPreWarmShootAndDrive("AmpDrop123Amp.4", "AmpDrop123Amp.5", AutoNote.M3),
                         driveBackPreWarmAndShoot("AmpDrop123Amp.6"),
