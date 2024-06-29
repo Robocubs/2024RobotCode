@@ -719,4 +719,18 @@ public class AutonomousCommands {
                 .withName("Amp Drop 231 Amp Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
+
+    public AutonomousCommand sourceDrop45source() {
+        var command = loggedSequence(
+                        print("Started source drop 45 source auto"),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop45Source.1", 0.2),
+                        efficientlyPreWarmShootAndDrive("SourceDrop45Source.2", "SourceDrop45Source.3", AutoNote.M5),
+                        driveBackPreWarmAndShoot("SourceDrop45Source.4"),
+                        rotateToHeadingAndSeek(
+                                () -> autoFlipRotation(Rotation2d.fromRadians(1.0)),
+                                () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
+                        aimAndShoot())
+                .withName("SourceDrop45SourceAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
 }
