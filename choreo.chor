@@ -70675,7 +70675,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "AmpDrop123Amp": {
             "waypoints": [
@@ -75509,7 +75509,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": false
+            "isTrajectoryStale": true
         },
         "AmpDrop231Amp": {
             "waypoints": [

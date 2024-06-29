@@ -137,19 +137,29 @@ public class AutonomousCommands {
                 .withName("TimedDriveWithVelocity");
     }
 
-    private Command rotateToHeading(Supplier<Rotation2d> heading, Supplier<Optional<Pose2d>> pose) {
-        return new DriveAndSeekNote(
-                mDrive,
-                mRobotState,
-                DriveCommands.rotateToFieldHeading(
+    private Command rotateToHeadingAndSeek(Supplier<Rotation2d> heading, Supplier<AutoNote> note) {
+        return clearNoteToSeek()
+                .andThen(setNoteToSeek(note.get()))
+                .andThen(new DriveAndSeekNote(
                         mDrive,
-                        heading,
-                        mRobotState::getHeading,
-                        () -> Rotation2d.fromDegrees(7),
-                        kAutoTrapezoidalKinematicLimits,
-                        true),
-                pose,
-                kAutoTrapezoidalKinematicLimits);
+                        mRobotState,
+                        DriveCommands.rotateToFieldHeading(
+                                mDrive,
+                                heading,
+                                mRobotState::getHeading,
+                                () -> Rotation2d.fromDegrees(7),
+                                kAutoTrapezoidalKinematicLimits,
+                                false),
+                        mAutoNoteSeeker::getDetectedNoteToSeek,
+                        kAutoTrapezoidalKinematicLimits))
+                .finallyDo(mAutoNoteSeeker::clear)
+                .withName("RotateToHeadingAndSeek");
+    }
+
+    private Command rotateToFieldHeading(
+            Supplier<Rotation2d> heading, Supplier<Rotation2d> tolerance, boolean finishAtRotation) {
+        return DriveCommands.rotateToFieldHeading(
+                mDrive, heading, mRobotState::getHeading, tolerance, kAutoTrapezoidalKinematicLimits, finishAtRotation);
     }
 
     private Command driveToPoseWhileShooting(Pose2d pose, FinishedState finishedState) {
@@ -662,7 +672,9 @@ public class AutonomousCommands {
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.4", "SourceDrop543Source.5", AutoNote.M3),
                         driveBackPreWarmAndShoot("SourceDrop543Source.6"),
-                        followChoreoPathAndSeekNote("SourceDrop543Source.7"),
+                        rotateToHeadingAndSeek(
+                                () -> autoFlipRotation(Rotation2d.fromRadians(1.1)),
+                                () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
                         aimAndShoot())
                 .withName("SourceDrop543SourceAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
@@ -674,7 +686,9 @@ public class AutonomousCommands {
                         followChoreoPathSeekNoteAndSpit("SourceDrop543Source.1", 0.2),
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
                         driveBackPreWarmAndShoot("SourceDrop543Source.4"),
-                        followChoreoPathAndSeekNote("SourceDrop543Source.7"),
+                        rotateToHeadingAndSeek(
+                                () -> autoFlipRotation(Rotation2d.fromRadians(1.1)),
+                                () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
                         aimAndShoot())
                 .withName("SourceDrop543SourceAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
