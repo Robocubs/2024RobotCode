@@ -673,7 +673,7 @@ public class AutonomousCommands {
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.4", "SourceDrop543Source.5", AutoNote.M3),
                         driveBackPreWarmAndShoot("SourceDrop543Source.6"),
                         rotateToHeadingAndSeek(
-                                () -> autoFlipRotation(Rotation2d.fromRadians(1.1)),
+                                () -> autoFlipRotation(Rotation2d.fromRadians(1.0)),
                                 () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
                         aimAndShoot())
                 .withName("SourceDrop543SourceAuto");
@@ -687,7 +687,7 @@ public class AutonomousCommands {
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
                         driveBackPreWarmAndShoot("SourceDrop543Source.4"),
                         rotateToHeadingAndSeek(
-                                () -> autoFlipRotation(Rotation2d.fromRadians(1.1)),
+                                () -> autoFlipRotation(Rotation2d.fromRadians(1.0)),
                                 () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
                         aimAndShoot())
                 .withName("SourceDrop543SourceAuto");
