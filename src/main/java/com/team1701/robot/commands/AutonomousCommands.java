@@ -668,6 +668,18 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
+    public AutonomousCommand sourceDrop54source() {
+        var command = loggedSequence(
+                        print("Started source drop 54 source auto"),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop543Source.1", 0.2),
+                        efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
+                        driveBackPreWarmAndShoot("SourceDrop543Source.4"),
+                        followChoreoPathAndSeekNote("SourceDrop543Source.7"),
+                        aimAndShoot())
+                .withName("SourceDrop543SourceAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
     public AutonomousCommand ampDrop123Amp() {
         var command = loggedSequence(
                         print("Started Amp Drop 123 Amp"),
@@ -678,6 +690,19 @@ public class AutonomousCommands {
                         followChoreoPathAndSeekNote("AmpDrop123Amp.7"),
                         aimAndShoot())
                 .withName("Amp Drop 123 Amp Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand ampDrop231Amp() {
+        var command = loggedSequence(
+                        print("Started Amp Drop 231 Amp"),
+                        followChoreoPathSeekNoteAndSpit("AmpDrop231Amp.1", 1.0),
+                        efficientlyPreWarmShootAndDrive("AmpDrop231Amp.2", "AmpDrop231Amp.3", AutoNote.M3),
+                        efficientlyPreWarmShootAndDrive("AmpDrop231Amp.4", "AmpDrop231Amp.5", AutoNote.M1),
+                        driveBackPreWarmAndShoot("AmpDrop231Amp.6"),
+                        followChoreoPathAndSeekNote("AmpDrop231Amp.7"),
+                        aimAndShoot())
+                .withName("Amp Drop 231 Amp Auto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }
