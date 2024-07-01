@@ -668,12 +668,12 @@ public class AutonomousCommands {
     public AutonomousCommand sourceDrop543source() {
         var command = loggedSequence(
                         print("Started source drop 543 source auto"),
-                        followChoreoPathSeekNoteAndSpit("SourceDrop543Source.1", 0.2),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop543Source.1", 0.7),
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.4", "SourceDrop543Source.5", AutoNote.M3),
                         driveBackPreWarmAndShoot("SourceDrop543Source.6"),
                         rotateToHeadingAndSeek(
-                                () -> autoFlipRotation(Rotation2d.fromRadians(1.0)),
+                                () -> autoFlipRotation(GeometryUtil.kRotationHalfPi),
                                 () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
                         aimAndShoot())
                 .withName("SourceDrop543SourceAuto");
@@ -683,7 +683,7 @@ public class AutonomousCommands {
     public AutonomousCommand sourceDrop54source() {
         var command = loggedSequence(
                         print("Started source drop 54 source auto"),
-                        followChoreoPathSeekNoteAndSpit("SourceDrop543Source.1", 0.2),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop543Source.1", 1),
                         efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
                         driveBackPreWarmAndShoot("SourceDrop543Source.4"),
                         rotateToHeadingAndSeek(
