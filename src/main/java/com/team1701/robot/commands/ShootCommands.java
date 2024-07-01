@@ -33,12 +33,20 @@ public class ShootCommands {
         return new Shoot(shooter, indexer, robotState, true);
     }
 
+    public static Command shootForMoving(Shooter shooter, Indexer indexer, RobotState robotState) {
+        return new Shoot(shooter, indexer, robotState, false, true, false).withName("ShootForMoving");
+    }
+
     public static Command forceShoot(Shooter shooter, Indexer indexer, RobotState robotState) {
         return new Shoot(shooter, indexer, robotState, false, false, false).withName("ForceShoot");
     }
 
     public static Command manualShoot(Shooter shooter, Indexer indexer, RobotState robotState) {
         return new ManualShoot(shooter, indexer, robotState).withName("ManualShoot");
+    }
+
+    public static Command spitNote(Shooter shooter, Indexer indexer, RobotState robotState) {
+        return new SpitNote(shooter, indexer, robotState).withName("SpitNote");
     }
 
     public static Command aimAndShootInSpeaker(Shooter shooter, Indexer indexer, Drive drive, RobotState robotState) {

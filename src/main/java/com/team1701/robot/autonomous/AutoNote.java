@@ -27,6 +27,20 @@ public class AutoNote {
             FieldConstants.kCenterLine,
             FieldConstants.kShortLengthMidLine - FieldConstants.kSpaceBetweenCenterNotes * 2);
 
+    public static final AutoNote SB = new AutoNote(
+            FieldConstants.kDroppedSourceNoteBlueTranslation.getX(),
+            FieldConstants.kDroppedSourceNoteBlueTranslation.getY());
+    public static final AutoNote SR = new AutoNote(
+            FieldConstants.kDroppedSourceNoteRedTranslation.getX(),
+            FieldConstants.kDroppedSourceNoteRedTranslation.getY());
+
+    public static final AutoNote AB = new AutoNote(
+            FieldConstants.kDroppedAmpNoteBlueTranslation.getX(), FieldConstants.kDroppedAmpNoteBlueTranslation.getY());
+    public static final AutoNote AR = new AutoNote(
+            FieldConstants.kDroppedAmpNoteRedTranslation.getX(), FieldConstants.kDroppedAmpNoteRedTranslation.getY());
+
+    public static final AutoNote X = new AutoNote(0, 0);
+
     private final Pose2d mBluePose;
     private final Pose2d mRedPose;
 

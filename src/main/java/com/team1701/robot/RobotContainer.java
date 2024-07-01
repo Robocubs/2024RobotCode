@@ -469,6 +469,9 @@ public class RobotContainer {
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mRobotState));
 
+        // SpitNote
+        mDriverController.a().whileTrue(ShootCommands.spitNote(mShooter, mIndexer, mRobotState));
+
         /* STREAMDECK BUTTONS */
 
         var stopIntakingCommand = IntakeCommands.stopIntake(mIntake, mIndexer)
@@ -625,6 +628,11 @@ public class RobotContainer {
         var centerBC123center = commands.centerBC123center();
         var source543source = commands.source543Source();
         var inverseGreedy = commands.inverseGreedy();
+        var sourceDrop543source = commands.sourceDrop543source();
+        var ampDrop123Amp = commands.ampDrop123Amp();
+        var ampDrop231Amp = commands.ampDrop231Amp();
+        var sourceDrop54source = commands.sourceDrop54source();
+        var sourceDrop45source = commands.sourceDrop45source();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Greedy Middle Auto", greedyMiddleCommand.path());
@@ -639,6 +647,11 @@ public class RobotContainer {
         mAutonomousPaths.put("Center BC123 Center", centerBC123center.path());
         mAutonomousPaths.put("Source 543 Source", source543source.path());
         mAutonomousPaths.put("Inverse Greedy Auto", inverseGreedy.path());
+        mAutonomousPaths.put("Source Drop 543 Source", sourceDrop543source.path());
+        mAutonomousPaths.put("Amp Drop 123 Amp", ampDrop123Amp.path());
+        mAutonomousPaths.put("Amp Drop 231 Amp", ampDrop231Amp.path());
+        mAutonomousPaths.put("Source Drop 54 Source", sourceDrop54source.path());
+        mAutonomousPaths.put("Source Drop 45 Source", sourceDrop45source.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Greedy Middle Auto", greedyMiddleCommand.command());
@@ -653,6 +666,11 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Center BC123 Center", centerBC123center.command());
         autonomousModeChooser.addOption("Source 543 Source", source543source.command());
         autonomousModeChooser.addOption("Inverse Greedy Auto", inverseGreedy.command());
+        autonomousModeChooser.addOption("Source Drop 543 Source", sourceDrop543source.command());
+        autonomousModeChooser.addOption("Amp Drop 123 Amp", ampDrop123Amp.command());
+        autonomousModeChooser.addOption("Amp Drop 231 Amp", ampDrop231Amp.command());
+        autonomousModeChooser.addOption("Source Drop 54 Source", sourceDrop54source.command());
+        autonomousModeChooser.addOption("Source Drop 45 Source", sourceDrop45source.command());
 
         // autonomousModeChooser.addOption(
         //         "Drive Characterization",
