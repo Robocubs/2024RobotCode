@@ -1,5 +1,6 @@
 package com.team1701.robot.commands;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.choreo.lib.Choreo;
@@ -21,12 +22,14 @@ import com.team1701.robot.subsystems.drive.Drive;
 import com.team1701.robot.subsystems.indexer.Indexer;
 import com.team1701.robot.subsystems.shooter.Shooter;
 import com.team1701.robot.subsystems.shooter.Shooter.ShooterSetpoint;
+import com.team1701.robot.subsystems.shooter.Shooter.ShooterSpeeds;
 import com.team1701.robot.util.FieldUtil;
 import com.team1701.robot.util.ShooterUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 import static com.team1701.lib.commands.LoggedCommands.*;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
@@ -64,6 +67,10 @@ public class AutonomousCommands {
         NamedCommands.registerCommand("seek3", setNoteToSeek(AutoNote.M3));
         NamedCommands.registerCommand("seek4", setNoteToSeek(AutoNote.M4));
         NamedCommands.registerCommand("seek5", setNoteToSeek(AutoNote.M5));
+        NamedCommands.registerCommand("seekSB", setNoteToSeek(AutoNote.SB));
+        NamedCommands.registerCommand("seekAB", setNoteToSeek(AutoNote.AB));
+        NamedCommands.registerCommand("seekSR", setNoteToSeek(AutoNote.SR));
+        NamedCommands.registerCommand("seekAR", setNoteToSeek(AutoNote.AR));
     }
 
     private Pose2d autoFlipPose(Pose2d pose) {
@@ -128,6 +135,31 @@ public class AutonomousCommands {
         return DriveCommands.driveWithVelocity(() -> speeds, mDrive)
                 .withTimeout(seconds)
                 .withName("TimedDriveWithVelocity");
+    }
+
+    private Command rotateToHeadingAndSeek(Supplier<Rotation2d> heading, Supplier<AutoNote> note) {
+        return clearNoteToSeek()
+                .andThen(setNoteToSeek(note.get()))
+                .andThen(new DriveAndSeekNote(
+                        mDrive,
+                        mRobotState,
+                        DriveCommands.rotateToFieldHeading(
+                                mDrive,
+                                heading,
+                                mRobotState::getHeading,
+                                () -> Rotation2d.fromDegrees(7),
+                                kAutoTrapezoidalKinematicLimits,
+                                false),
+                        mAutoNoteSeeker::getDetectedNoteToSeek,
+                        kAutoTrapezoidalKinematicLimits))
+                .finallyDo(mAutoNoteSeeker::clear)
+                .withName("RotateToHeadingAndSeek");
+    }
+
+    private Command rotateToFieldHeading(
+            Supplier<Rotation2d> heading, Supplier<Rotation2d> tolerance, boolean finishAtRotation) {
+        return DriveCommands.rotateToFieldHeading(
+                mDrive, heading, mRobotState::getHeading, tolerance, kAutoTrapezoidalKinematicLimits, finishAtRotation);
     }
 
     private Command driveToPoseWhileShooting(Pose2d pose, FinishedState finishedState) {
@@ -265,6 +297,17 @@ public class AutonomousCommands {
         return trajectory == null ? GeometryUtil.kPoseIdentity : trajectory.getFinalPose();
     }
 
+    // private Command driveAndDynamicallyShoot(SequentialCommandGroup) {
+
+    // }
+
+    private Command preSpit() {
+        return Commands.run(() -> {
+            mShooter.setRollerSpeeds(new ShooterSpeeds(50));
+            mShooter.setRotationAngle(Constants.Shooter.kShooterLowerLimit);
+        });
+    }
+
     private Command efficientlyPreWarmShootAndDrive(String pathName, String returnPath, AutoNote nextNote) {
         return race(
                         driveBackPreWarmAndShoot(pathName).andThen(followChoreoPathAndSeekNote(returnPath)),
@@ -285,6 +328,16 @@ public class AutonomousCommands {
         mPathBuilder.addPath(trajectory.getPoses());
 
         var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
+
+        for (ChoreoEventMarker i : eventMarkers) {
+            var c = i.command();
+            if (c.getName() == "seekAB" || c.getName() == "seekSB") {
+                var newName = c.getName();
+                newName = newName.substring(0, newName.length() - 1) + "R";
+                c.setName(newName);
+            }
+        }
+
         return clearNoteToSeek()
                 .andThen(new DriveAndSeekNote(
                         mDrive,
@@ -295,6 +348,28 @@ public class AutonomousCommands {
                 .deadlineWith(index(), idleShooter())
                 .finallyDo(mAutoNoteSeeker::clear)
                 .withName("FollowChoreoAndSeekNote");
+    }
+
+    private Command followChoreoPathSeekNoteAndSpit(String pathName, double dropTime) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        if (trajectory == null) {
+            return stopRoutine();
+        }
+
+        mPathBuilder.addPath(trajectory.getPoses());
+
+        var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
+        var command = clearNoteToSeek()
+                .andThen(new DriveAndSeekNote(
+                        mDrive,
+                        mRobotState,
+                        new DriveChoreoTrajectory(mDrive, mRobotState, trajectory, eventMarkers, true),
+                        mAutoNoteSeeker::getDetectedNoteToSeek,
+                        kAutoTrapezoidalKinematicLimits))
+                .finallyDo(mAutoNoteSeeker::clear);
+
+        return Commands.parallel(preSpit().withTimeout(dropTime).andThen(spitNote()), command)
+                .withName("followChoreoPathSeekNoteAndSpit");
     }
 
     private Command followChoreoPathAndPreWarm(String pathName) {
@@ -337,6 +412,29 @@ public class AutonomousCommands {
                 .withName("FollowChoreoAndShootWithTimeout");
     }
 
+    private Command followChoreoPathAndShootNoTimeout(String pathName, boolean resetPose) {
+        var trajectory = Choreo.getTrajectory(pathName);
+        if (trajectory == null) {
+            return stopRoutine();
+        }
+
+        mPathBuilder.addPath(trajectory.getPoses());
+
+        var shooterSetpoint =
+                ShooterUtil.calculateShooterSetpoint(FieldUtil.getDistanceToSpeaker(trajectory.getFinalPose()));
+        var eventMarkers = ChoreoEventMarker.loadFromFile(pathName);
+        return Commands.deadline(
+                        new DriveChoreoTrajectory(
+                                mDrive,
+                                mRobotState,
+                                trajectory,
+                                eventMarkers,
+                                shooterSetpoint::applyReleaseAngle,
+                                resetPose),
+                        ShootCommands.shootForMoving(mShooter, mIndexer, mRobotState))
+                .withName("FollowChoreoAndShootNoTimeout");
+    }
+
     private Command forceShoot() {
         return ShootCommands.forceShoot(mShooter, mIndexer, mRobotState);
     }
@@ -351,6 +449,15 @@ public class AutonomousCommands {
         return new PauseDrive(
                         mDrive, mRobotState, () -> autoFlipRotation(moduleHeading), () -> autoFlipRotation(robotPose))
                 .withName("PauseDrive");
+    }
+
+    private Command spitNote() {
+        return ShootCommands.spitNote(mShooter, mIndexer, mRobotState);
+    }
+
+    private Command driveToNote(Supplier<AutoNote> note) {
+        return DriveCommands.driveToNote(
+                mDrive, mRobotState, () -> Optional.of(note.get().pose()), kAutoTrapezoidalKinematicLimits, false);
     }
 
     public AutonomousCommand demo() {
@@ -555,6 +662,75 @@ public class AutonomousCommands {
                         followChoreoPathAndPreWarm("InverseGreedy.7"),
                         aimAndShoot())
                 .withName("InverseGreedyAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand sourceDrop543source() {
+        var command = loggedSequence(
+                        print("Started source drop 543 source auto"),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop543Source.1", 0.7),
+                        efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
+                        efficientlyPreWarmShootAndDrive("SourceDrop543Source.4", "SourceDrop543Source.5", AutoNote.M3),
+                        driveBackPreWarmAndShoot("SourceDrop543Source.6"),
+                        rotateToHeadingAndSeek(
+                                () -> autoFlipRotation(GeometryUtil.kRotationHalfPi),
+                                () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
+                        aimAndShoot())
+                .withName("SourceDrop543SourceAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand sourceDrop54source() {
+        var command = loggedSequence(
+                        print("Started source drop 54 source auto"),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop543Source.1", 1),
+                        efficientlyPreWarmShootAndDrive("SourceDrop543Source.2", "SourceDrop543Source.3", AutoNote.M4),
+                        driveBackPreWarmAndShoot("SourceDrop543Source.4"),
+                        rotateToHeadingAndSeek(
+                                () -> autoFlipRotation(Rotation2d.fromRadians(1.0)),
+                                () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
+                        aimAndShoot())
+                .withName("SourceDrop543SourceAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand ampDrop123Amp() {
+        var command = loggedSequence(
+                        print("Started Amp Drop 123 Amp"),
+                        followChoreoPathSeekNoteAndSpit("AmpDrop123Amp.1", 1.0),
+                        efficientlyPreWarmShootAndDrive("AmpDrop123Amp.2", "AmpDrop123Amp.3", AutoNote.M2),
+                        efficientlyPreWarmShootAndDrive("AmpDrop123Amp.4", "AmpDrop123Amp.5", AutoNote.M3),
+                        driveBackPreWarmAndShoot("AmpDrop123Amp.6"),
+                        followChoreoPathAndSeekNote("AmpDrop123Amp.7"),
+                        aimAndShoot())
+                .withName("Amp Drop 123 Amp Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand ampDrop231Amp() {
+        var command = loggedSequence(
+                        print("Started Amp Drop 231 Amp"),
+                        followChoreoPathSeekNoteAndSpit("AmpDrop231Amp.1", 1.0),
+                        efficientlyPreWarmShootAndDrive("AmpDrop231Amp.2", "AmpDrop231Amp.3", AutoNote.M3),
+                        efficientlyPreWarmShootAndDrive("AmpDrop231Amp.4", "AmpDrop231Amp.5", AutoNote.M1),
+                        driveBackPreWarmAndShoot("AmpDrop231Amp.6"),
+                        followChoreoPathAndSeekNote("AmpDrop231Amp.7"),
+                        aimAndShoot())
+                .withName("Amp Drop 231 Amp Auto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand sourceDrop45source() {
+        var command = loggedSequence(
+                        print("Started source drop 45 source auto"),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop45Source.1", 0.2),
+                        efficientlyPreWarmShootAndDrive("SourceDrop45Source.2", "SourceDrop45Source.3", AutoNote.M5),
+                        driveBackPreWarmAndShoot("SourceDrop45Source.4"),
+                        rotateToHeadingAndSeek(
+                                () -> autoFlipRotation(Rotation2d.fromRadians(1.0)),
+                                () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
+                        aimAndShoot())
+                .withName("SourceDrop45SourceAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }
