@@ -39,6 +39,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
     private static final double kDetectedNoteTimeout = 1.0;
@@ -99,22 +100,41 @@ public class RobotState {
         var robotPose = getPose2d();
         var robotTranslation = robotPose.getTranslation();
         var robotRotationReverse = robotPose.getRotation().plus(GeometryUtil.kRotationPi);
+        var fieldRelativeSpeeds = getFieldRelativeSpeedSetpoint();
+        var robotPoseWithDirection = Math.abs(fieldRelativeSpeeds.vxMetersPerSecond) > 0
+                        || Math.abs(fieldRelativeSpeeds.vyMetersPerSecond) > 0
+                ? new Pose2d(
+                        robotPose.getX(),
+                        robotPose.getY(),
+                        new Rotation2d(fieldRelativeSpeeds.vxMetersPerSecond, fieldRelativeSpeeds.vyMetersPerSecond))
+                : robotPose;
 
         var timeout = Timer.getFPGATimestamp() - kDetectedNoteTimeout;
         mDetectedNotes.removeIf(note -> note.timestamp() < timeout);
 
         mDetectedNoteForPickup = mDetectedNotes.stream()
                 .filter(note -> GeometryUtil.isNear(
-                        robotRotationReverse,
+                        (fieldRelativeSpeeds.vxMetersPerSecond > 0 && fieldRelativeSpeeds.vyMetersPerSecond > 0)
+                                ? robotPoseWithDirection.getRotation()
+                                : robotRotationReverse,
                         GeometryUtil.getTranslation2d(note.pose())
                                 .minus(robotTranslation)
                                 .getAngle(),
-                        Rotation2d.fromDegrees(35)))
+                        Rotation2d.fromDegrees(25)))
                 .min((note1, note2) -> Double.compare(
-                        robotTranslation.getDistance(GeometryUtil.getTranslation2d(note1.pose())),
-                        robotTranslation.getDistance(GeometryUtil.getTranslation2d(note2.pose()))));
+                        rankNote(note1, robotPoseWithDirection), rankNote(note2, robotPoseWithDirection)));
 
         mField.setRobotPose(robotPose);
+
+        Logger.recordOutput(
+                "RobotState/DetectedNoteForPickup",
+                mDetectedNoteForPickup.map(DetectedObjectState::pose).orElse(GeometryUtil.kPose3dIdentity));
+    }
+
+    private double rankNote(DetectedObjectState note, Pose2d robotPose2d) {
+        var noteRelativeToRobot = note.pose().toPose2d().relativeTo(robotPose2d);
+        Logger.recordOutput("RobotState/RankNote", noteRelativeToRobot);
+        return Math.abs(noteRelativeToRobot.getX()) + 4 * Math.abs(noteRelativeToRobot.getY());
     }
 
     @AutoLogOutput
@@ -163,6 +183,14 @@ public class RobotState {
         }
 
         return ChassisSpeeds.fromRobotRelativeSpeeds(mDrive.get().getVelocitySetpoint(), getHeading());
+    }
+
+    public ChassisSpeeds getRobotRelativeSpeed() {
+        if (mDrive.isEmpty()) {
+            return new ChassisSpeeds();
+        }
+
+        return mDrive.get().getVelocity();
     }
 
     public void addDriveMeasurements(DriveMeasurement... driveMeasurements) {

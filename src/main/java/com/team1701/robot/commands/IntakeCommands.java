@@ -67,7 +67,12 @@ public class IntakeCommands {
     public static Command idleIntake(Intake intake, RobotState robotState) {
         return Commands.run(
                         () -> {
-                            if (robotState.hasLoadedNote()) {
+                            if (robotState.hasLoadedNote()
+                                    && intake.hasNote()
+                                    && (!intake.hasNoteAtEntrance()
+                                            || robotState.getRobotRelativeSpeed().vxMetersPerSecond > 0.1)) {
+                                intake.setReverse();
+                            } else if (robotState.hasLoadedNote()) {
                                 intake.stop();
                             } else {
                                 intake.setForward();
