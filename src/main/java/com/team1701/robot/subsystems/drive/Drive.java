@@ -111,7 +111,7 @@ public class Drive extends SubsystemBase {
                         .ignoringDisable(true)
                         .withName("DriveEnabledStart"));
 
-        mUseDriveAssist = false;
+        mUseDriveAssist = true;
     }
 
     @Override
