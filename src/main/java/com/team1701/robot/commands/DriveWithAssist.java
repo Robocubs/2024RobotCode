@@ -29,7 +29,7 @@ public class DriveWithAssist extends Command {
             new LoggedTunableNumber(kLoggingPrefix + "TranslationKd", 0.0);
 
     private static final double kTranslationTolerance = 0.01;
-    private static final double kMaxTranslationPIDOutput = 0.5;
+    private static final double kMaxTranslationPIDOutput = 0.75;
 
     private final Drive mDrive;
     private final RobotState mRobotState;

@@ -114,11 +114,13 @@ public class RobotState {
 
         mDetectedNoteForPickup = mDetectedNotes.stream()
                 .filter(note -> GeometryUtil.isNear(
-                        robotRotationReverse,
+                        (fieldRelativeSpeeds.vxMetersPerSecond > 0 && fieldRelativeSpeeds.vyMetersPerSecond > 0)
+                                ? robotPoseWithDirection.getRotation()
+                                : robotRotationReverse,
                         GeometryUtil.getTranslation2d(note.pose())
                                 .minus(robotTranslation)
                                 .getAngle(),
-                        Rotation2d.fromDegrees(35)))
+                        Rotation2d.fromDegrees(25)))
                 .min((note1, note2) -> Double.compare(
                         rankNote(note1, robotPoseWithDirection), rankNote(note2, robotPoseWithDirection)));
 
