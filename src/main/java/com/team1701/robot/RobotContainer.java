@@ -405,11 +405,22 @@ public class RobotContainer {
                 .whileTrue(DriveCommands.driveToNote(
                         mDrive, mRobotState, Constants.Drive.kFastTrapezoidalKinematicLimits));
 
-        // Passing
+        // Long Pass
         mDriverController
                 .leftBumper()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-                .whileTrue(DriveCommands.passANote(
+                .whileTrue(DriveCommands.passLong(
+                        mDrive,
+                        mShooter,
+                        mIndexer,
+                        mRobotState,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX()));
+
+        // Mid Pass
+        mDriverController
+                .a()
+                .whileTrue(DriveCommands.passMid(
                         mDrive,
                         mShooter,
                         mIndexer,
@@ -468,9 +479,6 @@ public class RobotContainer {
                 .rightTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mRobotState));
-
-        // SpitNote
-        mDriverController.a().whileTrue(ShootCommands.spitNote(mShooter, mIndexer, mRobotState));
 
         /* STREAMDECK BUTTONS */
 

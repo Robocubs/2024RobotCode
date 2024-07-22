@@ -53,10 +53,12 @@ public final class FieldConstants {
             Units.inchesToMeters(328.0) - Constants.Robot.kRobotFrontToCenterWithBumpers,
             Rotation2d.fromDegrees(90));
 
-    public static final Pose2d kBluePassingTarget =
+    public static final Pose2d kBlueLongPassTarget =
             new Pose2d(new Translation2d(2.0, 6.3), GeometryUtil.kRotationIdentity);
-    public static final Pose2d kRedPassingTarget =
+    public static final Pose2d kRedLongPassTarget =
             new Pose2d(new Translation2d(kFieldLongLengthMeters - 1.5, 5.8), GeometryUtil.kRotationIdentity);
+    public static final Pose2d kMidPassTarget =
+            new Pose2d(kFieldLongLengthMeters / 2.0, 7.3, GeometryUtil.kRotationIdentity);
 
     public static final Translation2d kDroppedSourceNoteBlueTranslation = new Translation2d(2.64, 1.22);
     public static final Translation2d kDroppedSourceNoteRedTranslation =

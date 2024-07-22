@@ -26,6 +26,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class PassANote extends Command {
@@ -55,6 +56,9 @@ public class PassANote extends Command {
     private final Supplier<Translation2d> mFieldRelativeSpeeds;
     private final PIDController mRotationController;
 
+    @AutoLogOutput
+    private final boolean mUseMidTarget;
+
     private TrapezoidProfile mRotationProfile;
     private TrapezoidProfile.State mRotationState = kZeroState;
 
@@ -68,6 +72,17 @@ public class PassANote extends Command {
             RobotState robotState,
             Supplier<Translation2d> fieldRelativeSpeeds,
             Supplier<Rotation2d> headingTolerance) {
+        this(drive, shooter, indexer, robotState, fieldRelativeSpeeds, headingTolerance, false);
+    }
+
+    public PassANote(
+            Drive drive,
+            Shooter shooter,
+            Indexer indexer,
+            RobotState robotState,
+            Supplier<Translation2d> fieldRelativeSpeeds,
+            Supplier<Rotation2d> headingTolerance,
+            boolean useMidTarget) {
         mDrive = drive;
         mShooter = shooter;
         mIndexer = indexer;
@@ -78,6 +93,7 @@ public class PassANote extends Command {
         mRotationProfile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(kMaxAngularVelocity.get(), kMaxAngularAcceleration.get()));
         mHeadingTolerance = headingTolerance;
+        mUseMidTarget = useMidTarget;
 
         mLockedReadyToShoot = new TimeLockedBoolean(.1, Timer.getFPGATimestamp());
 
@@ -93,7 +109,7 @@ public class PassANote extends Command {
         mRotationController.enableContinuousInput(-Math.PI, Math.PI);
 
         var fieldRelativeChassisSpeeds = mDrive.getFieldRelativeVelocity();
-        var headingError = mRobotState.getHeading().minus(mRobotState.getPassingHeading());
+        var headingError = mRobotState.getHeading().minus(mRobotState.getLongPassHeading());
         mRotationState = new TrapezoidProfile.State(
                 MathUtil.angleModulus(headingError.getRadians()), fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
 
@@ -120,13 +136,15 @@ public class PassANote extends Command {
         var currentPose = mRobotState.getPose2d();
         var fieldRelativeSpeeds = mFieldRelativeSpeeds.get();
 
-        var droppedVelocity = ShooterUtil.calculatePassingSpeed(mRobotState.getDistanceToSpeaker())
+        var droppedVelocity = ShooterUtil.calculatePassingSpeed(
+                        mUseMidTarget ? mRobotState.getMidPassDistance() : mRobotState.getLongPassDistance())
                 * Constants.Shooter.kRollerSpeedToNoteSpeed;
         var robotVelocityTowardsTarget = fieldRelativeSpeeds
-                .rotateBy(mRobotState.getPassingHeading().unaryMinus())
+                .rotateBy(mRobotState.getLongPassHeading().unaryMinus())
                 .getX();
 
-        var timeInAir = mRobotState.getPassingDistance() / (robotVelocityTowardsTarget + droppedVelocity);
+        var timeInAir = (mUseMidTarget ? mRobotState.getMidPassDistance() : mRobotState.getLongPassDistance())
+                / (robotVelocityTowardsTarget + droppedVelocity);
 
         var endTranslation = new Translation2d(
                 currentPose.getX() + fieldRelativeSpeeds.getX() * timeInAir,
@@ -136,11 +154,16 @@ public class PassANote extends Command {
                 ? new ShooterSetpoint(
                         Constants.Shooter.kTunableShooterSpeedRadiansPerSecond.get(),
                         Rotation2d.fromRadians(Constants.Shooter.kTunableShooterAngleRadians.get()))
-                : ShooterUtil.calculatePassingSetpoint(FieldUtil.getDistanceToPassTarget(endTranslation));
+                : ShooterUtil.calculatePassingSetpoint(
+                        mUseMidTarget
+                                ? FieldUtil.getDistanceToMidPassTarget(endTranslation)
+                                : FieldUtil.getDistanceToLongPassTarget(endTranslation));
 
         mShooter.setSetpoint(shooterSetpoint);
 
-        var targetHeading = mRobotState.getPassingHeading().minus(shooterSetpoint.releaseAngle());
+        var targetHeading = mUseMidTarget
+                ? mRobotState.getMidPassHeading().minus(shooterSetpoint.releaseAngle())
+                : mRobotState.getLongPassHeading().minus(shooterSetpoint.releaseAngle());
         var headingError = mRobotState.getHeading().minus(targetHeading);
 
         Rotation2d headingSetpoint;
@@ -169,7 +192,7 @@ public class PassANote extends Command {
         var atHeading = GeometryUtil.isNear(
                 targetHeading, mRobotState.getHeading(), Constants.Shooter.kPassingHeadingTolerance);
 
-        var atPose = mRobotState.getPassingDistance() > 6 && !mRobotState.inOpponentWing();
+        var atPose = (mRobotState.getLongPassDistance() > 6 && !mRobotState.inOpponentWing()) || mUseMidTarget;
 
         if (mLockedReadyToShoot.update(atSpeed && atAngle && atHeading && atPose, Timer.getFPGATimestamp())) {
             mIndexer.setForwardShoot();

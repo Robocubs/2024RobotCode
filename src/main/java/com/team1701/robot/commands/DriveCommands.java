@@ -109,7 +109,7 @@ public class DriveCommands {
                                         drive.getFieldRelativeHeading(),
                                         kinematicLimits.maxDriveVelocity())
                                 .rotateBy(state.getHeading()),
-                        state::getPassingHeading,
+                        state::getLongPassHeading,
                         state::getHeading,
                         () -> new Rotation2d(.01),
                         kinematicLimits,
@@ -240,7 +240,7 @@ public class DriveCommands {
                 .withName("DriveWithVelocity");
     }
 
-    public static Command passANote(
+    public static Command passLong(
             Drive drive,
             Shooter shooter,
             Indexer indexer,
@@ -259,6 +259,29 @@ public class DriveCommands {
                                         Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity())
                                 .rotateBy(robotState.getHeading()),
                         () -> new Rotation2d(.03))
-                .withName("PassANote");
+                .withName("PassLong");
+    }
+
+    public static Command passMid(
+            Drive drive,
+            Shooter shooter,
+            Indexer indexer,
+            RobotState robotState,
+            DoubleSupplier throttleSupplier,
+            DoubleSupplier strafeSupplier) {
+        return new PassANote(
+                        drive,
+                        shooter,
+                        indexer,
+                        robotState,
+                        () -> calculateDriveWithJoysticksVelocities(
+                                        throttleSupplier.getAsDouble(),
+                                        strafeSupplier.getAsDouble(),
+                                        drive.getFieldRelativeHeading(),
+                                        Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity())
+                                .rotateBy(robotState.getHeading()),
+                        () -> new Rotation2d(.03),
+                        true)
+                .withName("PassMid");
     }
 }

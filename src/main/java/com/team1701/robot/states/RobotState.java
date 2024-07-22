@@ -220,28 +220,38 @@ public class RobotState {
 
     @AutoLogOutput
     public Pose2d getPassingPose() {
-        return new Pose2d(getPassingTarget(), GeometryUtil.kRotationIdentity);
+        return new Pose2d(getLongPassTarget(), GeometryUtil.kRotationIdentity);
     }
 
-    public Translation2d getPassingTarget() {
+    public Translation2d getLongPassTarget() {
         return Configuration.isBlueAlliance()
-                ? FieldConstants.kBluePassingTarget.getTranslation()
-                : FieldConstants.kRedPassingTarget.getTranslation();
+                ? FieldConstants.kBlueLongPassTarget.getTranslation()
+                : FieldConstants.kRedLongPassTarget.getTranslation();
     }
 
     @AutoLogOutput
-    public double getPassingDistance() {
-        return getPose2d().getTranslation().getDistance(getPassingTarget());
+    public double getLongPassDistance() {
+        return getPose2d().getTranslation().getDistance(getLongPassTarget());
     }
 
     @AutoLogOutput
-    public Rotation2d getPassingHeading() {
-        return FieldUtil.getHeadingToPassTarget(getPose2d().getTranslation());
+    public double getMidPassDistance() {
+        return getPose2d().getTranslation().getDistance(FieldConstants.kMidPassTarget.getTranslation()) - 1;
     }
 
     @AutoLogOutput
-    public Rotation2d getPassingHeading(Translation2d translation) {
-        return FieldUtil.getHeadingToPassTarget(translation);
+    public Rotation2d getMidPassHeading() {
+        return FieldUtil.getHeadingToMidPassTarget(getPose2d().getTranslation());
+    }
+
+    @AutoLogOutput
+    public Rotation2d getLongPassHeading() {
+        return FieldUtil.getHeadingToLongPassTarget(getPose2d().getTranslation());
+    }
+
+    @AutoLogOutput
+    public Rotation2d getLongPassHeading(Translation2d translation) {
+        return FieldUtil.getHeadingToLongPassTarget(translation);
     }
 
     public boolean outOfAmpRange() {
