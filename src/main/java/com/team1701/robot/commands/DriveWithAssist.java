@@ -128,5 +128,3 @@ public class DriveWithAssist extends Command {
         mDrive.stop();
     }
 }
-
-// make it decide which note to go for based off which direction the robot is driving, distance from robot to note
