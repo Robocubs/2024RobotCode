@@ -55,6 +55,28 @@ public class DriveCommands {
                 .withName("DriveWithJoysticks");
     }
 
+    public static Command driveWithAmpAssist(
+            Drive drive,
+            DoubleSupplier throttle,
+            DoubleSupplier strafe,
+            Supplier<Rotation2d> robotHeadingSupplier,
+            Supplier<Rotation2d> headingTolerance,
+            KinematicLimits kinematicLimits) {
+        return new RotateToFieldHeading(
+                drive,
+                () -> calculateDriveWithJoysticksVelocities(
+                                throttle.getAsDouble(),
+                                strafe.getAsDouble(),
+                                drive.getFieldRelativeHeading(),
+                                kinematicLimits.maxDriveVelocity())
+                        .rotateBy(robotHeadingSupplier.get()),
+                () -> Rotation2d.fromDegrees(90),
+                robotHeadingSupplier,
+                headingTolerance,
+                kinematicLimits,
+                false);
+    }
+
     public static Translation2d calculateDriveWithJoysticksVelocities(
             double throttle, double strafe, Rotation2d heading, double maxVelocity) {
         var translationSign = Configuration.isBlueAlliance() ? 1.0 : -1.0;

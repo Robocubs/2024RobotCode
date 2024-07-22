@@ -365,16 +365,6 @@ public class RobotContainer {
                                 : Constants.Drive.kFastKinematicLimits),
                 mDrive::useDriveAssist));
 
-        // mDrive.setDefaultCommand(driveWithJoysticks(
-        //         mDrive,
-        //         mDrive::getFieldRelativeHeading,
-        //         () -> -mDriverController.getLeftY(),
-        //         () -> -mDriverController.getLeftX(),
-        //         () -> -mDriverController.getRightX(),
-        //         () -> mDriverController.getHID().getRightBumper()
-        //                 ? Constants.Drive.kSlowKinematicLimits
-        //                 : Constants.Drive.kFastKinematicLimits));
-
         mIndexer.setDefaultCommand(IntakeCommands.idleIndexer(mIndexer));
 
         mIntake.setDefaultCommand(IntakeCommands.idleIntake(mIntake, mRobotState));
@@ -408,7 +398,7 @@ public class RobotContainer {
         // Long Pass
         mDriverController
                 .leftBumper()
-                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
+                .and(() -> mRobotState.isSpeakerMode())
                 .whileTrue(DriveCommands.passLong(
                         mDrive,
                         mShooter,
@@ -428,7 +418,7 @@ public class RobotContainer {
                         () -> -mDriverController.getLeftY(),
                         () -> -mDriverController.getLeftX()));
 
-        // Pass Low
+        // Low Pass
         mDriverController
                 .x()
                 .whileTrue(ShootCommands.passLow(
@@ -439,9 +429,21 @@ public class RobotContainer {
                         () -> -mDriverController.getLeftY(),
                         () -> -mDriverController.getLeftX()));
 
-        // Drive to Amp
+        // Drive With Amp Assist
         mDriverController
                 .leftBumper()
+                .and(() -> mRobotState.isAmpMode())
+                .whileTrue(DriveCommands.driveWithAmpAssist(
+                        mDrive,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX(),
+                        mRobotState::getHeading,
+                        () -> Rotation2d.fromRadians(0.05),
+                        Constants.Drive.kFastSmoothKinematicLimits));
+
+        // Drive to Amp
+        mDriverController
+                .povUp()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .and(() -> mRobotState.inWing() || mRobotState.getPose2d().getY() > 6.4)
                 .whileTrue(DriveCommands.driveToAmp(
@@ -451,6 +453,7 @@ public class RobotContainer {
                         Constants.Drive.kMediumTrapezoidalKinematicLimits,
                         false));
 
+        // Drive to Opposite Amp
         mDriverController
                 .povDown()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
