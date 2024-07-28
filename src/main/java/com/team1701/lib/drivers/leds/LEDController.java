@@ -63,6 +63,11 @@ public class LEDController {
         mLEDBuffer.setRGB(index, (int) (red * brightness), (int) (blue * brightness), (int) (green * brightness));
     }
 
+    private void setHSV(int index, int hue, int saturation, int value) {
+        var brightness = mBrightness[index];
+        mLEDBuffer.setHSV(index, hue, saturation, value);
+    }
+
     public void update() {
         for (var i = 0; i < mColors.length; i++) {
             var color = mColors[i];

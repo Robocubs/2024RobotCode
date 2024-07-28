@@ -1,7 +1,6 @@
 package com.team1701.robot.subsystems.leds;
 
 import com.team1701.lib.drivers.leds.LEDController;
-import com.team1701.robot.Configuration;
 import com.team1701.robot.states.RobotState;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -60,26 +59,53 @@ public class LED extends SubsystemBase {
         mLEDController.setAll(tick % 2 == 0 ? color : Color.kWhite);
     }
 
-    private void setDisabledLEDStates() {
-        var color = Configuration.isBlueAlliance() ? LEDColors.kDisabledBlue : LEDColors.kDisabledRed;
-        var cylonColumn = (int) ((Timer.getFPGATimestamp() * kCylonFrequency) % ((kTopLEDsPerRow - 1) * 2));
-        if (cylonColumn >= kTopLEDsPerRow) {
-            cylonColumn = (kTopLEDsPerRow - 1) * 2 - cylonColumn;
-        }
+    private void setRainbow() {
+        var tick = (int) (Timer.getFPGATimestamp() * 60);
+        var hue = tick % 180;
+        // for (var row = 0; row < kTopLEDsRowCount; row++) {
+        //     var start = row * kTopLEDsPerRow;
+        //     mLEDController.setRange(start, start + 3, Color.fromHSV(hue, 255, 128));
+        // }
 
-        mLEDController.setAll(Color.kBlack);
         for (var row = 0; row < kTopLEDsRowCount; row++) {
-            var rowStart = row * kTopLEDsPerRow;
-            var rowEnd = rowStart + kTopLEDsPerRow - 1;
-            var column = row % 2 == 0 ? rowStart + cylonColumn : rowEnd - cylonColumn;
-            mLEDController.set(column, color);
-            if (column > rowStart) {
-                mLEDController.set(column - 1, color, 0.25);
-            }
-            if (column < rowEnd) {
-                mLEDController.set(column + 1, color, 0.25);
+            if (row % 2 == 0) {
+                for (var i = 0; i < kTopLEDsPerRow; i++) {
+                    mLEDController.set(i + row * kTopLEDsPerRow, Color.fromHSV((hue + i * 10) % 180, 255, 128));
+                }
+            } else {
+                for (var i = 0; i < kTopLEDsPerRow; i++) {
+                    mLEDController.set(
+                            kTopLEDsPerRow - i - 1 + row * kTopLEDsPerRow,
+                            Color.fromHSV((hue + i * 10) % 180, 255, 128));
+                }
             }
         }
+    }
+
+    // private void setDisabledLEDStates() {
+    //     var color = Configuration.isBlueAlliance() ? LEDColors.kDisabledBlue : LEDColors.kDisabledRed;
+    //     var cylonColumn = (int) ((Timer.getFPGATimestamp() * kCylonFrequency) % ((kTopLEDsPerRow - 1) * 2));
+    //     if (cylonColumn >= kTopLEDsPerRow) {
+    //         cylonColumn = (kTopLEDsPerRow - 1) * 2 - cylonColumn;
+    //     }
+
+    //     mLEDController.setAll(Color.kBlack);
+    //     for (var row = 0; row < kTopLEDsRowCount; row++) {
+    //         var rowStart = row * kTopLEDsPerRow;
+    //         var rowEnd = rowStart + kTopLEDsPerRow - 1;
+    //         var column = row % 2 == 0 ? rowStart + cylonColumn : rowEnd - cylonColumn;
+    //         mLEDController.set(column, color);
+    //         if (column > rowStart) {
+    //             mLEDController.set(column - 1, color, 0.25);
+    //         }
+    //         if (column < rowEnd) {
+    //             mLEDController.set(column + 1, color, 0.25);
+    //         }
+    //     }
+    // }
+
+    private void setDisabledLEDStates() {
+        setRainbow();
     }
 
     private void setScoringLEDStates() {
