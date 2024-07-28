@@ -289,7 +289,7 @@ public final class Constants {
                     kSteerKp.initDefault(4000); // 16.0
                     kSteerKd.initDefault(50);
                     kFrontLeftModuleEncoderOffset = Rotation2d.fromRadians(-2.262);
-                    kFrontRightModuleEncoderOffset = Rotation2d.fromRadians(0.672);
+                    kFrontRightModuleEncoderOffset = Rotation2d.fromRadians(-3.851);
                     kBackLeftModuleEncoderOffset = Rotation2d.fromRadians(-1.291);
                     kBackRightModuleEncoderOffset = Rotation2d.fromRadians(-5.639);
                     break;
