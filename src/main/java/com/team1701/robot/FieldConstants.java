@@ -64,6 +64,10 @@ public final class FieldConstants {
     public static final Translation2d kDroppedSourceNoteRedTranslation =
             new Translation2d(kFieldLongLengthMeters - 3.73, 1.12);
 
+    public static final Translation2d kDroppedBlue5NoteTranslation = new Translation2d(6.124847888946533, 0.988);
+    public static final Translation2d kDroppedRed5NoteTranslation =
+            new Translation2d(kFieldLongLengthMeters - 6.124847888946533, 0.988);
+
     public static final Translation2d kDroppedAmpNoteBlueTranslation = new Translation2d(4.99, 7.39);
     public static final Translation2d kDroppedAmpNoteRedTranslation =
             new Translation2d(kFieldLongLengthMeters - 4.99, 7.39);

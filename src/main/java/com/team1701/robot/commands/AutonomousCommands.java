@@ -71,6 +71,9 @@ public class AutonomousCommands {
         NamedCommands.registerCommand("seekAB", setNoteToSeek(AutoNote.AB));
         NamedCommands.registerCommand("seekSR", setNoteToSeek(AutoNote.SR));
         NamedCommands.registerCommand("seekAR", setNoteToSeek(AutoNote.AR));
+        NamedCommands.registerCommand(
+                "seek5D",
+                Commands.runOnce(() -> setNoteToSeek(Configuration.isRedAlliance() ? AutoNote.R5D : AutoNote.B5D)));
     }
 
     private Pose2d autoFlipPose(Pose2d pose) {
@@ -767,6 +770,19 @@ public class AutonomousCommands {
                         aimAndShoot(),
                         followChoreoPath("SourceDrop45Source.5"))
                 .withName("SourceDrop45SourceAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand sourceSpit54source() {
+        var command = loggedSequence(
+                        print("Started source spit 45 source auto"),
+                        followChoreoPathSeekNoteAndSpit("SourceSpit54Source.1", 0.7),
+                        followChoreoPathSeekNoteAndSpit("SourceSpit54Source.2", 0.1),
+                        driveBackPreWarmAndShoot("SourceSpit54Source.3"),
+                        followChoreoPathAndSeekNote("SourceSpit54Source.4"),
+                        followChoreoPathAndSeekNote("SourceSpit54Source.5"),
+                        driveBackPreWarmAndShoot("SourceSpit54Source.6"))
+                .withName("SourceSpit54SourceAuto");
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 }

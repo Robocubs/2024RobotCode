@@ -26,7 +26,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class PassANote extends Command {
@@ -55,8 +54,6 @@ public class PassANote extends Command {
     private final RobotState mRobotState;
     private final Supplier<Translation2d> mFieldRelativeSpeeds;
     private final PIDController mRotationController;
-
-    @AutoLogOutput
     private final boolean mUseMidTarget;
 
     private TrapezoidProfile mRotationProfile;
@@ -211,6 +208,7 @@ public class PassANote extends Command {
                 new ShootingState(shooterSetpoint, true, atAngle, atSpeed, atHeading, atPose, mShooting));
         Logger.recordOutput(kLoggingPrefix + "AtPose", atPose);
         Logger.recordOutput(kLoggingPrefix + "HeadingSetpoint", headingSetpoint);
+        Logger.recordOutput(kLoggingPrefix + "UseMidTarget", mUseMidTarget);
     }
 
     @Override
