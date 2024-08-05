@@ -280,7 +280,7 @@ public class DriveCommands {
                                         drive.getFieldRelativeHeading(),
                                         Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity())
                                 .rotateBy(robotState.getHeading()),
-                        () -> new Rotation2d(.03))
+                        () -> new Rotation2d(.06))
                 .withName("PassLong");
     }
 

@@ -35,7 +35,7 @@ public class PassANote extends Command {
             new LoggedTunableBoolean(kLoggingPrefix + "TuningEnabled", false);
 
     private static final LoggedTunableNumber kAngleToleranceRadians =
-            new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.02);
+            new LoggedTunableNumber(kLoggingPrefix + "AngleToleranceRadians", 0.04);
 
     private static final TrapezoidProfile.State kZeroState = new TrapezoidProfile.State(0.0, 0.0);
     private static final KinematicLimits kKinematicLimits = Constants.Drive.kFastTrapezoidalKinematicLimits;
