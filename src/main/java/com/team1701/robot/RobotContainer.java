@@ -365,16 +365,6 @@ public class RobotContainer {
                                 : Constants.Drive.kFastKinematicLimits),
                 mDrive::useDriveAssist));
 
-        // mDrive.setDefaultCommand(driveWithJoysticks(
-        //         mDrive,
-        //         mDrive::getFieldRelativeHeading,
-        //         () -> -mDriverController.getLeftY(),
-        //         () -> -mDriverController.getLeftX(),
-        //         () -> -mDriverController.getRightX(),
-        //         () -> mDriverController.getHID().getRightBumper()
-        //                 ? Constants.Drive.kSlowKinematicLimits
-        //                 : Constants.Drive.kFastKinematicLimits));
-
         mIndexer.setDefaultCommand(IntakeCommands.idleIndexer(mIndexer));
 
         mIntake.setDefaultCommand(IntakeCommands.idleIntake(mIntake, mRobotState));
@@ -405,11 +395,11 @@ public class RobotContainer {
                 .whileTrue(DriveCommands.driveToNote(
                         mDrive, mRobotState, Constants.Drive.kFastTrapezoidalKinematicLimits));
 
-        // Passing
+        // Long Pass
         mDriverController
                 .leftBumper()
-                .and(() -> mRobotState.getScoringMode().equals(ScoringMode.SPEAKER))
-                .whileTrue(DriveCommands.passANote(
+                .and(() -> mRobotState.isSpeakerMode())
+                .whileTrue(DriveCommands.passLong(
                         mDrive,
                         mShooter,
                         mIndexer,
@@ -417,7 +407,18 @@ public class RobotContainer {
                         () -> -mDriverController.getLeftY(),
                         () -> -mDriverController.getLeftX()));
 
-        // Pass Low
+        // Mid Pass
+        mDriverController
+                .a()
+                .whileTrue(DriveCommands.passMid(
+                        mDrive,
+                        mShooter,
+                        mIndexer,
+                        mRobotState,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX()));
+
+        // Low Pass
         mDriverController
                 .x()
                 .whileTrue(ShootCommands.passLow(
@@ -428,9 +429,21 @@ public class RobotContainer {
                         () -> -mDriverController.getLeftY(),
                         () -> -mDriverController.getLeftX()));
 
-        // Drive to Amp
+        // Drive With Amp Assist
         mDriverController
                 .leftBumper()
+                .and(() -> mRobotState.isAmpMode())
+                .whileTrue(DriveCommands.driveWithAmpAssist(
+                        mDrive,
+                        () -> -mDriverController.getLeftY(),
+                        () -> -mDriverController.getLeftX(),
+                        mRobotState::getHeading,
+                        () -> Rotation2d.fromRadians(0.05),
+                        Constants.Drive.kFastSmoothKinematicLimits));
+
+        // Drive to Amp
+        mDriverController
+                .povUp()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .and(() -> mRobotState.inWing() || mRobotState.getPose2d().getY() > 6.4)
                 .whileTrue(DriveCommands.driveToAmp(
@@ -440,6 +453,7 @@ public class RobotContainer {
                         Constants.Drive.kMediumTrapezoidalKinematicLimits,
                         false));
 
+        // Drive to Opposite Amp
         mDriverController
                 .povDown()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
@@ -468,9 +482,6 @@ public class RobotContainer {
                 .rightTrigger()
                 .and(() -> mRobotState.getScoringMode().equals(ScoringMode.AMP))
                 .whileTrue(ShootCommands.scoreInAmp(mShooter, mIndexer, mRobotState));
-
-        // SpitNote
-        mDriverController.a().whileTrue(ShootCommands.spitNote(mShooter, mIndexer, mRobotState));
 
         /* STREAMDECK BUTTONS */
 
@@ -617,60 +628,69 @@ public class RobotContainer {
         var demoCommand = commands.demo();
         var shootAndBackupCommand = commands.shootAndBackup();
         var greedyMiddleCommand = commands.greedyMiddle();
-        var source4321CenterStageCommand = commands.source4321CenterStage();
+        var inverseGreedy = commands.inverseGreedy();
         var ampA123ampCommand = commands.ampA123amp();
-        var source54CSeek = commands.source54CSeek();
         var amp123Amp = commands.amp123Amp();
+        var ampDrop123Amp = commands.ampDrop123Amp();
+        var ampDrop12Amp = commands.ampDrop12Amp();
+        var ampDrop231Amp = commands.ampDrop231Amp();
+        var ampDrop21Amp = commands.ampDrop21Amp();
         var centerB342Stage = commands.centerB342Stage();
-        var source543Stage = commands.source543Stage();
         var centerB231Center = commands.centerB231Center();
         var centerBA123Amp = commands.centerBA123Amp();
         var centerBC123center = commands.centerBC123center();
+        var source543Stage = commands.source543Stage();
+        var source54CSeek = commands.source54CSeek();
+        var source4321CenterStageCommand = commands.source4321CenterStage();
         var source543source = commands.source543Source();
-        var inverseGreedy = commands.inverseGreedy();
         var sourceDrop543source = commands.sourceDrop543source();
-        var ampDrop123Amp = commands.ampDrop123Amp();
-        var ampDrop231Amp = commands.ampDrop231Amp();
         var sourceDrop54source = commands.sourceDrop54source();
         var sourceDrop45source = commands.sourceDrop45source();
+        var sourceSpit54source = commands.sourceSpit54source();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
         mAutonomousPaths.put("Greedy Middle Auto", greedyMiddleCommand.path());
-        mAutonomousPaths.put("Source 4321 CenterStage", source4321CenterStageCommand.path());
+        mAutonomousPaths.put("Inverse Greedy Auto", inverseGreedy.path());
         mAutonomousPaths.put("Amp A123 Amp", ampA123ampCommand.path());
-        mAutonomousPaths.put("Source 54C Seek", source54CSeek.path());
         mAutonomousPaths.put("Amp123Amp", amp123Amp.path());
+        mAutonomousPaths.put("Amp Drop 123 Amp", ampDrop123Amp.path());
+        mAutonomousPaths.put("Amp Drop 12 Amp", ampDrop12Amp.path());
+        mAutonomousPaths.put("Amp Drop 231 Amp", ampDrop231Amp.path());
+        mAutonomousPaths.put("Amp Drop 21 Amp", ampDrop21Amp.path());
         mAutonomousPaths.put("Center B342 Stage", centerB342Stage.path());
-        mAutonomousPaths.put("Source 543 Stage", source543Stage.path());
         mAutonomousPaths.put("Center B231 Center", centerB231Center.path());
         mAutonomousPaths.put("Center BA123 Amp", centerBA123Amp.path());
         mAutonomousPaths.put("Center BC123 Center", centerBC123center.path());
+        mAutonomousPaths.put("Source 543 Stage", source543Stage.path());
         mAutonomousPaths.put("Source 543 Source", source543source.path());
-        mAutonomousPaths.put("Inverse Greedy Auto", inverseGreedy.path());
+        mAutonomousPaths.put("Source 54C Seek", source54CSeek.path());
+        mAutonomousPaths.put("Source 4321 CenterStage", source4321CenterStageCommand.path());
         mAutonomousPaths.put("Source Drop 543 Source", sourceDrop543source.path());
-        mAutonomousPaths.put("Amp Drop 123 Amp", ampDrop123Amp.path());
-        mAutonomousPaths.put("Amp Drop 231 Amp", ampDrop231Amp.path());
         mAutonomousPaths.put("Source Drop 54 Source", sourceDrop54source.path());
         mAutonomousPaths.put("Source Drop 45 Source", sourceDrop45source.path());
+        mAutonomousPaths.put("Source Spit 54 Source", sourceSpit54source.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
         autonomousModeChooser.addOption("Greedy Middle Auto", greedyMiddleCommand.command());
-        autonomousModeChooser.addOption("Source 4321 CenterStage", source4321CenterStageCommand.command());
+        autonomousModeChooser.addOption("Inverse Greedy Auto", inverseGreedy.command());
         autonomousModeChooser.addOption("Amp A123 Amp", ampA123ampCommand.command());
-        autonomousModeChooser.addOption("Source 54C Seek", source54CSeek.command());
         autonomousModeChooser.addOption("Amp123Amp", amp123Amp.command());
+        autonomousModeChooser.addOption("Amp Drop 123 Amp", ampDrop123Amp.command());
+        autonomousModeChooser.addOption("Amp Drop 12 Amp", ampDrop12Amp.command());
+        autonomousModeChooser.addOption("Amp Drop 231 Amp", ampDrop231Amp.command());
+        autonomousModeChooser.addOption("Amp Drop 21 Amp", ampDrop21Amp.command());
         autonomousModeChooser.addOption("Center B342 Stage", centerB342Stage.command());
-        autonomousModeChooser.addOption("Source 543 Stage", source543Stage.command());
         autonomousModeChooser.addOption("Center B231 Center", centerB231Center.command());
         autonomousModeChooser.addOption("Center BA123 Amp", centerBA123Amp.command());
         autonomousModeChooser.addOption("Center BC123 Center", centerBC123center.command());
+        autonomousModeChooser.addOption("Source 543 Stage", source543Stage.command());
         autonomousModeChooser.addOption("Source 543 Source", source543source.command());
-        autonomousModeChooser.addOption("Inverse Greedy Auto", inverseGreedy.command());
+        autonomousModeChooser.addOption("Source 54C Seek", source54CSeek.command());
+        autonomousModeChooser.addOption("Source 4321 CenterStage", source4321CenterStageCommand.command());
         autonomousModeChooser.addOption("Source Drop 543 Source", sourceDrop543source.command());
-        autonomousModeChooser.addOption("Amp Drop 123 Amp", ampDrop123Amp.command());
-        autonomousModeChooser.addOption("Amp Drop 231 Amp", ampDrop231Amp.command());
         autonomousModeChooser.addOption("Source Drop 54 Source", sourceDrop54source.command());
         autonomousModeChooser.addOption("Source Drop 45 Source", sourceDrop45source.command());
+        autonomousModeChooser.addOption("Source Spit 54 Source", sourceSpit54source.command());
 
         // autonomousModeChooser.addOption(
         //         "Drive Characterization",

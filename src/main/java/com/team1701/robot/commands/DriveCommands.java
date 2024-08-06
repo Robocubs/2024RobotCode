@@ -55,6 +55,28 @@ public class DriveCommands {
                 .withName("DriveWithJoysticks");
     }
 
+    public static Command driveWithAmpAssist(
+            Drive drive,
+            DoubleSupplier throttle,
+            DoubleSupplier strafe,
+            Supplier<Rotation2d> robotHeadingSupplier,
+            Supplier<Rotation2d> headingTolerance,
+            KinematicLimits kinematicLimits) {
+        return new RotateToFieldHeading(
+                drive,
+                () -> calculateDriveWithJoysticksVelocities(
+                                throttle.getAsDouble(),
+                                strafe.getAsDouble(),
+                                drive.getFieldRelativeHeading(),
+                                kinematicLimits.maxDriveVelocity())
+                        .rotateBy(robotHeadingSupplier.get()),
+                () -> Rotation2d.fromDegrees(90),
+                robotHeadingSupplier,
+                headingTolerance,
+                kinematicLimits,
+                false);
+    }
+
     public static Translation2d calculateDriveWithJoysticksVelocities(
             double throttle, double strafe, Rotation2d heading, double maxVelocity) {
         var translationSign = Configuration.isBlueAlliance() ? 1.0 : -1.0;
@@ -109,7 +131,7 @@ public class DriveCommands {
                                         drive.getFieldRelativeHeading(),
                                         kinematicLimits.maxDriveVelocity())
                                 .rotateBy(state.getHeading()),
-                        state::getPassingHeading,
+                        state::getLongPassHeading,
                         state::getHeading,
                         () -> new Rotation2d(.01),
                         kinematicLimits,
@@ -240,7 +262,7 @@ public class DriveCommands {
                 .withName("DriveWithVelocity");
     }
 
-    public static Command passANote(
+    public static Command passLong(
             Drive drive,
             Shooter shooter,
             Indexer indexer,
@@ -258,7 +280,30 @@ public class DriveCommands {
                                         drive.getFieldRelativeHeading(),
                                         Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity())
                                 .rotateBy(robotState.getHeading()),
-                        () -> new Rotation2d(.03))
-                .withName("PassANote");
+                        () -> new Rotation2d(.06))
+                .withName("PassLong");
+    }
+
+    public static Command passMid(
+            Drive drive,
+            Shooter shooter,
+            Indexer indexer,
+            RobotState robotState,
+            DoubleSupplier throttleSupplier,
+            DoubleSupplier strafeSupplier) {
+        return new PassANote(
+                        drive,
+                        shooter,
+                        indexer,
+                        robotState,
+                        () -> calculateDriveWithJoysticksVelocities(
+                                        throttleSupplier.getAsDouble(),
+                                        strafeSupplier.getAsDouble(),
+                                        drive.getFieldRelativeHeading(),
+                                        Constants.Drive.kFastTrapezoidalKinematicLimits.maxDriveVelocity())
+                                .rotateBy(robotState.getHeading()),
+                        () -> new Rotation2d(.03),
+                        true)
+                .withName("PassMid");
     }
 }

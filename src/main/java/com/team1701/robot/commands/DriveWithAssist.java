@@ -5,7 +5,6 @@ import java.util.function.Supplier;
 
 import com.team1701.lib.swerve.SwerveSetpointGenerator.KinematicLimits;
 import com.team1701.lib.util.GeometryUtil;
-import com.team1701.lib.util.Util;
 import com.team1701.lib.util.tuning.LoggedTunableNumber;
 import com.team1701.lib.util.tuning.LoggedTunableValue;
 import com.team1701.robot.Constants;
@@ -13,31 +12,24 @@ import com.team1701.robot.states.RobotState;
 import com.team1701.robot.subsystems.drive.Drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
-import org.littletonrobotics.junction.Logger;
 
 public class DriveWithAssist extends Command {
     private static final String kLoggingPrefix = "Command/DriveWithAimAssist/";
-    private static final double kModuleRadius = Constants.Drive.kModuleRadius;
-    private static final TrapezoidProfile.State kZeroState = new TrapezoidProfile.State(0.0, 0.0);
-
-    private static final LoggedTunableNumber kMaxAngularVelocity = new LoggedTunableNumber(
-            kLoggingPrefix + "MaxAngularVelocity",
-            Constants.Drive.kFastKinematicLimits.maxDriveVelocity() / kModuleRadius);
-    private static final LoggedTunableNumber kMaxAngularAcceleration = new LoggedTunableNumber(
-            kLoggingPrefix + "MaxAngularAcceleration",
-            Constants.Drive.kFastKinematicLimits.maxDriveAcceleration() / kModuleRadius);
 
     private static final LoggedTunableNumber kLoopsLatency =
             new LoggedTunableNumber(kLoggingPrefix + "LoopsLatency", 2.0);
-    private static final LoggedTunableNumber kRotationKp = new LoggedTunableNumber(kLoggingPrefix + "RotationKp", 5.0);
-    private static final LoggedTunableNumber kRotationKi = new LoggedTunableNumber(kLoggingPrefix + "RotationKi", 0.0);
-    private static final LoggedTunableNumber kRotationKd = new LoggedTunableNumber(kLoggingPrefix + "RotationKd", 0.0);
+    private static final LoggedTunableNumber kTranslationKp =
+            new LoggedTunableNumber(kLoggingPrefix + "TranslationnKp", 2.0);
+    private static final LoggedTunableNumber kTranslationKi =
+            new LoggedTunableNumber(kLoggingPrefix + "TranslationKi", 0.0);
+    private static final LoggedTunableNumber kTranslationKd =
+            new LoggedTunableNumber(kLoggingPrefix + "TranslationKd", 0.0);
+
+    private static final double kTranslationTolerance = 0.01;
+    private static final double kMaxTranslationPIDOutput = 0.75;
 
     private final Drive mDrive;
     private final RobotState mRobotState;
@@ -45,10 +37,7 @@ public class DriveWithAssist extends Command {
     private final DoubleSupplier mStrafeSupplier;
     private final DoubleSupplier mRotationSupplier;
     private final Supplier<KinematicLimits> mKinematicLimits;
-    private final PIDController mRotationController;
-
-    private TrapezoidProfile mRotationProfile;
-    private TrapezoidProfile.State mRotationState = kZeroState;
+    private final PIDController mTranslationController;
 
     public DriveWithAssist(
             Drive drive,
@@ -63,13 +52,9 @@ public class DriveWithAssist extends Command {
         mStrafeSupplier = strafeSupplier;
         mRotationSupplier = rotationSupplier;
         mKinematicLimits = kinematicLimits;
-        mRotationController = new PIDController(
-                kRotationKp.get(), kRotationKi.get(), kRotationKd.get(), Constants.kLoopPeriodSeconds);
-        mRotationController.enableContinuousInput(-Math.PI, Math.PI);
-        mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                Math.min(kMaxAngularVelocity.get(), mKinematicLimits.get().maxDriveVelocity() / kModuleRadius),
-                Math.min(
-                        kMaxAngularAcceleration.get(), mKinematicLimits.get().maxDriveAcceleration() / kModuleRadius)));
+        mTranslationController = new PIDController(
+                kTranslationKp.get(), kTranslationKi.get(), kTranslationKd.get(), Constants.kLoopPeriodSeconds);
+        mTranslationController.enableContinuousInput(-Math.PI, Math.PI);
 
         addRequirements(mDrive);
     }
@@ -78,52 +63,29 @@ public class DriveWithAssist extends Command {
     public void initialize() {
         mDrive.setKinematicLimits(mKinematicLimits.get());
 
-        mRotationController.reset();
-
-        var fieldRelativeChassisSpeeds = mRobotState.getFieldRelativeSpeeds();
-        var detectedNoteHeading = mRobotState.getHeadingToDetectedNoteForPickup();
-        var headingError = detectedNoteHeading.isEmpty()
-                ? GeometryUtil.kRotationIdentity
-                : mRobotState.getHeadingToDetectedNoteForPickup().get().minus(mRobotState.getHeading());
-        mRotationState = new TrapezoidProfile.State(
-                MathUtil.angleModulus(headingError.getRadians()), fieldRelativeChassisSpeeds.omegaRadiansPerSecond);
+        mTranslationController.reset();
 
         LoggedTunableValue.ifChanged(
                 hashCode(),
                 () -> {
-                    mRotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                            Math.min(
-                                    kMaxAngularVelocity.get(),
-                                    mKinematicLimits.get().maxDriveVelocity() / kModuleRadius),
-                            Math.min(
-                                    kMaxAngularAcceleration.get(),
-                                    mKinematicLimits.get().maxDriveAcceleration() / kModuleRadius)));
-                    mRotationController.setPID(kRotationKp.get(), kRotationKi.get(), kRotationKd.get());
+                    mTranslationController.setPID(kTranslationKp.get(), kTranslationKi.get(), kTranslationKd.get());
                 },
-                kMaxAngularVelocity,
-                kMaxAngularAcceleration,
-                kRotationKp,
-                kRotationKi,
-                kRotationKd);
+                kTranslationKp,
+                kTranslationKi,
+                kTranslationKd);
     }
 
     @Override
     public void execute() {
         mDrive.setKinematicLimits(mKinematicLimits.get());
+
         var currentPose = mRobotState.getPose2d();
         var endTranslation = new Translation2d(
                 currentPose.getX()
                         + mThrottleSupplier.getAsDouble() * Constants.kLoopPeriodSeconds * kLoopsLatency.get(),
                 currentPose.getY()
                         + mStrafeSupplier.getAsDouble() * Constants.kLoopPeriodSeconds * kLoopsLatency.get());
-        var detectedNoteHeading = mRobotState.getHeadingToDetectedNoteForPickup();
-        var targetHeading = detectedNoteHeading.isEmpty()
-                ? mRobotState.getHeading()
-                : detectedNoteHeading.get().plus(GeometryUtil.kRotationPi);
-        var headingError = detectedNoteHeading.isEmpty()
-                ? GeometryUtil.kRotationIdentity
-                : targetHeading.minus(mRobotState.getHeading());
-        var headingTolerance = Rotation2d.fromRadians(0.03);
+
         var translationVelocities = DriveCommands.calculateDriveWithJoysticksVelocities(
                 mThrottleSupplier.getAsDouble(),
                 mStrafeSupplier.getAsDouble(),
@@ -133,54 +95,32 @@ public class DriveWithAssist extends Command {
         var rotationRadiansPerSecond = Math.copySign(rotation * rotation, rotation)
                 * mKinematicLimits.get().maxDriveVelocity()
                 / Constants.Drive.kModuleRadius;
-        var toleranceDegrees = detectedNoteHeading.isEmpty()
-                ? 0.0
-                : (180)
-                        / Math.pow(
-                                Math.abs(mRobotState
-                                        .getDistanceToDetectedNoteForPickup()
-                                        .getAsDouble()),
-                                2);
 
-        var fieldRelativeVelocityHeading =
-                translationVelocities.rotateBy(mRobotState.getHeading()).getAngle();
+        var notePose = mRobotState.getDetectedNoteForPickup();
 
-        Logger.recordOutput(kLoggingPrefix + "ToleranceDegrees", toleranceDegrees);
-        Logger.recordOutput(kLoggingPrefix + "TargetHeading", targetHeading);
-        Logger.recordOutput(kLoggingPrefix + "TranslationalVelocityAngle", fieldRelativeVelocityHeading);
-
-        if (detectedNoteHeading.isEmpty()
-                || mRobotState.hasNote()
-                || Math.abs(mRotationSupplier.getAsDouble()) > 0.5
-                || !GeometryUtil.isNear(
-                        fieldRelativeVelocityHeading,
-                        detectedNoteHeading.get(),
-                        Rotation2d.fromDegrees(toleranceDegrees))) {
+        if (notePose.isEmpty() || mRobotState.hasNote() || MathUtil.isNear(0, translationVelocities.getNorm(), 0.1)) {
             mDrive.setVelocity(new ChassisSpeeds(
                     translationVelocities.getX(), translationVelocities.getY(), rotationRadiansPerSecond));
             return;
         }
 
-        Rotation2d setpoint;
-        double rotationalVelocity;
-        if (GeometryUtil.isNear(GeometryUtil.kRotationIdentity, headingError, headingTolerance)
-                && Util.epsilonEquals(mThrottleSupplier.getAsDouble(), 0)
-                && Util.epsilonEquals(mStrafeSupplier.getAsDouble(), 0)) {
-            rotationalVelocity = 0;
-            mRotationState = kZeroState;
-            setpoint = targetHeading;
-        } else {
-            var rotationPidOutput = mRotationController.calculate(headingError.getRadians(), mRotationState.position);
-            mRotationState = mRotationProfile.calculate(Constants.kLoopPeriodSeconds, mRotationState, kZeroState);
-            rotationalVelocity = mRotationState.velocity + rotationPidOutput;
-            setpoint = Rotation2d.fromRadians(targetHeading.getRadians() + mRotationState.position);
+        var fieldRelativeTranslationToNote = notePose.isEmpty()
+                ? GeometryUtil.kTranslationIdentity
+                : notePose.get().pose().toPose2d().getTranslation().minus(endTranslation);
+        var robotRelativeTranslationToNote = fieldRelativeTranslationToNote.rotateBy(
+                currentPose.getRotation().unaryMinus());
+        var yError = robotRelativeTranslationToNote.getY();
+
+        if (!MathUtil.isNear(0, yError, kTranslationTolerance)) {
+
+            var yPidOutput = mTranslationController.calculate(yError, 0);
+            yPidOutput = MathUtil.clamp(yPidOutput, -kMaxTranslationPIDOutput, kMaxTranslationPIDOutput);
+            translationVelocities =
+                    new Translation2d(translationVelocities.getX(), translationVelocities.getY() - yPidOutput);
         }
 
         mDrive.setVelocity(new ChassisSpeeds(
-                translationVelocities.getX(),
-                translationVelocities.getY(),
-                -rotationalVelocity + (rotationRadiansPerSecond * 0.5)));
-        Logger.recordOutput(kLoggingPrefix + "Setpoint", new Pose2d(endTranslation, setpoint));
+                translationVelocities.getX(), translationVelocities.getY(), rotationRadiansPerSecond * 0.5));
     }
 
     @Override

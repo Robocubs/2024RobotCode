@@ -30,18 +30,26 @@ public class FieldUtil {
         return getDistanceToSpeaker(pose.getTranslation());
     }
 
-    public static double getDistanceToPassTarget(Translation2d translation) {
+    public static double getDistanceToLongPassTarget(Translation2d translation) {
         return translation.getDistance(
                 Configuration.isBlueAlliance()
-                        ? FieldConstants.kBluePassingTarget.getTranslation()
-                        : FieldConstants.kRedPassingTarget.getTranslation());
+                        ? FieldConstants.kBlueLongPassTarget.getTranslation()
+                        : FieldConstants.kRedLongPassTarget.getTranslation());
     }
 
-    public static Rotation2d getHeadingToPassTarget(Translation2d translation) {
+    public static double getDistanceToMidPassTarget(Translation2d translation) {
+        return translation.getDistance(FieldConstants.kMidPassTarget.getTranslation()) - 1;
+    }
+
+    public static Rotation2d getHeadingToLongPassTarget(Translation2d translation) {
         var target = Configuration.isBlueAlliance()
-                ? FieldConstants.kBluePassingTarget.getTranslation()
-                : FieldConstants.kRedPassingTarget.getTranslation();
+                ? FieldConstants.kBlueLongPassTarget.getTranslation()
+                : FieldConstants.kRedLongPassTarget.getTranslation();
         return target.minus(translation).getAngle();
+    }
+
+    public static Rotation2d getHeadingToMidPassTarget(Translation2d translation) {
+        return FieldConstants.kMidPassTarget.getTranslation().minus(translation).getAngle();
     }
 
     public static Rotation2d getHeadingToSpeaker(Translation2d translation) {

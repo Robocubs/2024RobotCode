@@ -83,7 +83,7 @@ public class ShootCommands {
                             var atAngle = GeometryUtil.isNear(
                                     shooter.getAngle(), setpoint.angle(), Rotation2d.fromRadians(.02));
                             var atHeading = GeometryUtil.isNear(
-                                    robotState.getPassingHeading(),
+                                    robotState.getLongPassHeading(),
                                     robotState.getHeading(),
                                     Constants.Shooter.kPassingHeadingTolerance);
                             if (atSpeed && atAngle && atHeading) {
