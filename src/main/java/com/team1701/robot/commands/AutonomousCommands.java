@@ -773,6 +773,36 @@ public class AutonomousCommands {
         return new AutonomousCommand(command, mPathBuilder.buildAndClear());
     }
 
+    public AutonomousCommand sourceDrop53source() {
+        var command = loggedSequence(
+                        print("Started source drop 53 source auto"),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop53Source.1", 0.7),
+                        efficientlyPreWarmShootAndDrive("SourceDrop53Source.2", "SourceDrop53Source.3", AutoNote.M3),
+                        driveBackPreWarmAndShoot("SourceDrop53Source.4"),
+                        rotateToHeadingAndSeek(
+                                () -> autoFlipRotation(GeometryUtil.kRotationHalfPi),
+                                () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
+                        aimAndShoot(),
+                        followChoreoPath("SourceDrop53Source.5"))
+                .withName("SourceDrop53SourceAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
+    public AutonomousCommand sourceDrop43source() {
+        var command = loggedSequence(
+                        print("Started source drop 43 source auto"),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop43Source.1", 0.7),
+                        efficientlyPreWarmShootAndDrive("SourceDrop43Source.2", "SourceDrop43Source.3", AutoNote.M3),
+                        driveBackPreWarmAndShoot("SourceDrop43Source.4"),
+                        rotateToHeadingAndSeek(
+                                () -> autoFlipRotation(GeometryUtil.kRotationHalfPi),
+                                () -> Configuration.isRedAlliance() ? AutoNote.SR : AutoNote.SB),
+                        aimAndShoot(),
+                        followChoreoPath("SourceDrop43Source.5"))
+                .withName("SourceDrop43SourceAuto");
+        return new AutonomousCommand(command, mPathBuilder.buildAndClear());
+    }
+
     public AutonomousCommand sourceSpit54source() {
         var command = loggedSequence(
                         print("Started source spit 45 source auto"),
