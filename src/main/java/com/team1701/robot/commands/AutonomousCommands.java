@@ -686,7 +686,7 @@ public class AutonomousCommands {
     public AutonomousCommand sourceDrop54source() {
         var command = loggedSequence(
                         print("Started source drop 54 source auto"),
-                        followChoreoPathSeekNoteAndSpit("SourceDrop54Source.1", 0.7),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop54Source.1", 0.8),
                         efficientlyPreWarmShootAndDrive("SourceDrop54Source.2", "SourceDrop54Source.3", AutoNote.M4),
                         driveBackPreWarmAndShoot("SourceDrop54Source.4"),
                         rotateToHeadingAndSeek(
@@ -776,7 +776,7 @@ public class AutonomousCommands {
     public AutonomousCommand sourceDrop53source() {
         var command = loggedSequence(
                         print("Started source drop 53 source auto"),
-                        followChoreoPathSeekNoteAndSpit("SourceDrop53Source.1", 0.7),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop53Source.1", 0.8),
                         efficientlyPreWarmShootAndDrive("SourceDrop53Source.2", "SourceDrop53Source.3", AutoNote.M3),
                         driveBackPreWarmAndShoot("SourceDrop53Source.4"),
                         rotateToHeadingAndSeek(
@@ -791,7 +791,7 @@ public class AutonomousCommands {
     public AutonomousCommand sourceDrop43source() {
         var command = loggedSequence(
                         print("Started source drop 43 source auto"),
-                        followChoreoPathSeekNoteAndSpit("SourceDrop43Source.1", 0.7),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop43Source.1", 0.8),
                         efficientlyPreWarmShootAndDrive("SourceDrop43Source.2", "SourceDrop43Source.3", AutoNote.M3),
                         driveBackPreWarmAndShoot("SourceDrop43Source.4"),
                         rotateToHeadingAndSeek(
