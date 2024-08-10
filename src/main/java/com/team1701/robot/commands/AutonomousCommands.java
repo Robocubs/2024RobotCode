@@ -776,7 +776,7 @@ public class AutonomousCommands {
     public AutonomousCommand sourceDrop53source() {
         var command = loggedSequence(
                         print("Started source drop 53 source auto"),
-                        followChoreoPathSeekNoteAndSpit("SourceDrop53Source.1", 0.8),
+                        followChoreoPathSeekNoteAndSpit("SourceDrop53Source.1", 0.9),
                         efficientlyPreWarmShootAndDrive("SourceDrop53Source.2", "SourceDrop53Source.3", AutoNote.M3),
                         driveBackPreWarmAndShoot("SourceDrop53Source.4"),
                         rotateToHeadingAndSeek(
