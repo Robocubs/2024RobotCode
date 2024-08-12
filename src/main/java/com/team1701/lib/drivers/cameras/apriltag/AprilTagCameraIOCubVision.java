@@ -63,9 +63,7 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
 
     @Override
     public void updateInputs(AprilTagInputs inputs) {
-        var heartbeat = mHeartbeatSubscriber.getAtomic();
-        inputs.isConnected = heartbeat.value > mLastHeartbeat || Logger.getTimestamp() - heartbeat.timestamp > 100000;
-        mLastHeartbeat = heartbeat.value;
+        inputs.isConnected = Logger.getTimestamp() - mHeartbeatSubscriber.getLastChange() < 5000000;
 
         inputs.fps = (int) mFpsSubscriber.get();
         inputs.temperature = (int) mTempSubscriber.get();
