@@ -106,7 +106,7 @@ public class RobotContainer {
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(12),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(13),
                                         new EncoderIOAnalog(1),
-                                        Rotation2d.fromRadians(-3.869)),
+                                        Rotation2d.fromRadians(-3.127)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(14),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(15),
@@ -381,6 +381,8 @@ public class RobotContainer {
                 .b()
                 .whileTrue(IntakeCommands.rejectAndDrive(
                         mIntake, mIndexer, mDrive, mDriverController, () -> mRobotState.getHeading()));
+
+        mDriverController.back().onTrue(runOnce(mDrive::zeroModules).withName("ZeroEncoders"));
 
         mDriverController
                 .start()
