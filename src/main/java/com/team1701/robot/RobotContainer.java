@@ -106,7 +106,7 @@ public class RobotContainer {
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(12),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(13),
                                         new EncoderIOAnalog(1),
-                                        Rotation2d.fromRadians(-3.869)),
+                                        Rotation2d.fromRadians(-3.127)),
                                 new SwerveModuleIO(
                                         TalonFxMotorFactory.createDriveMotorIOTalonFxFoc(14),
                                         TalonFxMotorFactory.createSteerMotorIOTalonFxFoc(15),
@@ -382,6 +382,8 @@ public class RobotContainer {
                 .whileTrue(IntakeCommands.rejectAndDrive(
                         mIntake, mIndexer, mDrive, mDriverController, () -> mRobotState.getHeading()));
 
+        mDriverController.back().onTrue(runOnce(mDrive::zeroModules).withName("ZeroEncoders"));
+
         mDriverController
                 .start()
                 .onTrue(runOnce(() -> mDrive.zeroGyroscope(
@@ -646,6 +648,8 @@ public class RobotContainer {
         var sourceDrop543source = commands.sourceDrop543source();
         var sourceDrop54source = commands.sourceDrop54source();
         var sourceDrop45source = commands.sourceDrop45source();
+        var sourceDrop53source = commands.sourceDrop53source();
+        var sourceDrop43source = commands.sourceDrop43source();
         var sourceSpit54source = commands.sourceSpit54source();
 
         mAutonomousPaths.put("Shoot and Backup", shootAndBackupCommand.path());
@@ -668,6 +672,8 @@ public class RobotContainer {
         mAutonomousPaths.put("Source Drop 543 Source", sourceDrop543source.path());
         mAutonomousPaths.put("Source Drop 54 Source", sourceDrop54source.path());
         mAutonomousPaths.put("Source Drop 45 Source", sourceDrop45source.path());
+        mAutonomousPaths.put("Source Drop 53 Source", sourceDrop53source.path());
+        mAutonomousPaths.put("Source Drop 43 Source", sourceDrop43source.path());
         mAutonomousPaths.put("Source Spit 54 Source", sourceSpit54source.path());
 
         autonomousModeChooser.addDefaultOption("Shoot and Backup", shootAndBackupCommand.command());
@@ -690,6 +696,8 @@ public class RobotContainer {
         autonomousModeChooser.addOption("Source Drop 543 Source", sourceDrop543source.command());
         autonomousModeChooser.addOption("Source Drop 54 Source", sourceDrop54source.command());
         autonomousModeChooser.addOption("Source Drop 45 Source", sourceDrop45source.command());
+        autonomousModeChooser.addOption("Source Drop 53 Source", sourceDrop53source.command());
+        autonomousModeChooser.addOption("Source Drop 43 Source", sourceDrop43source.command());
         autonomousModeChooser.addOption("Source Spit 54 Source", sourceSpit54source.command());
 
         // autonomousModeChooser.addOption(

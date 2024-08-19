@@ -12,6 +12,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.RawSubscriber;
 import edu.wpi.first.networktables.TimestampedRaw;
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
@@ -25,13 +26,13 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
     private final IntegerSubscriber mTempSubscriber;
     private final IntegerSubscriber mLatencySubscriber;
     private final IntegerSubscriber mHeartbeatSubscriber;
-    private int mLastHeartbeat = -1;
+    private long mLastHeartbeat = 0;
 
     public AprilTagCameraIOCubVision(VisionConfig config) {
         mConfig = config;
-        var CubVisionTable = NetworkTableInstance.getDefault().getTable("CubVision/" + config.cameraName);
+        var cubVisionTable = NetworkTableInstance.getDefault().getTable("CubVision/" + config.cameraName);
 
-        var configTable = CubVisionTable.getSubTable("config");
+        var configTable = cubVisionTable.getSubTable("config");
         configTable.getIntegerTopic("camera_id").publish().set(config.cameraID);
         configTable.getIntegerTopic("camera_resolution_width").publish().set(config.remoteConfig.cameraResolutionWidth);
         configTable
@@ -44,7 +45,7 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
         configTable.getBooleanTopic("should_stream").publish().set(config.remoteConfig.shouldStream);
         configTable.getDoubleTopic("fiducial_size_m").publish().set(Constants.Vision.kAprilTagWidth);
 
-        var outputTable = CubVisionTable.getSubTable("output");
+        var outputTable = cubVisionTable.getSubTable("output");
         mObservationSubscriber = outputTable
                 .getRawTopic("observations")
                 .subscribe(
@@ -62,9 +63,7 @@ public class AprilTagCameraIOCubVision implements AprilTagCameraIO {
 
     @Override
     public void updateInputs(AprilTagInputs inputs) {
-        var heartbeat = (int) mHeartbeatSubscriber.getAtomic().value;
-        inputs.isConnected = heartbeat > 0 && (heartbeat - mLastHeartbeat < 1000000);
-        mLastHeartbeat = heartbeat;
+        inputs.isConnected = Logger.getTimestamp() - mHeartbeatSubscriber.getLastChange() < 5000000;
 
         inputs.fps = (int) mFpsSubscriber.get();
         inputs.temperature = (int) mTempSubscriber.get();
