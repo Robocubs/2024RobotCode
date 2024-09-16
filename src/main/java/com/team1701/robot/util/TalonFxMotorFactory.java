@@ -5,9 +5,11 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.team1701.lib.alerts.Alert;
 import com.team1701.lib.drivers.motors.MotorIOTalonFX;
 import com.team1701.lib.drivers.motors.MotorIOTalonFXFOC;
 import com.team1701.robot.Constants;
+import org.littletonrobotics.junction.Logger;
 
 public class TalonFxMotorFactory {
     private static final InvertedValue kInverted = InvertedValue.Clockwise_Positive;
@@ -90,10 +92,22 @@ public class TalonFxMotorFactory {
     }
 
     private static void configureWithRetry(TalonFX motor, TalonFXConfiguration config) {
+        StatusCode statusCode = null;
         for (int i = 0; i < 4; i++) {
-            if (motor.getConfigurator().apply(config, 0.1) == StatusCode.OK) {
+            statusCode = motor.getConfigurator().apply(config, 0.1);
+            if (statusCode == StatusCode.OK) {
                 break;
             }
+        }
+
+        if (statusCode != StatusCode.OK) {
+            Alert.error("TalonFX configuration failed: id=" + motor.getDeviceID() + ",status=" + statusCode.toString())
+                    .enable();
+
+            var actualConfig = new TalonFXConfiguration();
+            motor.getConfigurator().refresh(actualConfig, 0.1);
+            Logger.recordOutput("Motor/" + motor.getDeviceID() + "/Config", config.toString());
+            Logger.recordOutput("Motor/" + motor.getDeviceID() + "/ActualConfig", actualConfig.toString());
         }
     }
 }
